@@ -30,8 +30,7 @@ export default function createEnv<T>(descriptor: T, options: CreateEnvOptions = 
         missingEnvs[keyOfT] = description as any;
       Object.defineProperty(env, keyOfT, {
         get() {
-          // throw new ServerError(500, `Missing env ${envKey}`, { type: 'missingEnv' });
-          throw options.missingKeyError?.(ENV_KEY) || new Error(`Missing env ${ENV_KEY}`);
+          throw options.missingKeyError?.(ENV_KEY) ?? new Error(`Missing env ${ENV_KEY}`);
         }
       });
       console.log(`WARNING: Missing env ${ENV_KEY} (${description}). Not throwing error until it is attempted to be used.`);
