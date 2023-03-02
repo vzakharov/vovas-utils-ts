@@ -5,7 +5,7 @@ export interface NewResolvableArgs {
   startResolved?: boolean;
 }
 
-export default class Resolvable {
+export class Resolvable {
   
   inProgress: boolean = true;
   _resolve: () => void = () => {};
