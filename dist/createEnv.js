@@ -28,9 +28,9 @@ export function createEnv(descriptor, options = {}) {
 }
 export const envCase = (string) => _.snakeCase(string).toUpperCase();
 export const unEnvCase = _.camelCase;
-function keyConverter(converter) {
-    // return (dict: T) => _.mapKeys(dict, (value, key) => converter(key)) as T;
-    return (dict) => _.mapKeys(dict, (value, key) => converter(key));
+export function envKeys(dict) {
+    return _.mapKeys(dict, (value, key) => envCase(key));
 }
-export const envKeys = keyConverter(envCase);
-export const unEnvKeys = keyConverter(unEnvCase);
+export function unEnvKeys(dict) {
+    return _.mapKeys(dict, (value, key) => unEnvCase(key));
+}

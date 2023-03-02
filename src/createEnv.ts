@@ -4,8 +4,8 @@ import { ensureProperty } from "./ensure.js";
 
 export interface CreateEnvResult<T> {
   env: T;
-  missingEnvs?: Partial<T>;
-  presentEnvs?: Partial<T>;
+  missingEnvs: Partial<T>;
+  presentEnvs: Partial<T>;
 }
 
 export type CreateEnvOptions = {
@@ -43,12 +43,10 @@ export function createEnv<T>(descriptor: T, options: CreateEnvOptions = {}): Cre
 export const envCase = (string: string) => _.snakeCase(string).toUpperCase();
 export const unEnvCase = _.camelCase;
 
-function keyConverter<T extends Dict>(converter: (key: string) => string): (dict: T) => T {
-  // return (dict: T) => _.mapKeys(dict, (value, key) => converter(key)) as T;
-  return (dict: T) => _.mapKeys(dict,
-    (value: any, key: string) => converter(key)
-  ) as T;
+export function envKeys<T extends Dict>(dict: T): T {
+  return _.mapKeys(dict, (value: any, key: string) => envCase(key)) as T;
 }
 
-export const envKeys: <T extends Dict>(dict: T) => T = keyConverter(envCase);
-export const unEnvKeys: <T extends Dict>(dict: T) => T = keyConverter(unEnvCase);
+export function unEnvKeys<T extends Dict>(dict: T): T {
+  return _.mapKeys(dict, (value: any, key: string) => unEnvCase(key)) as T;
+}
