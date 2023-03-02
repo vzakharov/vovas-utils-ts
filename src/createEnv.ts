@@ -1,26 +1,28 @@
-import { config } from 'dotenv';
-config();
-// console.log("Environment variables:", process.env);
-
 import _ from "lodash";
-import { Dict, ServerError } from "~~/utils/types";
+import { Dict } from "./types.js";
 import { ensureProperty } from "~~/utils/ensure";
 
-export interface CreateEnvOptions<T> {
+export interface CreateEnvResult<T> {
+  env: T;
   missingEnvs?: Partial<T>;
   presentEnvs?: Partial<T>;
 }
 
-export default function createEnv<T>(descriptor: T, options: CreateEnvOptions<T> = {}): T {
+export type CreateEnvOptions = {
+  missingKeyError?: (key: string) => Error;
+}
 
-  const { missingEnvs, presentEnvs } = options;
+export default function createEnv<T>(descriptor: T, options: CreateEnvOptions = {}): CreateEnvResult<T> {
+
   const env: T = {} as T;
+  const missingEnvs: Partial<T> = {};
+  const presentEnvs: Partial<T> = {};
   for ( const key of Object.getOwnPropertyNames(descriptor) ) {
     const keyOfT = key as keyof T;
     const description = descriptor[keyOfT] as string;
-    const envKey = _.snakeCase(key).toUpperCase();
+    const ENV_KEY = _.snakeCase(key).toUpperCase();
     try {
-      env[keyOfT] = ensureProperty(process.env, envKey, description);
+      env[keyOfT] = ensureProperty(process.env, ENV_KEY, description);
       if ( presentEnvs )
         presentEnvs[keyOfT] = env[keyOfT];
     } catch (e: any) {
@@ -28,14 +30,15 @@ export default function createEnv<T>(descriptor: T, options: CreateEnvOptions<T>
         missingEnvs[keyOfT] = description as any;
       Object.defineProperty(env, keyOfT, {
         get() {
-          throw new ServerError(500, `Missing env ${envKey}`, { type: 'missingEnv' });
+          // throw new ServerError(500, `Missing env ${envKey}`, { type: 'missingEnv' });
+          throw options.missingKeyError?.(ENV_KEY) || new Error(`Missing env ${ENV_KEY}`);
         }
       });
-      console.log(`WARNING: Missing env ${envKey} (${description}). Not throwing error until it is attempted to be used.`);
+      console.log(`WARNING: Missing env ${ENV_KEY} (${description}). Not throwing error until it is attempted to be used.`);
     }
   }
 
-  return env as T;
+  return { env, missingEnvs, presentEnvs };
 }
 
 export const envCase = (string: string) => _.snakeCase(string).toUpperCase();
