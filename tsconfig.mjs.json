@@ -8,6 +8,7 @@
     "outDir": "dist",
     "lib": ["DOM"],
     "skipLibCheck": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
 }

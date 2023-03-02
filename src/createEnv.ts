@@ -44,7 +44,10 @@ export const envCase = (string: string) => _.snakeCase(string).toUpperCase();
 export const unEnvCase = _.camelCase;
 
 function keyConverter<T extends Dict>(converter: (key: string) => string): (dict: T) => T {
-  return (dict: T) => _.mapKeys(dict, (value, key) => converter(key)) as T;
+  // return (dict: T) => _.mapKeys(dict, (value, key) => converter(key)) as T;
+  return (dict: T) => _.mapKeys(dict,
+    (value: any, key: string) => converter(key)
+  ) as T;
 }
 
 export const envKeys: <T extends Dict>(dict: T) => T = keyConverter(envCase);
