@@ -3,7 +3,7 @@ export interface NewResolvableArgs {
     previousResolved?: UnixTimestamp;
     startResolved?: boolean;
 }
-export default class Resolvable {
+export declare class Resolvable {
     inProgress: boolean;
     _resolve: () => void;
     _reject: (reason?: any) => void;

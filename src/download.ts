@@ -3,7 +3,7 @@ import https from 'https';
 import path from 'path';
 import os from 'os';
 
-export default async function download(url: string, filename?: string): Promise<string> {
+export async function download(url: string, filename?: string): Promise<string> {
   const filePath = path.join(os.tmpdir(), filename ?? path.basename(url));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, response => response.pipe(file));

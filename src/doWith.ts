@@ -1,6 +1,6 @@
 import { ensureProperty } from "./ensure.js";
 
-export default function doWith<T, Result>(
+export function doWith<T, Result>(
   target: T,
   callback: (target: T) => Result,
   { finally: cleanMethodName }: { finally: string }

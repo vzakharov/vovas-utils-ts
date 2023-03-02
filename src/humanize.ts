@@ -1,6 +1,6 @@
 import _ from 'lodash';
 
-export default function humanize(str: string): string {
+export function humanize(str: string): string {
   return _.capitalize(_.startCase(str));
 }
 

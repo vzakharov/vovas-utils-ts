@@ -1,4 +1,4 @@
-export default class Resolvable {
+export class Resolvable {
     inProgress = true;
     _resolve = () => { };
     _reject = () => { };

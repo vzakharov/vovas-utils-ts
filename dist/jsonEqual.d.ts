@@ -1,1 +1,1 @@
-export default function jsonEqual<T>(a: T, b: T): boolean;
+export declare function jsonEqual<T>(a: T, b: T): boolean;

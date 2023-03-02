@@ -1,5 +1,5 @@
 import _ from 'lodash';
-export default function humanize(str) {
+export function humanize(str) {
     return _.capitalize(_.startCase(str));
 }
 export function labelize(values) {
