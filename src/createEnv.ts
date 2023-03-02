@@ -1,6 +1,6 @@
 import _ from "lodash";
 import { Dict } from "./types.js";
-import { ensureProperty } from "~~/utils/ensure";
+import { ensureProperty } from "./ensure.js";
 
 export interface CreateEnvResult<T> {
   env: T;
