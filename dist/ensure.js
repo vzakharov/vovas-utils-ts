@@ -6,6 +6,9 @@ export function ensure(x, variableName) {
     }
     return x;
 }
+export function assert(x, variableName) {
+    ensure(x, variableName);
+}
 // export function ensureProperty<T = void>(
 //   obj: any, key: string, messageIfInvalid?: string
 // ): T;
@@ -20,14 +23,14 @@ export function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
     const { requiredType, validate, messageIfInvalid } = options;
     try {
         if (typeof obj[keyOfObj] === 'undefined') {
-            throw new Error(`Property ${String(keyOfObj)} is undefined.`);
+            throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
         }
         if (requiredType && typeof obj[keyOfObj] !== requiredType) {
-            throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}.`);
+            throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
         }
         else if (validate) {
             if (!validate(obj[keyOfObj])) {
-                throw new Error(`Property ${String(keyOfObj)} is invalid.`);
+                throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
             }
         }
     }

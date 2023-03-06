@@ -9,6 +9,10 @@ export function ensure<T>(x: T | undefined | null, variableName?: string): T {
   return x;
 }
 
+export function assert<T>(x: T | undefined | null, variableName?: string): asserts x is T {
+  ensure(x, variableName);
+}
+
 export interface EnsurePropertyOptions {
   requiredType?: string;
   validate?: (value: any) => boolean;
@@ -35,13 +39,13 @@ export function ensureProperty<Result, Container = any>(
 
   try {
     if ( typeof obj[keyOfObj] === 'undefined' ) {
-      throw new Error(`Property ${String(keyOfObj)} is undefined.`);
+      throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
     }
     if ( requiredType && typeof obj[keyOfObj] !== requiredType ) {
-      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}.`);
+      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
     } else if ( validate ) {
       if ( !validate(obj[keyOfObj]) ) {
-        throw new Error(`Property ${String(keyOfObj)} is invalid.`);
+        throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
       }
     }
   } catch (e: any) {
