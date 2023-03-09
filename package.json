@@ -1,6 +1,6 @@
 {
   "name": "vovas-utils",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Just a bunch of useful TypeScript helpers",
   "exports": {
     ".": {
@@ -24,6 +24,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "ansi-colors": "^4.1.3",
     "lodash": "^4.17.21"
   }
 }
