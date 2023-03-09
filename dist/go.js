@@ -1,6 +1,6 @@
 export function go(callback, arg) {
     const recurse = (arg) => go(callback, arg);
-    return callback(recurse, arg);
+    return callback(arg, recurse);
 }
 export function goer(callback) {
     return (arg) => go(callback, arg);
@@ -8,10 +8,10 @@ export function goer(callback) {
 // Examples:
 function examples() {
     // 1. Function to calculate the factorial with `goer`:
-    const getFactorial = goer((recurse, n) => n === 0 ? 1 : n * recurse(n - 1));
+    const getFactorial = goer((n, recurse) => n === 0 ? 1 : n * recurse(n - 1));
     console.log(getFactorial(5));
     // 2. Retry connecting to an endpoint five times with `go`:
-    go((retry, retriesLeft) => {
+    go((retriesLeft, retry) => {
         try {
             return fetch("https://example.com");
         }

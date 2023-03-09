@@ -1,6 +1,6 @@
 export type GoRecurse<TReturn, TArg> = (arg: TArg) => TReturn;
 
-export type GoCallback<TReturn, TArg> = (arg: TArg, recurse?: GoRecurse<TReturn, TArg>) => TReturn;
+export type GoCallback<TReturn, TArg> = (arg: TArg, recurse: GoRecurse<TReturn, TArg>) => TReturn;
 
 export function go<TReturn, TArg>(callback: GoCallback<TReturn, TArg>, arg: TArg): TReturn {
   const recurse: GoRecurse<TReturn, TArg> = (arg: TArg) => go(callback, arg);
