@@ -4,6 +4,7 @@ export * from './download.js';
 export * from './ensure.js';
 export * from './go.js';
 export * from './humanize.js';
+export * from './logger.js';
 export * from './jsonClone.js';
 export * from './jsonEqual.js';
 export * from './resolvable.js';
