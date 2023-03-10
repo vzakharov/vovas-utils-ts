@@ -8,4 +8,5 @@ export * from './logger.js';
 export * from './jsonClone.js';
 export * from './jsonEqual.js';
 export * from './resolvable.js';
+export * from './throwError.js';
 export * from './types.js';
