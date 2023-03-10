@@ -1,16 +1,17 @@
 import { UnixTimestamp } from "./types.js";
-export interface NewResolvableArgs {
+export interface NewResolvableArgs<T> {
     previousResolved?: UnixTimestamp;
     startResolved?: boolean;
+    startResolvedWith?: T;
 }
-export declare class Resolvable {
+export declare class Resolvable<T = void> {
     inProgress: boolean;
-    _resolve: () => void;
+    _resolve: (value?: T | PromiseLike<T>) => void;
     _reject: (reason?: any) => void;
-    promise: Promise<void>;
+    promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
-    constructor({ previousResolved, startResolved }?: NewResolvableArgs);
-    resolve(): void;
+    constructor({ previousResolved, startResolved, startResolvedWith }?: NewResolvableArgs<T>);
+    resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
-    reset(): void;
+    reset(value?: T | PromiseLike<T>): void;
 }

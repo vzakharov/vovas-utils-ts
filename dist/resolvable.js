@@ -1,20 +1,25 @@
+import { ensure } from "./ensure.js";
+// export class Resolvable {
 export class Resolvable {
     inProgress = true;
+    // _resolve: () => void = () => {};
     _resolve = () => { };
     _reject = () => { };
+    // promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
     promise = new Promise((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
     previousResolved;
     // constructor(previousResolved?: UnixTimestamp) {
-    constructor({ previousResolved, startResolved } = {}) {
+    constructor({ previousResolved, startResolved, startResolvedWith } = {}) {
         this.previousResolved = previousResolved;
         if (startResolved) {
-            this.promise = Promise.resolve();
+            this.promise = Promise.resolve(ensure(startResolvedWith));
             this.inProgress = false;
         }
     }
-    resolve() {
+    // resolve() {
+    resolve(value) {
         // console.log('Resolving');
-        this._resolve();
+        this._resolve(value);
         this.inProgress = false;
         // console.log('Resolved:', this);
     }
@@ -22,8 +27,9 @@ export class Resolvable {
         this._reject(reason);
         this.inProgress = false;
     }
-    reset() {
-        this.resolve();
+    // reset() {
+    reset(value) {
+        this.resolve(value);
         Object.assign(this, new Resolvable({ previousResolved: Date.now() }));
     }
 }

@@ -1,30 +1,36 @@
+import { ensure } from "./ensure.js";
 import { UnixTimestamp } from "./types.js";
 
-export interface NewResolvableArgs {
+export interface NewResolvableArgs<T> {
   previousResolved?: UnixTimestamp;
   startResolved?: boolean;
+  startResolvedWith?: T;
 }
 
-export class Resolvable {
+// export class Resolvable {
+export class Resolvable<T = void> {
   
   inProgress: boolean = true;
-  _resolve: () => void = () => {};
+  // _resolve: () => void = () => {};
+  _resolve: (value?: T | PromiseLike<T>) => void = () => {};
   _reject: (reason?: any) => void = () => {};
-  promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
+  // promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
+  promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   previousResolved: UnixTimestamp | undefined;
 
   // constructor(previousResolved?: UnixTimestamp) {
-  constructor({ previousResolved, startResolved }: NewResolvableArgs = {}) {
+  constructor({ previousResolved, startResolved, startResolvedWith }: NewResolvableArgs<T> = {}) {
     this.previousResolved = previousResolved;
     if ( startResolved ) {
-      this.promise = Promise.resolve();
+      this.promise = Promise.resolve(ensure(startResolvedWith));
       this.inProgress = false;
     }
   }
 
-  resolve() {
+  // resolve() {
+  resolve(value?: T | PromiseLike<T>) {
     // console.log('Resolving');
-    this._resolve();
+    this._resolve(value);
     this.inProgress = false;
     // console.log('Resolved:', this);
   }
@@ -34,8 +40,9 @@ export class Resolvable {
     this.inProgress = false;
   }
 
-  reset() {
-    this.resolve();
+  // reset() {
+  reset(value?: T | PromiseLike<T>) {
+    this.resolve(value);
     Object.assign(this, new Resolvable({ previousResolved: Date.now() }));
   }
 

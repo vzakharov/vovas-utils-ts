@@ -1,8 +1,3 @@
 export function throwError(error) {
-    if (typeof error === 'string') {
-        throw new Error(error);
-    }
-    else {
-        throw error;
-    }
+    throw typeof error === 'string' ? new Error(error) : error;
 }
