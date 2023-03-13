@@ -12,26 +12,77 @@
 // ```
 // The util will only log the message if the index is equal to the last log index. This way, we can easily switch between logging different contexts by changing the index, without cluttering the console with logs from other contexts which are no longer relevant.
 
-import c from 'ansi-colors';
+import _ from 'lodash';
 import fs from 'fs';
 
-export type LoggerStyle = keyof typeof c;
+// import paint from 'ansi-colors';
+// export type LogColor = keyof typeof color;
 
-const lastLogIndex = fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0;
+export type Color = 'gray' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan';
+
+export type Painter = (text: string) => string;
+
+export type ColorMap<T> = {
+  [color in Color]: T;
+}
+
+export type Paint = ( (color: Color) => Painter ) & ColorMap<Painter>;
+
+export const ansiPrefixes: ColorMap<string> = {
+  gray: '\x1b[90m',
+  red: '\x1b[31m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  magenta: '\x1b[35m',
+  cyan: '\x1b[36m',
+};
+
+export const ansiColors = _.keys(ansiPrefixes) as Color[];
+
+// export function paint(color: LogColor): Painter {
+//   return (text: string) => ansiPrefixes[color] + text + '\x1b[0m';
+// }
+export const paint = (
+  (
+    color: Color) =>
+      (text: string) => ansiPrefixes[color] + text + '\x1b[0m'
+  ) as Paint;
+
+Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color as Color)));
 
 export const loggerInfo = {
-  lastLogIndex
+  // lastLogIndex
+} as {
+  lastLogIndex: number;
 };
+
+Object.defineProperty(loggerInfo, 'lastLogIndex', {
+  get() {
+    return process?.env
+      ? fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0
+      : localStorage
+        ? localStorage.getItem('lastLogIndex') || 0
+        : 0;
+  },
+  set(value) {
+    if ( process?.env ) {
+      fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: value }, null, 2));
+    } else if ( localStorage ) {
+      localStorage.setItem('lastLogIndex', value);
+    }
+  }
+});
 
 export type LogFunction = (...args: any[]) => void;
 
 export type Log = LogFunction & {
-  [style in LoggerStyle]: LogFunction;
+  [style in Color]: LogFunction;
 } & {
   always: Log;
 }
 
-export function logger(index?: number | 'always', defaultStyle: LoggerStyle = 'blue', addAlways = true): Log {
+export function logger(index?: number | 'always', defaultStyle: Color = 'blue', addAlways = true): Log {
 
   if ( typeof index === 'undefined' ) {
     logger('always').yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
@@ -42,11 +93,11 @@ export function logger(index?: number | 'always', defaultStyle: LoggerStyle = 'b
     fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: index }, null, 2));
   }
   
-  function logWithStyle(style: LoggerStyle | undefined, ...args: any[]) {
+  function logWithStyle(style: Color | undefined, ...args: any[]) {
     if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
       let formatFunction = (arg: any) => arg;
       if ( style ) {
-        let func = c[style] as Function;
+        let func = paint[style] as Function;
         if ( typeof func !== 'function' ) throw new Error(`"${style}" is not a valid style function.`);
         formatFunction = (arg: any) => func(arg);
       }
@@ -56,8 +107,8 @@ export function logger(index?: number | 'always', defaultStyle: LoggerStyle = 'b
 
   const log = logWithStyle.bind(null, defaultStyle) as Log;
 
-  for ( const style of Object.keys(c) ) {
-    log[style as LoggerStyle] = (...args: any[]) => logWithStyle(style as LoggerStyle, ...args);
+  for ( const style of Object.keys(paint) ) {
+    log[style as Color] = (...args: any[]) => logWithStyle(style as Color, ...args);
   }
 
   if ( addAlways )
