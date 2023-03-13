@@ -31,7 +31,8 @@ export function createEnv<T>(descriptor: T, options: CreateEnvOptions = {}): Cre
       Object.defineProperty(env, keyOfT, {
         get() {
           throw options.missingKeyError?.(ENV_KEY) ?? new Error(`Missing env ${ENV_KEY} (${description})`);
-        }
+        },
+        configurable: true,
       });
       console.log(`WARNING: Missing env ${ENV_KEY} (${description}). Not throwing error until it is attempted to be used.`);
     }
