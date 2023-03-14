@@ -1,12 +1,4 @@
-export type Primitive = string | number | boolean | null | undefined;
-
-export type JsonableNonArray = Primitive | JsonableObject;
-
-export type Jsonable = JsonableNonArray | Jsonable[];
-
-export interface JsonableObject {
-  [key: string]: Jsonable;
-};
+import { Jsonable } from "./types.js";
 
 export function jsonClone<T>(obj: T): T & Jsonable {
   return JSON.parse(JSON.stringify(obj));

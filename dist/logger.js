@@ -13,6 +13,8 @@
 // The util will only log the message if the index is equal to the last log index. This way, we can easily switch between logging different contexts by changing the index, without cluttering the console with logs from other contexts which are no longer relevant.
 import _ from 'lodash';
 import fs from 'fs';
+import yaml from 'js-yaml';
+import { isPrimitive } from './types.js';
 export const ansiPrefixes = {
     gray: '\x1b[90m',
     red: '\x1b[31m',
@@ -48,31 +50,39 @@ Object.defineProperty(loggerInfo, 'lastLogIndex', {
         }
     }
 });
-export function logger(index, defaultStyle = 'blue', addAlways = true) {
+export const serializer = {
+    json: (arg) => JSON.stringify(arg, null, 2),
+    yaml: (arg) => yaml.dump(arg),
+    none: (arg) => arg,
+};
+export function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
+    const defaultOptions = (_.isPlainObject(defaultColorOrOptions)
+        ? defaultColorOrOptions
+        : {
+            color: defaultColorOrOptions ?? 'gray',
+            serializeAs: defaultSerializeAsOrAddAlways ?? 'yaml',
+        });
+    const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
     if (typeof index === 'undefined') {
         logger('always').yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
     }
     if (index && index !== 'always' && index > loggerInfo.lastLogIndex) {
         loggerInfo.lastLogIndex = index;
-        fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: index }, null, 2));
     }
-    function logWithStyle(style, ...args) {
+    function _log(options, ...args) {
+        const { color, serializeAs } = _.defaults(options, defaultOptions);
         if (index === 'always' || index === loggerInfo.lastLogIndex) {
-            let formatFunction = (arg) => arg;
-            if (style) {
-                let func = paint[style];
-                if (typeof func !== 'function')
-                    throw new Error(`"${style}" is not a valid style function.`);
-                formatFunction = (arg) => func(arg);
-            }
-            console.log(...args.map(formatFunction));
+            console.log(...args.map(arg => paint[color](isPrimitive(arg) ? arg : serializer[serializeAs](arg))));
         }
     }
-    const log = logWithStyle.bind(null, defaultStyle);
-    for (const style of Object.keys(paint)) {
-        log[style] = (...args) => logWithStyle(style, ...args);
+    const log = (...args) => _log(defaultOptions, ...args);
+    for (const color of [undefined, ...Object.keys(paint)]) {
+        for (const serializeAs of [undefined, 'json', 'yaml']) {
+            if (color || serializeAs)
+                _.set(log, _.compact([color, serializeAs]), (...args) => _log({ color, serializeAs }, ...args));
+        }
     }
     if (addAlways)
-        log.always = logger('always', defaultStyle, false);
+        log.always = logger('always', defaultOptions, false);
     return log;
 }

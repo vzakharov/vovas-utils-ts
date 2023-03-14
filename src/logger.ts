@@ -14,6 +14,8 @@
 
 import _ from 'lodash';
 import fs from 'fs';
+import yaml from 'js-yaml';
+import { isPrimitive } from './types.js';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -74,46 +76,84 @@ Object.defineProperty(loggerInfo, 'lastLogIndex', {
   }
 });
 
-export type LogFunction = (...args: any[]) => void;
+export const serializer = {
+  json: (arg: any) => JSON.stringify(arg, null, 2),
+  yaml: (arg: any) => yaml.dump(arg),
+  none: (arg: any) => arg,
+};
 
-export type Log = LogFunction & {
-  [style in Color]: LogFunction;
+export type SerializeAs = keyof typeof serializer;
+
+export type LogOptions = {
+  color: Color;
+  serializeAs: SerializeAs;
+};  
+
+export type LogFunction = (...args: any[]) => void
+
+export type PossiblySerializedLogFunction = LogFunction & {
+  [serialize in SerializeAs]: LogFunction;
+}
+
+export type Log = PossiblySerializedLogFunction & {
+  [color in Color]: PossiblySerializedLogFunction;
 } & {
   always: Log;
 }
 
-export function logger(index?: number | 'always', defaultStyle: Color = 'blue', addAlways = true): Log {
+export function logger(index?: number | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
+export function logger(index?: number | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
+export function logger(index?: number | 'always', 
+  defaultColorOrOptions?: Color | LogOptions,
+  defaultSerializeAsOrAddAlways?: SerializeAs | boolean
+): Log {
 
+  const defaultOptions = (
+    _.isPlainObject(defaultColorOrOptions)
+      ? defaultColorOrOptions
+      : {
+        color: defaultColorOrOptions ?? 'gray',
+        serializeAs: defaultSerializeAsOrAddAlways ?? 'yaml',
+      } 
+  ) as LogOptions;
+
+  const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
+  
   if ( typeof index === 'undefined' ) {
     logger('always').yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
 
   if ( index && index !== 'always' && index > loggerInfo.lastLogIndex ) {
     loggerInfo.lastLogIndex = index;
-    fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: index }, null, 2));
   }
   
-  function logWithStyle(style: Color | undefined, ...args: any[]) {
+  function _log(options: Partial<LogOptions>, ...args: any[]) {
+
+    const { color, serializeAs } = _.defaults(options, defaultOptions);
+  
     if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
-      let formatFunction = (arg: any) => arg;
-      if ( style ) {
-        let func = paint[style] as Function;
-        if ( typeof func !== 'function' ) throw new Error(`"${style}" is not a valid style function.`);
-        formatFunction = (arg: any) => func(arg);
-      }
-      console.log(...args.map(formatFunction));
+      console.log(...args.map( arg => 
+        paint[color](
+          isPrimitive(arg) ? arg : serializer[serializeAs](arg)
+        )
+      ));
     }
   }
 
-  const log = logWithStyle.bind(null, defaultStyle) as Log;
-
-  for ( const style of Object.keys(paint) ) {
-    log[style as Color] = (...args: any[]) => logWithStyle(style as Color, ...args);
+  const log = (...args: any[]) => _log(defaultOptions, ...args);
+  for ( const color of [undefined, ...Object.keys(paint) as Color[]] ) {
+     for ( const serializeAs of [undefined, 'json', 'yaml'] as const ) {
+      if ( color || serializeAs)
+        _.set( log,
+            _.compact([color, serializeAs]),
+            (...args: any[]) => _log({ color, serializeAs }, ...args)
+        );
+    }
   }
 
   if ( addAlways )
-    log.always = logger('always', defaultStyle, false);
+    log.always = logger('always', defaultOptions, false);
 
-  return log;
+  return log as Log;
 
 }
