@@ -133,9 +133,9 @@ export function logger(index?: number | 'always',
   
     if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
       console.log(...args.map( arg => 
-        paint[color](
+        (
           isPrimitive(arg) ? arg : serializer[serializeAs](arg)
-        )
+        ).split('\n').map( paint[color] ).join('\n')
       ));
     }
   }
