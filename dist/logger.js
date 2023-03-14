@@ -72,7 +72,7 @@ export function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlwa
     function _log(options, ...args) {
         const { color, serializeAs } = _.defaults(options, defaultOptions);
         if (index === 'always' || index === loggerInfo.lastLogIndex) {
-            console.log(...args.map(arg => (isPrimitive(arg) ? arg : serializer[serializeAs](arg)).split('\n').map(paint[color]).join('\n')));
+            console.log(...args.map(arg => String(isPrimitive(arg) ? arg : serializer[serializeAs](arg)).split('\n').map(paint[color]).join('\n')));
         }
     }
     const log = (...args) => _log(defaultOptions, ...args);

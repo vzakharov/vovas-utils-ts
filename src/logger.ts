@@ -132,8 +132,8 @@ export function logger(index?: number | 'always',
     const { color, serializeAs } = _.defaults(options, defaultOptions);
   
     if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
-      console.log(...args.map( arg => 
-        (
+      console.log(...args.map( arg =>
+        String(
           isPrimitive(arg) ? arg : serializer[serializeAs](arg)
         ).split('\n').map( paint[color] ).join('\n')
       ));
