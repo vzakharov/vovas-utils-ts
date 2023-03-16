@@ -1,19 +1,34 @@
 import _ from "lodash";
 import yaml from "js-yaml";
 import path from "path";
-import { execSync } from "child_process";
+import childProcess from "child_process";
 import { logger } from "./logger.js";
 
 const log = logger(20, 'yellow');
 
+export interface INpmLsOutput {
+  dependencies: Record<string, {
+    resolved: string;
+  }>
+}
+
 export function viteConfigForNpmLinks(): IViteConfig {
-  const npmLinks = Object.entries(
-    yaml.load(
-      execSync('ls -l node_modules | grep ^l | awk \'{print $9": "$11}\'')
-        .toString()
-        .trim()
-    ) as Record<string, string>
+
+  // First, let's get all npm-linked packages
+  // npm ls --depth=0 --link=true --json=true
+  const npmLsOutput = JSON.parse(
+    childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
   );
+
+  // We need to remove `file:` prefix from the resolved path
+  const npmLinks = Object.entries(
+    _.mapValues(
+      npmLsOutput.dependencies,
+      ({ resolved }) => resolved.replace(/^file:/, '')
+    )
+  );
+
+  log("npmLinks:\n", npmLinks);
 
   const viteConfig = npmLinks.reduce( (vite: IViteConfig, packageName) => {
     log("Adding alias for", packageName, "to vite config");
