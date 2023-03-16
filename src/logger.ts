@@ -134,7 +134,11 @@ export function logger(index?: number | 'always',
     if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
       console.log(...args.map( arg =>
         String(
-          isPrimitive(arg) ? arg : serializer[serializeAs](arg)
+          isPrimitive(arg)
+            ? arg
+            : _.isFunction(arg)
+              ? arg.toString()  
+              : serializer[serializeAs](arg)
         ).split('\n').map( paint[color] ).join('\n')
       ));
     }
