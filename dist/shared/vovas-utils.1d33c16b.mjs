@@ -27,9 +27,7 @@ const ansiPrefixes = {
 const ansiColors = _.keys(ansiPrefixes);
 const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
-const loggerInfo = {
-  // lastLogIndex
-};
+const loggerInfo = {};
 Object.defineProperty(loggerInfo, "lastLogIndex", {
   get() {
     try {
@@ -43,7 +41,10 @@ Object.defineProperty(loggerInfo, "lastLogIndex", {
   },
   set(value) {
     try {
-      fs.writeFileSync("./logger.json", JSON.stringify({ lastLogIndex: value }, null, 2));
+      fs.writeFileSync("./logger.json", JSON.stringify({
+        ...loggerInfo,
+        lastLogIndex: value
+      }, null, 2));
     } catch (e) {
       if (e instanceof TypeError) {
         localStorage.setItem("lastLogIndex", value);
@@ -71,7 +72,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    if (index === "always" || index === loggerInfo.lastLogIndex) {
+    if (loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex) {
       console.log(...args.map(
         (arg) => String(
           isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : $try(() => serializer[serializeAs](arg), arg)

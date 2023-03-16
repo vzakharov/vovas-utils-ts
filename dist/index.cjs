@@ -1,6 +1,6 @@
 'use strict';
 
-const logger = require('./shared/vovas-utils.f71bc8c1.cjs');
+const logger = require('./shared/vovas-utils.17651975.cjs');
 const _ = require('lodash');
 const fs = require('fs');
 const https = require('https');

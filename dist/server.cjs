@@ -3,11 +3,11 @@
 const _ = require('lodash');
 const path = require('path');
 const childProcess = require('child_process');
-const logger = require('./shared/vovas-utils.f71bc8c1.cjs');
+const logger = require('./shared/vovas-utils.17651975.cjs');
 require('fs');
 require('js-yaml');
 
-const log = logger.logger(20, "yellow");
+const log = logger.logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()

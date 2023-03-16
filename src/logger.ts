@@ -54,11 +54,13 @@ export const paint = (
 
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color as Color)));
 
-export const loggerInfo = {
-  // lastLogIndex
-} as {
+export type LoggerInfo = {
   lastLogIndex: number;
-};
+  logAll?: boolean;
+}
+
+export const loggerInfo = {
+} as LoggerInfo;
 
 Object.defineProperty(loggerInfo, 'lastLogIndex', {
   get() {
@@ -73,7 +75,10 @@ Object.defineProperty(loggerInfo, 'lastLogIndex', {
   },
   set(value) {
     try {
-      fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: value }, null, 2));
+      fs.writeFileSync('./logger.json', JSON.stringify({ 
+        ...loggerInfo,
+        lastLogIndex: value
+      }, null, 2));
     } catch (e) {
       if (e instanceof TypeError) { // "writeFileSync is not a function"
         localStorage.setItem('lastLogIndex', value);
@@ -138,7 +143,7 @@ export function logger(index?: number | 'always',
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
   
-    if ( index === 'always' || index === loggerInfo.lastLogIndex ) {
+    if ( loggerInfo.logAll || index === 'always' || index === loggerInfo.lastLogIndex ) {
       console.log(...args.map( arg =>
         String(
           isPrimitive(arg)

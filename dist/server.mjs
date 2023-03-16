@@ -1,11 +1,11 @@
 import _ from 'lodash';
 import path from 'path';
 import childProcess from 'child_process';
-import { c as logger } from './shared/vovas-utils.7610a055.mjs';
+import { c as logger } from './shared/vovas-utils.1d33c16b.mjs';
 import 'fs';
 import 'js-yaml';
 
-const log = logger(20, "yellow");
+const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
