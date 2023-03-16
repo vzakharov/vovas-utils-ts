@@ -1,6 +1,6 @@
 export interface INpmLsOutput {
     dependencies: Record<string, {
-        resolved: string;
+        resolved?: string;
     }>;
 }
 export type NpmLink = [string, string];

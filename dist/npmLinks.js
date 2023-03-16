@@ -7,7 +7,7 @@ export function getNpmLinks() {
     const npmLsOutput = JSON.parse(childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString());
     log("npmLsOutput:\n", npmLsOutput);
     // We need to remove `file:` prefix from the resolved path
-    const npmLinks = Object.entries(_.mapValues(npmLsOutput.dependencies, ({ resolved }) => resolved.replace(/^file:/, '')));
+    const npmLinks = Object.entries(_.mapValues(npmLsOutput.dependencies, (dependency) => dependency.resolved?.replace(/^file:/, "") ?? "")).filter(([_, resolvedPath]) => resolvedPath);
     return npmLinks;
 }
 export function viteConfigForNpmLinks() {

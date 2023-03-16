@@ -8,7 +8,7 @@ const log = logger(20, 'yellow');
 
 export interface INpmLsOutput {
   dependencies: Record<string, {
-    resolved: string;
+    resolved?: string;
   }>
 }
 
@@ -24,9 +24,9 @@ export function getNpmLinks(): NpmLink[] {
   const npmLinks = Object.entries(
     _.mapValues(
       npmLsOutput.dependencies,
-      ({ resolved }) => resolved.replace(/^file:/, '')
+      (dependency) => dependency.resolved?.replace(/^file:/, "") ?? ""
     )
-  );
+  ).filter(([_, resolvedPath]) => resolvedPath);
   return npmLinks;
 }
 
