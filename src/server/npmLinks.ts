@@ -2,7 +2,7 @@ import _ from "lodash";
 import yaml from "js-yaml";
 import path from "path";
 import childProcess from "child_process";
-import { logger } from "./logger.js";
+import { logger } from "../logger";
 
 const log = logger(20, 'yellow');
 
