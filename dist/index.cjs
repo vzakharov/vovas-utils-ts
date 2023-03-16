@@ -1,6 +1,6 @@
 'use strict';
 
-const logger = require('./shared/vovas-utils.17651975.cjs');
+const logger = require('./shared/vovas-utils.ad53e4a7.cjs');
 const _ = require('lodash');
 const fs = require('fs');
 const https = require('https');
@@ -210,18 +210,14 @@ class Resolvable {
   }
 }
 
-function throwError(error) {
-  throw typeof error === "string" ? new Error(error) : error;
-}
-
 exports.$try = logger.$try;
 exports.ansiColors = logger.ansiColors;
 exports.ansiPrefixes = logger.ansiPrefixes;
 exports.isPrimitive = logger.isPrimitive;
 exports.logger = logger.logger;
-exports.loggerInfo = logger.loggerInfo;
 exports.paint = logger.paint;
 exports.serializer = logger.serializer;
+exports.throwError = logger.throwError;
 exports.Resolvable = Resolvable;
 exports.assert = assert;
 exports.createEnv = createEnv;
@@ -239,6 +235,5 @@ exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
 exports.labelize = labelize;
-exports.throwError = throwError;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;

@@ -1,18 +1,24 @@
-import _ from 'lodash';
-import fs from 'fs';
-import yaml from 'js-yaml';
+'use strict';
+
+const _ = require('lodash');
+const fs = require('fs');
+const yaml = require('js-yaml');
 
 function $try(fn, fallback) {
   try {
     return fn();
   } catch (e) {
-    return _.isFunction(fallback) ? fallback() : fallback;
+    return _.isFunction(fallback) ? fallback(e) : fallback;
   }
 }
 
 function isPrimitive(v) {
   const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
   return result;
+}
+
+function throwError(error) {
+  throw typeof error === "string" ? new Error(error) : error;
 }
 
 const ansiPrefixes = {
@@ -27,32 +33,17 @@ const ansiPrefixes = {
 const ansiColors = _.keys(ansiPrefixes);
 const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
-const loggerInfo = {};
-Object.defineProperty(loggerInfo, "lastLogIndex", {
-  get() {
-    try {
-      return fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")).lastLogIndex : 0;
-    } catch (e) {
-      if (e instanceof TypeError) {
-        return localStorage.getItem("lastLogIndex") || 0;
-      }
-      throw e;
-    }
-  },
-  set(value) {
-    try {
-      fs.writeFileSync("./logger.json", JSON.stringify({
-        ...loggerInfo,
-        lastLogIndex: value
-      }, null, 2));
-    } catch (e) {
-      if (e instanceof TypeError) {
-        localStorage.setItem("lastLogIndex", value);
-      }
-      throw e;
-    }
-  }
-});
+function loadOrSaveLoggerInfo(save) {
+  return $try(
+    () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
+    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : throwError(error)
+  );
+}
+const loggerInfo = loadOrSaveLoggerInfo();
+function setLastLogIndex(index) {
+  loggerInfo.lastLogIndex = index;
+  loadOrSaveLoggerInfo(loggerInfo);
+}
 const serializer = {
   json: (arg) => JSON.stringify(arg, null, 2),
   yaml: (arg) => yaml.dump(arg),
@@ -68,7 +59,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
     logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
   if (index && index !== "always" && index > loggerInfo.lastLogIndex) {
-    loggerInfo.lastLogIndex = index;
+    setLastLogIndex(index);
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
@@ -96,4 +87,11 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   return log;
 }
 
-export { $try as $, ansiPrefixes as a, ansiColors as b, logger as c, isPrimitive as i, loggerInfo as l, paint as p, serializer as s };
+exports.$try = $try;
+exports.ansiColors = ansiColors;
+exports.ansiPrefixes = ansiPrefixes;
+exports.isPrimitive = isPrimitive;
+exports.logger = logger;
+exports.paint = paint;
+exports.serializer = serializer;
+exports.throwError = throwError;

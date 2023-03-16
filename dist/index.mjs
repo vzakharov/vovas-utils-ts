@@ -1,5 +1,5 @@
-import { i as isPrimitive } from './shared/vovas-utils.1d33c16b.mjs';
-export { $ as $try, b as ansiColors, a as ansiPrefixes, c as logger, l as loggerInfo, p as paint, s as serializer } from './shared/vovas-utils.1d33c16b.mjs';
+import { i as isPrimitive } from './shared/vovas-utils.9b34ffc1.mjs';
+export { $ as $try, b as ansiColors, a as ansiPrefixes, l as logger, p as paint, s as serializer, t as throwError } from './shared/vovas-utils.9b34ffc1.mjs';
 import _ from 'lodash';
 import fs from 'fs';
 import https from 'https';
@@ -209,8 +209,4 @@ class Resolvable {
   }
 }
 
-function throwError(error) {
-  throw typeof error === "string" ? new Error(error) : error;
-}
-
-export { Resolvable, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, throwError, unEnvCase, unEnvKeys };
+export { Resolvable, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, unEnvCase, unEnvKeys };

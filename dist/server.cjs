@@ -3,7 +3,7 @@
 const _ = require('lodash');
 const path = require('path');
 const childProcess = require('child_process');
-const logger = require('./shared/vovas-utils.17651975.cjs');
+const logger = require('./shared/vovas-utils.ad53e4a7.cjs');
 require('fs');
 require('js-yaml');
 

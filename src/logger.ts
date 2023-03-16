@@ -17,6 +17,7 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import { isPrimitive } from './types.js';
 import { $try } from './$try.js';
+import { throwError } from './throwError.js';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -59,34 +60,33 @@ export type LoggerInfo = {
   logAll?: boolean;
 }
 
-export const loggerInfo = {
-} as LoggerInfo;
+function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
+  return $try(
+    () =>
+      save
+        ? (
+          fs.writeFileSync('./logger.json', JSON.stringify(save, null, 2)),
+          save
+        ) : fs.existsSync('./logger.json')
+          ? JSON.parse(fs.readFileSync('./logger.json', 'utf8'))
+          : {},
+    (error: any) =>
+      error instanceof TypeError // "existsSync is not a function"
+        ? save
+          ? (
+            localStorage.setItem('loggerInfo', JSON.stringify(save)),
+            save
+          ) : JSON.parse(localStorage.getItem('loggerInfo') ?? '{}')
+        : throwError(error)
+  );
+};
 
-Object.defineProperty(loggerInfo, 'lastLogIndex', {
-  get() {
-    try {
-      return fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0;
-    } catch (e) {
-      if (e instanceof TypeError) { // "existsSync is not a function"
-        return localStorage.getItem('lastLogIndex') || 0;
-      }
-      throw e;
-    }
-  },
-  set(value) {
-    try {
-      fs.writeFileSync('./logger.json', JSON.stringify({ 
-        ...loggerInfo,
-        lastLogIndex: value
-      }, null, 2));
-    } catch (e) {
-      if (e instanceof TypeError) { // "writeFileSync is not a function"
-        localStorage.setItem('lastLogIndex', value);
-      }
-      throw e;
-    }
-  }
-});
+const loggerInfo: LoggerInfo = loadOrSaveLoggerInfo();
+
+function setLastLogIndex(index: number) {
+  loggerInfo.lastLogIndex = index;
+  loadOrSaveLoggerInfo(loggerInfo);
+}
 
 export const serializer = {
   json: (arg: any) => JSON.stringify(arg, null, 2),
@@ -136,7 +136,7 @@ export function logger(index?: number | 'always',
   }
 
   if ( index && index !== 'always' && index > loggerInfo.lastLogIndex ) {
-    loggerInfo.lastLogIndex = index;
+    setLastLogIndex(index);
   }
   
   function _log(options: Partial<LogOptions>, ...args: any[]) {

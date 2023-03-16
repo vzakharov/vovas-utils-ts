@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 declare function $try<T>(fn: () => T, fallback: T): T;
-declare function $try<T>(fn: () => T, fallback: () => T): T;
+declare function $try<T>(fn: () => T, fallback: (error?: Error) => T): T;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -71,7 +71,6 @@ type LoggerInfo = {
     lastLogIndex: number;
     logAll?: boolean;
 };
-declare const loggerInfo: LoggerInfo;
 declare const serializer: {
     json: (arg: any) => string;
     yaml: (arg: any) => string;
@@ -117,4 +116,4 @@ declare class Resolvable<T = void> {
 declare function throwError<T extends Error>(error: T): never;
 declare function throwError(message: string): never;
 
-export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, throwError, unEnvCase, unEnvKeys };
+export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, paint, serializer, throwError, unEnvCase, unEnvKeys };
