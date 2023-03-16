@@ -1,3 +1,4 @@
+export * from './$try.js';
 export * from './createEnv.js';
 export * from './doWith.js';
 export * from './download.js';

@@ -16,6 +16,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import { isPrimitive } from './types.js';
+import { $try } from './$try.js';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -144,7 +145,7 @@ export function logger(index?: number | 'always',
             ? arg
             : _.isFunction(arg)
               ? arg.toString()  
-              : serializer[serializeAs](arg)
+              : $try(() => serializer[serializeAs](arg), arg)
         ).split('\n').map( paint[color] ).join('\n')
       ));
     }

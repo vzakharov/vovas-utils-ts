@@ -15,6 +15,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import { isPrimitive } from './types.js';
+import { $try } from './$try.js';
 export const ansiPrefixes = {
     gray: '\x1b[90m',
     red: '\x1b[31m',
@@ -83,7 +84,7 @@ export function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlwa
                 ? arg
                 : _.isFunction(arg)
                     ? arg.toString()
-                    : serializer[serializeAs](arg)).split('\n').map(paint[color]).join('\n')));
+                    : $try(() => serializer[serializeAs](arg), arg)).split('\n').map(paint[color]).join('\n')));
         }
     }
     const log = (...args) => _log(defaultOptions, ...args);
