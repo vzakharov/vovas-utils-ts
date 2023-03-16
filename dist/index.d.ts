@@ -96,6 +96,26 @@ declare function logger(index?: number | 'always', defaultOptions?: LogOptions, 
 declare function jsonClone<T>(obj: T): T & Jsonable;
 declare function jsonEqual<T>(a: T, b: T): boolean;
 
+interface INpmLsOutput {
+    dependencies: Record<string, {
+        resolved?: string;
+    }>;
+}
+type NpmLink = [string, string];
+declare function getNpmLinks(): NpmLink[];
+declare function viteConfigForNpmLinks(): IViteConfig;
+interface IViteConfig {
+    resolve?: {
+        alias: Record<string, string>;
+    };
+    server?: {
+        fs: {
+            allow: string[];
+        };
+    };
+}
+declare function forceUpdateNpmLinks(): void;
+
 interface NewResolvableArgs<T> {
     previousResolved?: UnixTimestamp;
     startResolved?: boolean;
@@ -116,4 +136,4 @@ declare class Resolvable<T = void> {
 declare function throwError<T extends Error>(error: T): never;
 declare function throwError(message: string): never;
 
-export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, paint, serializer, throwError, unEnvCase, unEnvKeys };
+export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, paint, serializer, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
