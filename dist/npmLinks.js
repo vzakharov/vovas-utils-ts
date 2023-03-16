@@ -5,6 +5,7 @@ import { logger } from "./logger.js";
 const log = logger(20, 'yellow');
 export function getNpmLinks() {
     const npmLsOutput = JSON.parse(childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString());
+    log("npmLsOutput:\n", npmLsOutput);
     // We need to remove `file:` prefix from the resolved path
     const npmLinks = Object.entries(_.mapValues(npmLsOutput.dependencies, ({ resolved }) => resolved.replace(/^file:/, '')));
     return npmLinks;
