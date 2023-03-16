@@ -81,9 +81,9 @@ function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
   );
 };
 
-const loggerInfo: LoggerInfo = loadOrSaveLoggerInfo();
+export const loggerInfo: LoggerInfo = loadOrSaveLoggerInfo();
 
-function setLastLogIndex(index: number) {
+export function setLastLogIndex(index: number) {
   loggerInfo.lastLogIndex = index;
   loadOrSaveLoggerInfo(loggerInfo);
 }

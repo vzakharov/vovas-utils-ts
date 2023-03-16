@@ -71,6 +71,8 @@ type LoggerInfo = {
     lastLogIndex: number;
     logAll?: boolean;
 };
+declare const loggerInfo: LoggerInfo;
+declare function setLastLogIndex(index: number): void;
 declare const serializer: {
     json: (arg: any) => string;
     yaml: (arg: any) => string;
@@ -136,4 +138,4 @@ declare class Resolvable<T = void> {
 declare function throwError<T extends Error>(error: T): never;
 declare function throwError(message: string): never;
 
-export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, paint, serializer, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

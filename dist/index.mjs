@@ -341,4 +341,4 @@ class Resolvable {
   }
 }
 
-export { $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, paint, serializer, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
