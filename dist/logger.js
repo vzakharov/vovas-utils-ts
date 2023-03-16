@@ -39,8 +39,7 @@ Object.defineProperty(loggerInfo, 'lastLogIndex', {
             return fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0;
         }
         catch (e) {
-            // If ReferenceError, then we're in the browser
-            if (e instanceof ReferenceError) {
+            if (e instanceof TypeError) { // "existsSync is not a function"
                 return localStorage.getItem('lastLogIndex') || 0;
             }
             throw e;
@@ -51,8 +50,7 @@ Object.defineProperty(loggerInfo, 'lastLogIndex', {
             fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: value }, null, 2));
         }
         catch (e) {
-            // If ReferenceError, then we're in the browser
-            if (e instanceof ReferenceError) {
+            if (e instanceof TypeError) { // "writeFileSync is not a function"
                 localStorage.setItem('lastLogIndex', value);
             }
             throw e;
