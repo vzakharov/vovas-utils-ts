@@ -35,18 +35,27 @@ export const loggerInfo = {
 };
 Object.defineProperty(loggerInfo, 'lastLogIndex', {
     get() {
-        return process?.env
-            ? fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0
-            : localStorage
-                ? localStorage.getItem('lastLogIndex') || 0
-                : 0;
+        try {
+            return fs.existsSync('./logger.json') ? JSON.parse(fs.readFileSync('./logger.json', 'utf8')).lastLogIndex : 0;
+        }
+        catch (e) {
+            // If ReferenceError, then we're in the browser
+            if (e instanceof ReferenceError) {
+                return localStorage.getItem('lastLogIndex') || 0;
+            }
+            throw e;
+        }
     },
     set(value) {
-        if (process?.env) {
+        try {
             fs.writeFileSync('./logger.json', JSON.stringify({ lastLogIndex: value }, null, 2));
         }
-        else if (localStorage) {
-            localStorage.setItem('lastLogIndex', value);
+        catch (e) {
+            // If ReferenceError, then we're in the browser
+            if (e instanceof ReferenceError) {
+                localStorage.setItem('lastLogIndex', value);
+            }
+            throw e;
         }
     }
 });
@@ -72,7 +81,11 @@ export function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlwa
     function _log(options, ...args) {
         const { color, serializeAs } = _.defaults(options, defaultOptions);
         if (index === 'always' || index === loggerInfo.lastLogIndex) {
-            console.log(...args.map(arg => String(isPrimitive(arg) ? arg : serializer[serializeAs](arg)).split('\n').map(paint[color]).join('\n')));
+            console.log(...args.map(arg => String(isPrimitive(arg)
+                ? arg
+                : _.isFunction(arg)
+                    ? arg.toString()
+                    : serializer[serializeAs](arg)).split('\n').map(paint[color]).join('\n')));
         }
     }
     const log = (...args) => _log(defaultOptions, ...args);
