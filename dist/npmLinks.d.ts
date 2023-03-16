@@ -3,6 +3,8 @@ export interface INpmLsOutput {
         resolved: string;
     }>;
 }
+export type NpmLink = [string, string];
+export declare function getNpmLinks(): NpmLink[];
 export declare function viteConfigForNpmLinks(): IViteConfig;
 export interface IViteConfig {
     resolve?: {
@@ -14,3 +16,4 @@ export interface IViteConfig {
         };
     };
 }
+export declare function forceUpdateNpmLinks(): void;

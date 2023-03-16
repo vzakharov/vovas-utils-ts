@@ -12,13 +12,13 @@ export interface INpmLsOutput {
   }>
 }
 
-export function viteConfigForNpmLinks(): IViteConfig {
+export type NpmLink = [string, string];
 
-  // First, let's get all npm-linked packages
-  // npm ls --depth=0 --link=true --json=true
-  const npmLsOutput = JSON.parse(
+export function getNpmLinks(): NpmLink[] {
+  const npmLsOutput: INpmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
   );
+  log("npmLsOutput:\n", npmLsOutput);
 
   // We need to remove `file:` prefix from the resolved path
   const npmLinks = Object.entries(
@@ -27,6 +27,14 @@ export function viteConfigForNpmLinks(): IViteConfig {
       ({ resolved }) => resolved.replace(/^file:/, '')
     )
   );
+  return npmLinks;
+}
+
+export function viteConfigForNpmLinks(): IViteConfig {
+
+  // First, let's get all npm-linked packages
+  // npm ls --depth=0 --link=true --json=true
+  const npmLinks = getNpmLinks();
 
   log("npmLinks:\n", npmLinks);
 
@@ -67,4 +75,13 @@ export interface IViteConfig {
       allow: string[];
     };
   };
+}
+
+export function forceUpdateNpmLinks() {
+  // Run `yarn add --force [packageName]` for each npm-linked package
+  getNpmLinks().forEach(([packageName]) => {
+    log(`Forcing update of npm-linked package ${packageName}`);
+    childProcess.execSync(`yarn add --force ${packageName}`);
+    log.green(`Successfully updated npm-linked package ${packageName}`);
+  });
 }

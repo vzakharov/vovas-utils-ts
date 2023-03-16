@@ -1,14 +1,18 @@
 import _ from "lodash";
 import path from "path";
-import { execSync } from "child_process";
+import childProcess from "child_process";
 import { logger } from "./logger.js";
 const log = logger(20, 'yellow');
+export function getNpmLinks() {
+    const npmLsOutput = JSON.parse(childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString());
+    // We need to remove `file:` prefix from the resolved path
+    const npmLinks = Object.entries(_.mapValues(npmLsOutput.dependencies, ({ resolved }) => resolved.replace(/^file:/, '')));
+    return npmLinks;
+}
 export function viteConfigForNpmLinks() {
     // First, let's get all npm-linked packages
     // npm ls --depth=0 --link=true --json=true
-    const npmLsOutput = JSON.parse(execSync("npm ls --depth=0 --link=true --json=true").toString());
-    // We need to remove `file:` prefix from the resolved path
-    const npmLinks = Object.entries(_.mapValues(npmLsOutput.dependencies, ({ resolved }) => resolved.replace(/^file:/, '')));
+    const npmLinks = getNpmLinks();
     log("npmLinks:\n", npmLinks);
     const viteConfig = npmLinks.reduce((vite, packageName) => {
         log("Adding alias for", packageName, "to vite config");
@@ -34,4 +38,12 @@ export function viteConfigForNpmLinks() {
         return toMerge;
     }, {});
     return viteConfig;
+}
+export function forceUpdateNpmLinks() {
+    // Run `yarn add --force [packageName]` for each npm-linked package
+    getNpmLinks().forEach(([packageName]) => {
+        log(`Forcing update of npm-linked package ${packageName}`);
+        childProcess.execSync(`yarn add --force ${packageName}`);
+        log.green(`Successfully updated npm-linked package ${packageName}`);
+    });
 }
