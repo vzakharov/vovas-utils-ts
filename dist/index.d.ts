@@ -22,14 +22,13 @@ declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Rec
 type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type Switch<Arg, Result> = {
-    if: If<Arg, Result>;
+    if: <TypedArg extends Arg>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result>) => Switch<Exclude<Arg, TypedArg>, Result>;
     else(transform: Transform<Arg, Result>): Result;
 };
 type SwitchWithCondition<Result> = {
     if: typeof ifWithCondition;
     else(transform: FunctionThatReturns<Result>): Result;
 };
-type If<Arg, Result> = <TypedArg extends Arg>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result>) => Switch<Exclude<Arg, TypedArg>, Result>;
 declare function dummySwitch<T>(value: T): {
     if: () => any;
     else(): T;
@@ -180,4 +179,4 @@ type Typed<O extends object, T extends string> = O & HasType<T>;
 declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, dummySwitch, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, dummySwitch, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

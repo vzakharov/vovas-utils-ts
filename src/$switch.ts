@@ -24,19 +24,20 @@ export type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg
 export type Transform<Arg, Result> = (arg: Arg) => Result;
 
 export type Switch<Arg, Result> = {
-  if: If<Arg, Result>;
+
+  if: <TypedArg extends Arg>(
+    typeguard: Typeguard<Arg, TypedArg>,
+    transform: Transform<TypedArg, Result>
+  ) => Switch<Exclude<Arg, TypedArg>, Result>;
+
   else(transform: Transform<Arg, Result>): Result;
+  
 };
 
 type SwitchWithCondition<Result> = {
   if: typeof ifWithCondition;
   else(transform: FunctionThatReturns<Result>): Result;
 };
-
-export type If<Arg, Result> = <TypedArg extends Arg>(
-  typeguard: Typeguard<Arg, TypedArg>,
-  transform: Transform<TypedArg, Result>
-) => Switch<Exclude<Arg, TypedArg>, Result>;
 
 export function dummySwitch<T>(value: T) {
   const recursion = () => ({
