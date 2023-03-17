@@ -10,5 +10,5 @@ export * from './logger.js';
 export * from './json.js';
 export * from './npmLinks.js';
 export * from './resolvable.js';
-export * from './throwError.js';
+export * from './$throw.js';
 export * from './types.js';

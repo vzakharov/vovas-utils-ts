@@ -6,11 +6,17 @@ import os from 'os';
 import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
-function $try(fn, fallback) {
+function $throw(error) {
+  throw typeof error === "string" ? new Error(error) : error;
+}
+
+function $try(fn, fallback = $throw, finallyCallback) {
   try {
     return fn();
   } catch (e) {
     return _.isFunction(fallback) ? fallback(e) : fallback;
+  } finally {
+    finallyCallback?.();
   }
 }
 
@@ -179,10 +185,6 @@ ${getIndent(indentCount - 1)}}`;
 export default ${stringify(obj)};`;
 }
 
-function throwError(error) {
-  throw typeof error === "string" ? new Error(error) : error;
-}
-
 const ansiPrefixes = {
   gray: "\x1B[90m",
   red: "\x1B[31m",
@@ -198,7 +200,7 @@ Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)))
 function loadOrSaveLoggerInfo(save) {
   return $try(
     () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
-    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : throwError(error)
+    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
   );
 }
 const loggerInfo = loadOrSaveLoggerInfo();
@@ -341,4 +343,4 @@ class Resolvable {
   }
 }
 
-export { $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $throw, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

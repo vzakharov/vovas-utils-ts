@@ -1,7 +1,7 @@
 import fs from 'fs';
 
-declare function $try<T>(fn: () => T, fallback: T): T;
-declare function $try<T>(fn: () => T, fallback: (error?: Error) => T): T;
+declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
+declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -135,7 +135,7 @@ declare class Resolvable<T = void> {
     reset(value?: T | PromiseLike<T>): void;
 }
 
-declare function throwError<T extends Error>(error: T): never;
-declare function throwError(message: string): never;
+declare function $throw<T extends Error>(error: T): never;
+declare function $throw(message: string): never;
 
-export { $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, throwError, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $throw, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

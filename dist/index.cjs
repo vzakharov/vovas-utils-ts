@@ -8,11 +8,17 @@ const os = require('os');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
-function $try(fn, fallback) {
+function $throw(error) {
+  throw typeof error === "string" ? new Error(error) : error;
+}
+
+function $try(fn, fallback = $throw, finallyCallback) {
   try {
     return fn();
   } catch (e) {
     return _.isFunction(fallback) ? fallback(e) : fallback;
+  } finally {
+    finallyCallback?.();
   }
 }
 
@@ -181,10 +187,6 @@ ${getIndent(indentCount - 1)}}`;
 export default ${stringify(obj)};`;
 }
 
-function throwError(error) {
-  throw typeof error === "string" ? new Error(error) : error;
-}
-
 const ansiPrefixes = {
   gray: "\x1B[90m",
   red: "\x1B[31m",
@@ -200,7 +202,7 @@ Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)))
 function loadOrSaveLoggerInfo(save) {
   return $try(
     () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
-    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : throwError(error)
+    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
   );
 }
 const loggerInfo = loadOrSaveLoggerInfo();
@@ -343,6 +345,7 @@ class Resolvable {
   }
 }
 
+exports.$throw = $throw;
 exports.$try = $try;
 exports.Resolvable = Resolvable;
 exports.ansiColors = ansiColors;
@@ -371,7 +374,6 @@ exports.loggerInfo = loggerInfo;
 exports.paint = paint;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
-exports.throwError = throwError;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;

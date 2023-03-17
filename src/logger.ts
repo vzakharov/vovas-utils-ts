@@ -17,7 +17,7 @@ import fs from 'fs';
 import yaml from 'js-yaml';
 import { isPrimitive } from './types.js';
 import { $try } from './$try.js';
-import { throwError } from './throwError.js';
+import { $throw } from './$throw.js';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -77,7 +77,7 @@ function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
             localStorage.setItem('loggerInfo', JSON.stringify(save)),
             save
           ) : JSON.parse(localStorage.getItem('loggerInfo') ?? '{}')
-        : throwError(error)
+        : $throw(error)
   );
 };
 
