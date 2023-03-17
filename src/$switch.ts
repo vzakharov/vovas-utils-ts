@@ -22,21 +22,16 @@ import { functionThatReturns, FunctionThatReturns } from './types';
 
 export type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
+
 export type Switch<Arg, Result> = {
-
   if: If<Arg, Result>;
-  case: If<Arg, Result>; // alias
-
   else(transform: Transform<Arg, Result>): Result;
-  default(transform: Transform<Arg, Result>): Result; // alias
-
 };
 
 export type If<Arg, Result> = <TypedArg extends Arg>(
   typeguard: Typeguard<Arg, TypedArg>,
   transform: Transform<TypedArg, Result>
 ) => Switch<Exclude<Arg, TypedArg>, Result>;
-
 
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
@@ -48,15 +43,15 @@ export function $if<Arg, TypedArg extends Arg, IfResult>(
   return $switch<Exclude<Arg, TypedArg>, IfResult>(arg as Exclude<Arg, TypedArg>);
 };
 
-export type ElseElseIf<Result> = {
-  else(transform: FunctionThatReturns<Result>): Result;
+export type SwitchWithCondition<Result> = {
   if: typeof ifWithCondition;
+  else(transform: FunctionThatReturns<Result>): Result;
 };
 
 export function ifWithCondition<Result>(
   condition: boolean,
   transform: () => Result
-): ElseElseIf<Result> {
+): SwitchWithCondition<Result> {
 
   if ( condition ) {
     const value = transform();
