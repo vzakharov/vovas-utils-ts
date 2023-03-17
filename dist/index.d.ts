@@ -34,7 +34,7 @@ declare function $switch<Arg, Result>(arg: Arg): {
     default: (transform: Transform<Arg, Result>) => Result;
 };
 declare function bypass<Arg, Result>(result: Result): Switch<Arg, Result>;
-declare function isDefined<T>(value: T): value is NonNullable<T>;
+declare function isDefined<T>(value: T): value is Exclude<T, undefined>;
 declare function $<T>(value: T): FunctionThatReturns<T>;
 
 declare function $throw<T extends Error>(error: T): never;

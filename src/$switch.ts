@@ -86,7 +86,7 @@ export function bypass<Arg, Result>(result: Result): Switch<Arg, Result> {
   };
 }
 
-export function isDefined<T>(value: T): value is NonNullable<T> {
+export function isDefined<T>(value: T): value is Exclude<T, undefined> {
   return !_.isUndefined(value);
 }
 
