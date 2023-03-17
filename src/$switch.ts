@@ -93,3 +93,19 @@ export function isDefined<T>(value: T): value is Exclude<T, undefined> {
 export function $<T>(value: T): FunctionThatReturns<T> {
   return (...args: any[]) => value;
 }
+
+export function guard<T, U extends T>(checker: (value: T) => boolean): Typeguard<T, U> {
+  return checker as Typeguard<T, U>;
+}
+
+// // Example:
+// function isGreaterThan0(value: number): boolean {
+//   return value > 0;
+// }
+
+// let x = 1;
+// $if(x, isGreaterThan0, $('greater than 0'))
+// // Gives an error as isGreaterThan0 is not a typeguard
+
+// $if(x, guard(isGreaterThan0), $('greater than 0'))
+// // Works

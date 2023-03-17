@@ -62,6 +62,9 @@ function isDefined(value) {
 function $(value) {
   return (...args) => value;
 }
+function guard(checker) {
+  return checker;
+}
 
 function $try(fn, fallback = $throw, finallyCallback) {
   try {
@@ -433,6 +436,7 @@ exports.getItemNames = getItemNames;
 exports.getNpmLinks = getNpmLinks;
 exports.go = go;
 exports.goer = goer;
+exports.guard = guard;
 exports.humanize = humanize;
 exports.isDefined = isDefined;
 exports.isPrimitive = isPrimitive;

@@ -36,6 +36,7 @@ declare function $switch<Arg, Result>(arg: Arg): {
 declare function bypass<Arg, Result>(result: Result): Switch<Arg, Result>;
 declare function isDefined<T>(value: T): value is Exclude<T, undefined>;
 declare function $<T>(value: T): FunctionThatReturns<T>;
+declare function guard<T, U extends T>(checker: (value: T) => boolean): Typeguard<T, U>;
 
 declare function $throw<T extends Error>(error: T): never;
 declare function $throw(message: string): never;
@@ -172,4 +173,4 @@ type Typed<O extends object, T extends string> = O & HasType<T>;
 declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, bypass, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getItemNames, getNpmLinks, go, goer, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, bypass, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getItemNames, getNpmLinks, go, goer, guard, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
