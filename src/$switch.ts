@@ -28,6 +28,11 @@ export type Switch<Arg, Result> = {
   else(transform: Transform<Arg, Result>): Result;
 };
 
+type SwitchWithCondition<Result> = {
+  if: typeof ifWithCondition;
+  else(transform: FunctionThatReturns<Result>): Result;
+};
+
 export type If<Arg, Result> = <TypedArg extends Arg>(
   typeguard: Typeguard<Arg, TypedArg>,
   transform: Transform<TypedArg, Result>
@@ -72,11 +77,6 @@ export function $if<Arg, TypedArg extends Arg, Result>(
   }
 
   return $switch<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
-};
-
-type SwitchWithCondition<Result> = {
-  if: typeof ifWithCondition;
-  else(transform: FunctionThatReturns<Result>): Result;
 };
 
 function ifWithCondition<Result>(

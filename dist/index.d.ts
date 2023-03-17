@@ -25,6 +25,10 @@ type Switch<Arg, Result> = {
     if: If<Arg, Result>;
     else(transform: Transform<Arg, Result>): Result;
 };
+type SwitchWithCondition<Result> = {
+    if: typeof ifWithCondition;
+    else(transform: FunctionThatReturns<Result>): Result;
+};
 type If<Arg, Result> = <TypedArg extends Arg>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result>) => Switch<Exclude<Arg, TypedArg>, Result>;
 declare function dummySwitch<T>(value: T): {
     if: () => any;
@@ -32,10 +36,6 @@ declare function dummySwitch<T>(value: T): {
 };
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
 declare function $if<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
-type SwitchWithCondition<Result> = {
-    if: typeof ifWithCondition;
-    else(transform: FunctionThatReturns<Result>): Result;
-};
 declare function ifWithCondition<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
 declare function $switch<Arg, Result>(arg: Arg): {
     if<TypedArg extends Arg, IfResult extends Result>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
