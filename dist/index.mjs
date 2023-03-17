@@ -6,8 +6,44 @@ import os from 'os';
 import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
-function $throw(error) {
-  throw typeof error === "string" ? new Error(error) : error;
+function $throw(errorOrMessage) {
+  throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
+}
+function $thrower(errorOrMessage) {
+  return () => $throw(errorOrMessage);
+}
+
+function getItemNames(itemStringOrArrayOrObject) {
+  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).default($throw("Expected string, array or object"));
+  return itemNames;
+}
+function $switch(arg) {
+  function $if(typeGuard, transform) {
+    if (typeGuard(arg))
+      return bypass(transform(arg));
+    return $switch(arg);
+  }
+  return {
+    if: $if,
+    case: $if,
+    // alias
+    default(transform) {
+      return transform(arg);
+    }
+  };
+}
+function bypass(result) {
+  return {
+    if() {
+      return bypass(result);
+    },
+    case() {
+      return bypass(result);
+    },
+    default() {
+      return result;
+    }
+  };
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -343,4 +379,16 @@ class Resolvable {
   }
 }
 
-export { $throw, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+function typed(type) {
+  return (object) => Object.assign(object, { type });
+}
+const apple = typed("fruit")({ color: "red" });
+function isTyped(type) {
+  return function(object) {
+    return object.type === type;
+  };
+}
+if (isTyped("fruit")(apple))
+  console.log(apple.color);
+
+export { $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, bypass, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getItemNames, getNpmLinks, go, goer, humanize, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

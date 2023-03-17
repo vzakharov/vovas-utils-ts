@@ -8,8 +8,44 @@ const os = require('os');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
-function $throw(error) {
-  throw typeof error === "string" ? new Error(error) : error;
+function $throw(errorOrMessage) {
+  throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
+}
+function $thrower(errorOrMessage) {
+  return () => $throw(errorOrMessage);
+}
+
+function getItemNames(itemStringOrArrayOrObject) {
+  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).default($throw("Expected string, array or object"));
+  return itemNames;
+}
+function $switch(arg) {
+  function $if(typeGuard, transform) {
+    if (typeGuard(arg))
+      return bypass(transform(arg));
+    return $switch(arg);
+  }
+  return {
+    if: $if,
+    case: $if,
+    // alias
+    default(transform) {
+      return transform(arg);
+    }
+  };
+}
+function bypass(result) {
+  return {
+    if() {
+      return bypass(result);
+    },
+    case() {
+      return bypass(result);
+    },
+    default() {
+      return result;
+    }
+  };
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -345,12 +381,27 @@ class Resolvable {
   }
 }
 
+function typed(type) {
+  return (object) => Object.assign(object, { type });
+}
+const apple = typed("fruit")({ color: "red" });
+function isTyped(type) {
+  return function(object) {
+    return object.type === type;
+  };
+}
+if (isTyped("fruit")(apple))
+  console.log(apple.color);
+
+exports.$switch = $switch;
 exports.$throw = $throw;
+exports.$thrower = $thrower;
 exports.$try = $try;
 exports.Resolvable = Resolvable;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
+exports.bypass = bypass;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;
@@ -360,11 +411,13 @@ exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
+exports.getItemNames = getItemNames;
 exports.getNpmLinks = getNpmLinks;
 exports.go = go;
 exports.goer = goer;
 exports.humanize = humanize;
 exports.isPrimitive = isPrimitive;
+exports.isTyped = isTyped;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
@@ -374,6 +427,7 @@ exports.loggerInfo = loggerInfo;
 exports.paint = paint;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
+exports.typed = typed;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;

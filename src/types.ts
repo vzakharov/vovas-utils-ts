@@ -21,3 +21,5 @@ export interface JsonableObject {
 export type JsonableNonArray = Primitive | JsonableObject;
 
 export type Jsonable = JsonableNonArray | Jsonable[];
+
+export type FunctionThatReturns<T> = (...args: any[]) => T;

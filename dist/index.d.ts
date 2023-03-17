@@ -1,7 +1,20 @@
 import fs from 'fs';
 
-declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
-declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
+declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
+type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
+type Transform<Arg, Result> = (arg: Arg) => Result;
+type Switch<Arg, Result> = {
+    if: If<Arg, Result>;
+    case: If<Arg, Result>;
+    default(transform: (arg: Arg) => Result): Result;
+};
+type If<Arg, Result> = <TypedArg extends Arg>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result>) => Switch<Exclude<Arg, TypedArg>, Result>;
+declare function $switch<Arg, Result>(arg: Arg): {
+    if: <TypedArg extends Arg, Result_1>(typeGuard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result_1>) => Switch<Exclude<Arg, TypedArg>, Result_1>;
+    case: <TypedArg extends Arg, Result_1>(typeGuard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result_1>) => Switch<Exclude<Arg, TypedArg>, Result_1>;
+    default(transform: Transform<Arg, Result>): Result;
+};
+declare function bypass<Arg, Result>(result: Result): Switch<Arg, Result>;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -14,6 +27,15 @@ interface JsonableObject {
 }
 type JsonableNonArray = Primitive | JsonableObject;
 type Jsonable = JsonableNonArray | Jsonable[];
+type FunctionThatReturns<T> = (...args: any[]) => T;
+
+declare function $throw<T extends Error>(error: T): never;
+declare function $throw(message: string): never;
+declare function $throw<T extends Error>(errorOrMessage: T | string): never;
+declare function $thrower<T extends Error>(errorOrMessage: T | string): FunctionThatReturns<never>;
+
+declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
+declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
 
 interface CreateEnvResult<T> {
     env: T;
@@ -135,7 +157,11 @@ declare class Resolvable<T = void> {
     reset(value?: T | PromiseLike<T>): void;
 }
 
-declare function $throw<T extends Error>(error: T): never;
-declare function $throw(message: string): never;
+type HasType<T extends string> = {
+    type: T;
+};
+type Typed<O extends object, T extends string> = O & HasType<T>;
+declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
+declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $throw, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, GoCallback, GoRecurse, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getNpmLinks, go, goer, humanize, isPrimitive, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, bypass, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getItemNames, getNpmLinks, go, goer, humanize, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
