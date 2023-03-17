@@ -18,7 +18,7 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 // Implementation:
 
 import _ from 'lodash';
-import { FunctionThatReturns } from './types';
+import { functionThatReturns, FunctionThatReturns } from './types';
 
 export type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
@@ -46,6 +46,36 @@ export function $if<Arg, TypedArg extends Arg, IfResult>(
   if ( typeguard(arg) )
     return bypass(transform(arg));
   return $switch<Exclude<Arg, TypedArg>, IfResult>(arg as Exclude<Arg, TypedArg>);
+};
+
+export type ElseElseIf<Result> = {
+  else(transform: FunctionThatReturns<Result>): Result;
+  if: typeof ifWithCondition;
+};
+
+export function ifWithCondition<Result>(
+  condition: boolean,
+  transform: () => Result
+): ElseElseIf<Result> {
+
+  if ( condition ) {
+    const value = transform();
+    const dummy = () => ({
+      else(): Result {
+        return value;
+      },
+      if: dummy
+    })
+    return dummy();
+  }
+
+  return {
+    else(transform: FunctionThatReturns<Result>): Result {
+      return transform();
+    },
+    if: ifWithCondition
+  };
+
 };
 
 export function $switch<Arg, Result>(arg: Arg) {

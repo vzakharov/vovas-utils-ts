@@ -24,6 +24,12 @@ export type Jsonable = JsonableNonArray | Jsonable[];
 
 export type FunctionThatReturns<T> = (...args: any[]) => T;
 
+export function functionThatReturns<T>(value: T): FunctionThatReturns<T> {
+  return (...args: any[]) => value;
+};
+
+export type ReturnTypeOf<T> = T extends (...args: any[]) => infer R ? R : never;
+
 // export function $as<AsWhat, What extends AsWhat>(what: What): AsWhat {
 //   return what;
 // }

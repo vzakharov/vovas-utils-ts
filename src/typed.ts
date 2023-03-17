@@ -28,3 +28,4 @@ export function isTyped<T extends string>(
 //   console.log(apple.color);
 // else
 //   apple; // should compile to "never"
+
