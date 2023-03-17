@@ -7,7 +7,7 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
       .if(_.isString, _.castArray)
       .if(_.isArray, _.identity)
       .if(_.isObject, _.keys)
-      .default($throw("Expected string, array or object"))
+      .else($throw("Expected string, array or object"))
     // (Once we see `default`, the expression is evaluated and the result is returned)
   return itemNames;
 };
@@ -18,7 +18,7 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 // Implementation:
 
 import _ from 'lodash';
-import { functionThatReturns, FunctionThatReturns } from './types';
+import { FunctionThatReturns } from './types';
 
 export type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
@@ -33,35 +33,59 @@ export type If<Arg, Result> = <TypedArg extends Arg>(
   transform: Transform<TypedArg, Result>
 ) => Switch<Exclude<Arg, TypedArg>, Result>;
 
+export function dummySwitch<T>(value: T) {
+  const recursion = () => ({
+    if: recursion,
+    else() {
+      return value;
+    },
+  })
+  return recursion();
+}
+
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
   typeguard: Typeguard<Arg, TypedArg>,
   transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult> {
-  if ( typeguard(arg) )
-    return bypass(transform(arg));
-  return $switch<Exclude<Arg, TypedArg>, IfResult>(arg as Exclude<Arg, TypedArg>);
+): Switch<Exclude<Arg, TypedArg>, IfResult>
+
+export function $if<Result>(
+  condition: boolean,
+  transform: () => Result
+) : SwitchWithCondition<Result>
+
+export function $if<Arg, TypedArg extends Arg, Result>(
+  argOrCondition: Arg | boolean,
+  typeguardOrTransform: Typeguard<Arg, TypedArg> | (() => Result),
+  transformOrNothing?: Transform<TypedArg, Result>
+): Switch<Exclude<Arg, TypedArg>, Result> | SwitchWithCondition<Result> {
+
+  if ( _.isBoolean(argOrCondition) )
+    return ifWithCondition(argOrCondition, typeguardOrTransform as () => Result);
+  
+  const arg = argOrCondition;
+  const typeguard = typeguardOrTransform as Typeguard<Arg, TypedArg>;
+  const transform = transformOrNothing as Transform<TypedArg, Result>;
+
+  if ( typeguard(arg) ) {
+    return dummySwitch(transform(arg));
+  }
+
+  return $switch<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
 };
 
-export type SwitchWithCondition<Result> = {
+type SwitchWithCondition<Result> = {
   if: typeof ifWithCondition;
   else(transform: FunctionThatReturns<Result>): Result;
 };
 
-export function ifWithCondition<Result>(
+function ifWithCondition<Result>(
   condition: boolean,
   transform: () => Result
 ): SwitchWithCondition<Result> {
 
   if ( condition ) {
-    const value = transform();
-    const dummy = () => ({
-      else(): Result {
-        return value;
-      },
-      if: dummy
-    })
-    return dummy();
+    return dummySwitch(transform());
   }
 
   return {
@@ -75,41 +99,23 @@ export function ifWithCondition<Result>(
 
 export function $switch<Arg, Result>(arg: Arg) {
 
-  function _if<TypedArg extends Arg, IfResult extends Result>(
-    typeguard: Typeguard<Arg, TypedArg>,
-    transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, IfResult> {
-    return $if(arg, typeguard, transform);
-  };
-
-  function _else(transform: Transform<Arg, Result>): Result {
-    return transform(arg);
-  };
-
   return {
 
-    if: _if,
-    case: _if, // alias
+    if<TypedArg extends Arg, IfResult extends Result>(
+      typeguard: Typeguard<Arg, TypedArg>,
+      transform: Transform<TypedArg, IfResult>
+    ): Switch<Exclude<Arg, TypedArg>, IfResult> {
+      return $if(arg, typeguard, transform);
+    },
 
-    else: _else,
-    default: _else, // alias
+    else(transform: Transform<Arg, Result>): Result {
+      return transform(arg);
+    }
 
   };
 
 };
 
-
-export function bypass<Arg, Result>(result: Result): Switch<Arg, Result> {
-  return {
-
-    if() { return bypass(result); },
-    case() { return bypass(result); },
-
-    else() { return result; },
-    default() { return result; },
-
-  };
-}
 
 export function isDefined<T>(value: T): value is Exclude<T, undefined> {
   return !_.isUndefined(value);

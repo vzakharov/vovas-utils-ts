@@ -12,6 +12,8 @@ interface JsonableObject {
 type JsonableNonArray = Primitive | JsonableObject;
 type Jsonable = JsonableNonArray | Jsonable[];
 type FunctionThatReturns<T> = (...args: any[]) => T;
+declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
+type ReturnTypeOf<T> = T extends (...args: any[]) => infer R ? R : never;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 
@@ -21,19 +23,24 @@ type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type Switch<Arg, Result> = {
     if: If<Arg, Result>;
-    case: If<Arg, Result>;
     else(transform: Transform<Arg, Result>): Result;
-    default(transform: Transform<Arg, Result>): Result;
 };
 type If<Arg, Result> = <TypedArg extends Arg>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, Result>) => Switch<Exclude<Arg, TypedArg>, Result>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
-declare function $switch<Arg, Result>(arg: Arg): {
-    if: <TypedArg extends Arg, IfResult extends Result>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>) => Switch<Exclude<Arg, TypedArg>, IfResult>;
-    case: <TypedArg extends Arg, IfResult extends Result>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>) => Switch<Exclude<Arg, TypedArg>, IfResult>;
-    else: (transform: Transform<Arg, Result>) => Result;
-    default: (transform: Transform<Arg, Result>) => Result;
+declare function dummySwitch<T>(value: T): {
+    if: () => any;
+    else(): T;
 };
-declare function bypass<Arg, Result>(result: Result): Switch<Arg, Result>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
+declare function $if<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
+type SwitchWithCondition<Result> = {
+    if: typeof ifWithCondition;
+    else(transform: FunctionThatReturns<Result>): Result;
+};
+declare function ifWithCondition<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
+declare function $switch<Arg, Result>(arg: Arg): {
+    if<TypedArg extends Arg, IfResult extends Result>(typeguard: Typeguard<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
+    else(transform: Transform<Arg, Result>): Result;
+};
 declare function isDefined<T>(value: T): value is Exclude<T, undefined>;
 declare function $<T>(value: T): FunctionThatReturns<T>;
 declare function guard<T, U extends T>(checker: (value: T) => boolean): Typeguard<T, U>;
@@ -173,4 +180,4 @@ type Typed<O extends object, T extends string> = O & HasType<T>;
 declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, bypass, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, getItemNames, getNpmLinks, go, goer, guard, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, If, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, Transform, Typed, Typeguard, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, dummySwitch, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

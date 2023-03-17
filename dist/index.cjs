@@ -16,43 +16,47 @@ function $thrower(errorOrMessage) {
 }
 
 function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).default($throw("Expected string, array or object"));
+  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).else($throw("Expected string, array or object"));
   return itemNames;
 }
-function $if(arg, typeguard, transform) {
-  if (typeguard(arg))
-    return bypass(transform(arg));
+function dummySwitch(value) {
+  const recursion = () => ({
+    if: recursion,
+    else() {
+      return value;
+    }
+  });
+  return recursion();
+}
+function $if(argOrCondition, typeguardOrTransform, transformOrNothing) {
+  if (_.isBoolean(argOrCondition))
+    return ifWithCondition(argOrCondition, typeguardOrTransform);
+  const arg = argOrCondition;
+  const typeguard = typeguardOrTransform;
+  const transform = transformOrNothing;
+  if (typeguard(arg)) {
+    return dummySwitch(transform(arg));
+  }
   return $switch(arg);
 }
-function $switch(arg) {
-  function _if(typeguard, transform) {
-    return $if(arg, typeguard, transform);
-  }
-  function _else(transform) {
-    return transform(arg);
+function ifWithCondition(condition, transform) {
+  if (condition) {
+    return dummySwitch(transform());
   }
   return {
-    if: _if,
-    case: _if,
-    // alias
-    else: _else,
-    default: _else
-    // alias
+    else(transform2) {
+      return transform2();
+    },
+    if: ifWithCondition
   };
 }
-function bypass(result) {
+function $switch(arg) {
   return {
-    if() {
-      return bypass(result);
+    if(typeguard, transform) {
+      return $if(arg, typeguard, transform);
     },
-    case() {
-      return bypass(result);
-    },
-    else() {
-      return result;
-    },
-    default() {
-      return result;
+    else(transform) {
+      return transform(arg);
     }
   };
 }
@@ -188,6 +192,9 @@ function labelize(values) {
 function isPrimitive(v) {
   const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
   return result;
+}
+function functionThatReturns(value) {
+  return (...args) => value;
 }
 function $as(what) {
   return _.isFunction(what) ? what : what;
@@ -422,16 +429,17 @@ exports.Resolvable = Resolvable;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
-exports.bypass = bypass;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;
 exports.downloadAsStream = downloadAsStream;
+exports.dummySwitch = dummySwitch;
 exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
+exports.functionThatReturns = functionThatReturns;
 exports.getItemNames = getItemNames;
 exports.getNpmLinks = getNpmLinks;
 exports.go = go;
