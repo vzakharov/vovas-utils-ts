@@ -23,3 +23,16 @@ export type JsonableNonArray = Primitive | JsonableObject;
 export type Jsonable = JsonableNonArray | Jsonable[];
 
 export type FunctionThatReturns<T> = (...args: any[]) => T;
+
+// export function $as<AsWhat, What extends AsWhat>(what: What): AsWhat {
+//   return what;
+// }
+export function $as<AsWhat>(what: any): AsWhat
+export function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>
+export function $as<AsWhat>(
+  what: any | FunctionThatReturns<any>,
+): AsWhat | FunctionThatReturns<AsWhat> {
+  return _.isFunction(what)
+    ? what as FunctionThatReturns<AsWhat>
+    : what as AsWhat;
+}

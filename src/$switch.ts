@@ -18,13 +18,18 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 // Implementation:
 
 import _ from 'lodash';
+import { FunctionThatReturns } from './types';
 
 export type Typeguard<Arg, TypedArg extends Arg> = (arg: Arg) => arg is TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
 export type Switch<Arg, Result> = {
+
   if: If<Arg, Result>;
   case: If<Arg, Result>; // alias
-  default(transform: (arg: Arg) => Result): Result;
+
+  else(transform: Transform<Arg, Result>): Result;
+  default(transform: Transform<Arg, Result>): Result; // alias
+
 };
 
 export type If<Arg, Result> = <TypedArg extends Arg>(
@@ -33,25 +38,36 @@ export type If<Arg, Result> = <TypedArg extends Arg>(
 ) => Switch<Exclude<Arg, TypedArg>, Result>;
 
 
+export function $if<Arg, TypedArg extends Arg, IfResult>(
+  arg: Arg,
+  typeguard: Typeguard<Arg, TypedArg>,
+  transform: Transform<TypedArg, IfResult>
+): Switch<Exclude<Arg, TypedArg>, IfResult> {
+  if ( typeguard(arg) )
+    return bypass(transform(arg));
+  return $switch<Exclude<Arg, TypedArg>, IfResult>(arg as Exclude<Arg, TypedArg>);
+};
+
 export function $switch<Arg, Result>(arg: Arg) {
 
-  function $if<TypedArg extends Arg, Result>(
-    typeGuard: Typeguard<Arg, TypedArg>,
-    transform: Transform<TypedArg, Result>
-  ): Switch<Exclude<Arg, TypedArg>, Result> {
-    if ( typeGuard(arg) )
-      return bypass(transform(arg));
-    return $switch<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
-  }
+  function _if<TypedArg extends Arg, IfResult extends Result>(
+    typeguard: Typeguard<Arg, TypedArg>,
+    transform: Transform<TypedArg, IfResult>
+  ): Switch<Exclude<Arg, TypedArg>, IfResult> {
+    return $if(arg, typeguard, transform);
+  };
+
+  function _else(transform: Transform<Arg, Result>): Result {
+    return transform(arg);
+  };
 
   return {
 
-    if: $if,
-    case: $if, // alias
+    if: _if,
+    case: _if, // alias
 
-    default(transform: Transform<Arg, Result>): Result {
-      return transform(arg);
-    },
+    else: _else,
+    default: _else, // alias
 
   };
 
@@ -60,8 +76,20 @@ export function $switch<Arg, Result>(arg: Arg) {
 
 export function bypass<Arg, Result>(result: Result): Switch<Arg, Result> {
   return {
+
     if() { return bypass(result); },
     case() { return bypass(result); },
+
+    else() { return result; },
     default() { return result; },
+
   };
+}
+
+export function isDefined<T>(value: T): value is NonNullable<T> {
+  return !_.isUndefined(value);
+}
+
+export function $<T>(value: T): FunctionThatReturns<T> {
+  return (...args: any[]) => value;
 }

@@ -19,19 +19,25 @@ function getItemNames(itemStringOrArrayOrObject) {
   const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).default($throw("Expected string, array or object"));
   return itemNames;
 }
+function $if(arg, typeguard, transform) {
+  if (typeguard(arg))
+    return bypass(transform(arg));
+  return $switch(arg);
+}
 function $switch(arg) {
-  function $if(typeGuard, transform) {
-    if (typeGuard(arg))
-      return bypass(transform(arg));
-    return $switch(arg);
+  function _if(typeguard, transform) {
+    return $if(arg, typeguard, transform);
+  }
+  function _else(transform) {
+    return transform(arg);
   }
   return {
-    if: $if,
-    case: $if,
+    if: _if,
+    case: _if,
     // alias
-    default(transform) {
-      return transform(arg);
-    }
+    else: _else,
+    default: _else
+    // alias
   };
 }
 function bypass(result) {
@@ -42,10 +48,19 @@ function bypass(result) {
     case() {
       return bypass(result);
     },
+    else() {
+      return result;
+    },
     default() {
       return result;
     }
   };
+}
+function isDefined(value) {
+  return !_.isUndefined(value);
+}
+function $(value) {
+  return (...args) => value;
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -170,6 +185,9 @@ function labelize(values) {
 function isPrimitive(v) {
   const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
   return result;
+}
+function $as(what) {
+  return _.isFunction(what) ? what : what;
 }
 
 function jsObjectString(obj) {
@@ -384,15 +402,15 @@ class Resolvable {
 function typed(type) {
   return (object) => Object.assign(object, { type });
 }
-const apple = typed("fruit")({ color: "red" });
 function isTyped(type) {
   return function(object) {
     return object.type === type;
   };
 }
-if (isTyped("fruit")(apple))
-  console.log(apple.color);
 
+exports.$ = $;
+exports.$as = $as;
+exports.$if = $if;
 exports.$switch = $switch;
 exports.$throw = $throw;
 exports.$thrower = $thrower;
@@ -416,6 +434,7 @@ exports.getNpmLinks = getNpmLinks;
 exports.go = go;
 exports.goer = goer;
 exports.humanize = humanize;
+exports.isDefined = isDefined;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
 exports.jsObjectString = jsObjectString;

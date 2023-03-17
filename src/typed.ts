@@ -1,7 +1,5 @@
 import _ from 'lodash';
 
-import { Primitive, isPrimitive } from "./types";
-
 export type HasType<T extends string> = {
   type: T;
 };
@@ -15,7 +13,7 @@ export function typed<T extends string>(
 }
 
 // Example:
-const apple = typed('fruit')({ color: 'red' });
+// const apple = typed('fruit')({ color: 'red' });
 
 export function isTyped<T extends string>(
   type: T
@@ -26,7 +24,7 @@ export function isTyped<T extends string>(
 }
 
 // Example:
-if ( isTyped('fruit')(apple) )
-  console.log(apple.color);
-else
-  apple; // should compile to "never"
+// if ( isTyped('fruit')(apple) )
+//   console.log(apple.color);
+// else
+//   apple; // should compile to "never"
