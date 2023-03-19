@@ -1,5 +1,33 @@
 import fs from 'fs';
 
+declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
+type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg);
+type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
+type Transform<Arg, Result> = (arg: Arg) => Result;
+type SwitchWithArg<Arg, Result> = {
+    if<TypedArg extends Arg, IfResult>(typeguardOrType: ((arg: Arg) => arg is TypedArg) | TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    else(transform: (arg: Arg) => Result): Result;
+};
+type SwitchWithCondition<Result> = {
+    if: <Result>(condition: boolean, transform: () => Result) => SwitchWithCondition<Result>;
+    else(transform: () => Result): Result;
+};
+type Switch<Arg, Result, ConditionBased extends boolean> = ConditionBased extends true ? SwitchWithCondition<Result> : SwitchWithArg<Arg, Result>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
+declare function $switch<Arg, Result = never>(arg: Arg): {
+    if: {
+        <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): SwitchWithArg<Exclude<Arg, TypedArg>, Result | IfResult>;
+        <TypedArg_1 extends Arg, IfResult_1>(type: TypedArg_1, transform: Transform<TypedArg_1, IfResult_1>): SwitchWithArg<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
+    };
+    else(transform: (arg: Arg) => Result): Result;
+};
+declare function isDefined<T>(value: T | undefined): value is T;
+declare function $<T>(value: T): (...args: any[]) => T;
+declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): Typeguard<BroadType, NarrowType>;
+declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
+
 type Dict<T = any> = {
     [key: string]: T;
 } | Promise<Dict>;
@@ -16,39 +44,6 @@ declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
 type ReturnTypeOf<T> = T extends (...args: any[]) => infer R ? R : never;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
-
-declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
-
-type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg);
-type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
-type Transform<Arg, Result> = (arg: Arg) => Result;
-type Switch<Arg, Result> = {
-    if: <TypedArg extends Arg, IfResult>(typeguardOrType: ((arg: Arg) => arg is TypedArg) | TypedArg, transform: (arg: TypedArg) => IfResult) => Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
-    else(transform: (arg: Arg) => Result): Result;
-};
-type SwitchWithCondition<Result> = {
-    if: typeof ifWithCondition;
-    else(transform: FunctionThatReturns<Result>): Result;
-};
-declare function dummySwitch<T>(value: T): {
-    if: () => any;
-    else(): T;
-};
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult>;
-declare function $if<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
-declare function ifWithCondition<Result>(condition: boolean, transform: () => Result): SwitchWithCondition<Result>;
-declare function $switch<Arg, Result = never>(arg: Arg): {
-    if: {
-        <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
-        <TypedArg_1 extends Arg, IfResult_1>(type: TypedArg_1, transform: Transform<TypedArg_1, IfResult_1>): Switch<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
-    };
-    else(transform: (arg: Arg) => Result): Result;
-};
-declare function isDefined<T>(value: T | undefined): value is T;
-declare function $<T>(value: T): (...args: any[]) => T;
-declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): Typeguard<BroadType, NarrowType>;
-declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
 
 declare function $throw<T extends Error>(error: T): never;
 declare function $throw(message: string): never;
@@ -185,4 +180,4 @@ type Typed<O extends object, T extends string> = O & HasType<T>;
 declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, dummySwitch, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

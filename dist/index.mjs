@@ -17,13 +17,15 @@ function getItemNames(itemStringOrArrayOrObject) {
   const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($throw("Expected string, array or object"));
   return itemNames;
 }
-function dummySwitch(value) {
-  const recursion = () => ({
-    if: recursion,
-    else() {
-      return value;
-    }
-  });
+function warp(value) {
+  function recursion() {
+    return {
+      if: recursion,
+      else() {
+        return value;
+      }
+    };
+  }
   return recursion();
 }
 function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
@@ -34,13 +36,13 @@ function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
   const typeguard = _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType);
   const transform = transformOrNothing;
   if (typeguard(arg)) {
-    return dummySwitch(transform(arg));
+    return warp(transform(arg));
   }
   return $switch(arg);
 }
 function ifWithCondition(condition, transform) {
   if (condition) {
-    return dummySwitch(transform());
+    return warp(transform());
   }
   return {
     else(transform2) {
@@ -427,4 +429,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, dummySwitch, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
