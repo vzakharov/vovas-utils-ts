@@ -16,7 +16,7 @@ function $thrower(errorOrMessage) {
 }
 
 function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, _.identity).if(_.isObject, _.keys).else($throw("Expected string, array or object"));
+  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($throw("Expected string, array or object"));
   return itemNames;
 }
 function dummySwitch(value) {
@@ -28,11 +28,12 @@ function dummySwitch(value) {
   });
   return recursion();
 }
-function $if(argOrCondition, typeguardOrTransform, transformOrNothing) {
+function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
   if (_.isBoolean(argOrCondition))
-    return ifWithCondition(argOrCondition, typeguardOrTransform);
+    return ifWithCondition(argOrCondition, typeguardOrTypeOrTransform);
   const arg = argOrCondition;
-  const typeguard = typeguardOrTransform;
+  const typeguardOrType = typeguardOrTypeOrTransform;
+  const typeguard = _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType);
   const transform = transformOrNothing;
   if (typeguard(arg)) {
     return dummySwitch(transform(arg));
@@ -51,10 +52,15 @@ function ifWithCondition(condition, transform) {
   };
 }
 function $switch(arg) {
+  function _if(typeguardOrType, transform) {
+    return $if(
+      arg,
+      _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
+      transform
+    );
+  }
   return {
-    if(typeguard, transform) {
-      return $if(arg, typeguard, transform);
-    },
+    if: _if,
     else(transform) {
       return transform(arg);
     }
@@ -68,6 +74,11 @@ function $(value) {
 }
 function guard(checker) {
   return checker;
+}
+function is(valueToCheck) {
+  return function isNarrowType(value) {
+    return value === valueToCheck;
+  };
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -446,6 +457,7 @@ exports.go = go;
 exports.goer = goer;
 exports.guard = guard;
 exports.humanize = humanize;
+exports.is = is;
 exports.isDefined = isDefined;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
