@@ -45,10 +45,10 @@ function ifWithCondition(condition, transform) {
     return warp(transform());
   }
   return {
+    if: ifWithCondition,
     else(transform2) {
       return transform2();
-    },
-    if: ifWithCondition
+    }
   };
 }
 function $switch(arg) {

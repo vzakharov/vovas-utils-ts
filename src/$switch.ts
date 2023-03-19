@@ -108,10 +108,10 @@ function ifWithCondition<Result>(
   }
 
   return {
-    else(transform: FunctionThatReturns<Result>): Result {
+    if: ifWithCondition,
+    else(transform: () => Result): Result {
       return transform();
     },
-    if: ifWithCondition
   };
 
 };
