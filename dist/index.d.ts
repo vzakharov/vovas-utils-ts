@@ -1,7 +1,7 @@
 import fs from 'fs';
 
 declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
-type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg);
+type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg) | ((arg: any) => arg is TypedArg);
 type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type SwitchWithArg<Arg, Result> = {
@@ -14,6 +14,8 @@ type SwitchWithCondition<Result> = {
 };
 type Switch<Arg, Result, ConditionBased extends boolean> = ConditionBased extends true ? SwitchWithCondition<Result> : SwitchWithArg<Arg, Result>;
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
 declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
 declare function $switch<Arg, Result = never>(arg: Arg): {
@@ -22,7 +24,7 @@ declare function $switch<Arg, Result = never>(arg: Arg): {
 };
 declare function isDefined<T>(value: T | undefined): value is T;
 declare function $<T>(value: T): (...args: any[]) => T;
-declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): Typeguard<BroadType, NarrowType>;
+declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
 declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
 
 type Dict<T = any> = {

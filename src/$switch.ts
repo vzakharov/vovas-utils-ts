@@ -20,7 +20,11 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 import _ from 'lodash';
 import { FunctionThatReturns } from './types';
 
-export type Typeguard<Arg, TypedArg extends Arg> = ( (arg: Arg) => arg is TypedArg );
+export type Typeguard<Arg, TypedArg extends Arg> = 
+  ( (arg: Arg) => arg is TypedArg )
+  |
+  ( (arg: any) => arg is TypedArg );
+
 export type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
 
@@ -38,8 +42,8 @@ export type SwitchWithArg<Arg, Result> = {
 export type SwitchWithCondition<Result> = {
 
   if: <Result>(condition: boolean, transform: () => Result) => SwitchWithCondition<Result>
-
   else(transform: () => Result): Result;
+  
 };
 
 export type Switch<Arg, Result, ConditionBased extends boolean> = 
@@ -62,6 +66,19 @@ function warp<T, ConditionBased extends boolean>(value: T) {
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
   typeguard: (arg: Arg) => arg is TypedArg,
+  transform: Transform<TypedArg, IfResult>
+): Switch<Exclude<Arg, TypedArg>, IfResult, false>
+
+export function $if<Arg, TypedArg extends Arg, IfResult>(
+  arg: Arg,
+  typeguard: (arg: any) => arg is TypedArg,
+  transform: Transform<TypedArg, IfResult>
+): Switch<Exclude<Arg, TypedArg>, IfResult, false>
+
+
+export function $if<Arg, TypedArg extends Arg, IfResult>(
+  arg: Arg,
+  typeguard: (arg: any) => arg is TypedArg,
   transform: Transform<TypedArg, IfResult>
 ): Switch<Exclude<Arg, TypedArg>, IfResult, false>
 
@@ -150,7 +167,7 @@ export function $<T>(value: T): (...args: any[]) => T {
 
 export function guard<BroadType, NarrowType extends BroadType>(
   checker: (value: BroadType) => boolean
-): Typeguard<BroadType, NarrowType> {
+): (value: BroadType) => value is NarrowType {
   // return checker as Typeguard<T, U>;
   return checker as Typeguard<BroadType, NarrowType>;
 }
