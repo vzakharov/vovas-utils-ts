@@ -24,55 +24,64 @@ export type Typeguard<Arg, TypedArg extends Arg> = ( (arg: Arg) => arg is TypedA
 export type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
 export type Transform<Arg, Result> = (arg: Arg) => Result;
 
-export type Switch<Arg, Result> = {
+export type SwitchWithArg<Arg, Result> = {
 
-  if: <TypedArg extends Arg, IfResult>(
-    typeguardOrType: TypeguardOrType<Arg, TypedArg>,
-    transform: Transform<TypedArg, IfResult>
-  ) => Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
+  if<TypedArg extends Arg, IfResult>(
+    typeguardOrType: ( (arg: Arg) => arg is TypedArg ) | TypedArg,
+    transform: (arg: TypedArg) => IfResult
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
 
-  else(transform: Transform<Arg, Result>): Result;
+  else(transform: (arg: Arg) => Result): Result;
   
 };
 
-type SwitchWithCondition<Result> = {
-  if: typeof ifWithCondition;
-  else(transform: FunctionThatReturns<Result>): Result;
+export type SwitchWithCondition<Result> = {
+
+  if: <Result>(condition: boolean, transform: () => Result) => SwitchWithCondition<Result>
+
+  else(transform: () => Result): Result;
 };
 
-export function dummySwitch<T>(value: T) {
-  const recursion = () => ({
-    if: recursion,
-    else() {
-      return value;
-    },
-  })
-  return recursion();
+export type Switch<Arg, Result, ConditionBased extends boolean> = 
+  ConditionBased extends true
+    ? SwitchWithCondition<Result>
+    : SwitchWithArg<Arg, Result>;
+
+function warp<T, ConditionBased extends boolean>(value: T) {
+  function recursion() {
+    return {
+      if: recursion,
+      else() {
+        return value;
+      },
+    };
+  };
+  return recursion() as Switch<any, T, ConditionBased>;
 }
 
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
   typeguard: (arg: Arg) => arg is TypedArg,
   transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult>
+): Switch<Exclude<Arg, TypedArg>, IfResult, false>
 
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
   type: TypedArg,
   transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult>
+): Switch<Exclude<Arg, TypedArg>, IfResult, false>
 
 
 export function $if<Result>(
   condition: boolean,
   transform: () => Result
-) : SwitchWithCondition<Result>
+) : Switch<never, Result, true>
 
 export function $if<Arg, TypedArg extends Arg, Result>(
   argOrCondition: Arg | boolean,
   typeguardOrTypeOrTransform: TypeguardOrType<Arg, TypedArg> | (() => Result),
   transformOrNothing?: Transform<TypedArg, Result>
-): Switch<Exclude<Arg, TypedArg>, Result> | SwitchWithCondition<Result> {
+): Switch<Exclude<Arg, TypedArg>, Result, boolean> {
 
   if ( _.isBoolean(argOrCondition) )
     return ifWithCondition(argOrCondition, typeguardOrTypeOrTransform as () => Result);
@@ -83,7 +92,7 @@ export function $if<Arg, TypedArg extends Arg, Result>(
   const transform = transformOrNothing as Transform<TypedArg, Result>;
 
   if ( typeguard(arg) ) {
-    return dummySwitch(transform(arg));
+    return warp(transform(arg));
   }
 
   return $switch<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
@@ -95,7 +104,7 @@ function ifWithCondition<Result>(
 ): SwitchWithCondition<Result> {
 
   if ( condition ) {
-    return dummySwitch(transform());
+    return warp<Result, true>(transform());
   }
 
   return {
@@ -112,17 +121,17 @@ export function $switch<Arg, Result = never>(arg: Arg) {
   function _if<TypedArg extends Arg, IfResult>(
     typeguard: (arg: Arg) => arg is TypedArg,
     transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult>
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
 
   function _if<TypedArg extends Arg, IfResult>(
     type: TypedArg,
     transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult>
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
   
   function _if<TypedArg extends Arg, IfResult>(
     typeguardOrType: TypeguardOrType<Arg, TypedArg>,
     transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult> {
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false> {
     return $if(arg, 
       _.isFunction(typeguardOrType) 
         ? typeguardOrType 
@@ -134,7 +143,7 @@ export function $switch<Arg, Result = never>(arg: Arg) {
 
     if: _if,
 
-    else(transform: Transform<Arg, Result>): Result {
+    else(transform: (arg: Arg) => Result): Result {
       return transform(arg);
     }
 

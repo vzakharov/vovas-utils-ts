@@ -23,8 +23,8 @@ type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg);
 type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type Switch<Arg, Result> = {
-    if: <TypedArg extends Arg, IfResult>(typeguardOrType: TypeguardOrType<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>) => Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
-    else(transform: Transform<Arg, Result>): Result;
+    if: <TypedArg extends Arg, IfResult>(typeguardOrType: ((arg: Arg) => arg is TypedArg) | TypedArg, transform: (arg: TypedArg) => IfResult) => Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
+    else(transform: (arg: Arg) => Result): Result;
 };
 type SwitchWithCondition<Result> = {
     if: typeof ifWithCondition;
@@ -43,7 +43,7 @@ declare function $switch<Arg, Result = never>(arg: Arg): {
         <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, Result | IfResult>;
         <TypedArg_1 extends Arg, IfResult_1>(type: TypedArg_1, transform: Transform<TypedArg_1, IfResult_1>): Switch<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
     };
-    else(transform: Transform<Arg, Result>): Result;
+    else(transform: (arg: Arg) => Result): Result;
 };
 declare function isDefined<T>(value: T | undefined): value is T;
 declare function $<T>(value: T): (...args: any[]) => T;
