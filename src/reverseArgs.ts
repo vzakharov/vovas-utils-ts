@@ -15,6 +15,6 @@ export function reverseArgs<Func extends (arg: any, arg2: any, arg3: any, arg4: 
 
 export function reverseArgs<Func extends FunctionThatReturns<any>>(
   func: Func
-) {
+): (...args: any[]) => Return<Func> {
   return (...args: any[]) => func(...args.reverse());
 }
