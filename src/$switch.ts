@@ -209,14 +209,8 @@ export function is<BroadType, NarrowType extends BroadType>(
   }
 }
 
-// // Example:
-// function isGreaterThan0(value: number): boolean {
-//   return value > 0;
-// }
-
-// let x = 1;
-// $if(x, isGreaterThan0, $('greater than 0'))
-// // Gives an error as isGreaterThan0 is not a typeguard
-
-// $if(x, guard(isGreaterThan0), $('greater than 0'))
-// // Works
+export function map<Item, Result>(
+  transform: Transform<Item, Result>
+): (items: Item[]) => Result[] {
+  return (items: Item[]) => items.map(transform);
+};

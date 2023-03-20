@@ -82,6 +82,9 @@ function is(valueToCheck) {
     return value === valueToCheck;
   };
 }
+function map(transform) {
+  return (items) => items.map(transform);
+}
 
 function $try(fn, fallback = $throw, finallyCallback) {
   try {
@@ -431,6 +434,10 @@ function isTyped(type) {
   };
 }
 
+function wrap(func, ...args) {
+  return (target) => func(target, ...args);
+}
+
 exports.$ = $;
 exports.$as = $as;
 exports.$if = $if;
@@ -468,6 +475,7 @@ exports.jsonEqual = jsonEqual;
 exports.labelize = labelize;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
+exports.map = map;
 exports.paint = paint;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
@@ -475,3 +483,4 @@ exports.typed = typed;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;
+exports.wrap = wrap;

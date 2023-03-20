@@ -80,6 +80,9 @@ function is(valueToCheck) {
     return value === valueToCheck;
   };
 }
+function map(transform) {
+  return (items) => items.map(transform);
+}
 
 function $try(fn, fallback = $throw, finallyCallback) {
   try {
@@ -429,4 +432,8 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+function wrap(func, ...args) {
+  return (target) => func(target, ...args);
+}
+
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

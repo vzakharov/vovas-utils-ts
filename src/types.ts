@@ -28,7 +28,18 @@ export function functionThatReturns<T>(value: T): FunctionThatReturns<T> {
   return (...args: any[]) => value;
 };
 
-export type ReturnTypeOf<T> = T extends (...args: any[]) => infer R ? R : never;
+export type Return<F> = F extends (...args: any[]) => infer R ? R : never;
+export type Target<F> = F extends (target: infer Target, ...args: any[]) => any ? Target : never;
+export type Arg<F> = F extends (target: any, arg: infer Arg) => any ? Arg : never;
+export type Arg1of2<F> = F extends (target: any, arg1: infer Arg1, arg2: any) => any ? Arg1 : never;
+export type Arg2of2<F> = F extends (target: any, arg1: any, arg2: infer Arg2) => any ? Arg2 : never;
+export type Arg1of3<F> = F extends (target: any, arg1: infer Arg1, arg2: any, arg3: any) => any ? Arg1 : never;
+export type Arg2of3<F> = F extends (target: any, arg1: any, arg2: infer Arg2, arg3: any) => any ? Arg2 : never;
+export type Arg3of3<F> = F extends (target: any, arg1: any, arg2: any, arg3: infer Arg3) => any ? Arg3 : never;
+export type Arg1of4<F> = F extends (target: any, arg1: infer Arg1, arg2: any, arg3: any, arg4: any) => any ? Arg1 : never;
+export type Arg2of4<F> = F extends (target: any, arg1: any, arg2: infer Arg2, arg3: any, arg4: any) => any ? Arg2 : never;
+export type Arg3of4<F> = F extends (target: any, arg1: any, arg2: any, arg3: infer Arg3, arg4: any) => any ? Arg3 : never;
+export type Arg4of4<F> = F extends (target: any, arg1: any, arg2: any, arg3: any, arg4: infer Arg4) => any ? Arg4 : never;
 
 // export function $as<AsWhat, What extends AsWhat>(what: What): AsWhat {
 //   return what;

@@ -14,3 +14,4 @@ export * from './npmLinks.js';
 export * from './resolvable.js';
 export * from './typed.js';
 export * from './types.js';
+export * from './wrap.js';

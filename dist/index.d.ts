@@ -25,6 +25,7 @@ declare function isDefined<T>(value: T | undefined): value is T;
 declare function $<T>(value: T): (...args: any[]) => T;
 declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
 declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
+declare function map<Item, Result>(transform: Transform<Item, Result>): (items: Item[]) => Result[];
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -39,7 +40,18 @@ type JsonableNonArray = Primitive | JsonableObject;
 type Jsonable = JsonableNonArray | Jsonable[];
 type FunctionThatReturns<T> = (...args: any[]) => T;
 declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
-type ReturnTypeOf<T> = T extends (...args: any[]) => infer R ? R : never;
+type Return<F> = F extends (...args: any[]) => infer R ? R : never;
+type Target<F> = F extends (target: infer Target, ...args: any[]) => any ? Target : never;
+type Arg<F> = F extends (target: any, arg: infer Arg) => any ? Arg : never;
+type Arg1of2<F> = F extends (target: any, arg1: infer Arg1, arg2: any) => any ? Arg1 : never;
+type Arg2of2<F> = F extends (target: any, arg1: any, arg2: infer Arg2) => any ? Arg2 : never;
+type Arg1of3<F> = F extends (target: any, arg1: infer Arg1, arg2: any, arg3: any) => any ? Arg1 : never;
+type Arg2of3<F> = F extends (target: any, arg1: any, arg2: infer Arg2, arg3: any) => any ? Arg2 : never;
+type Arg3of3<F> = F extends (target: any, arg1: any, arg2: any, arg3: infer Arg3) => any ? Arg3 : never;
+type Arg1of4<F> = F extends (target: any, arg1: infer Arg1, arg2: any, arg3: any, arg4: any) => any ? Arg1 : never;
+type Arg2of4<F> = F extends (target: any, arg1: any, arg2: infer Arg2, arg3: any, arg4: any) => any ? Arg2 : never;
+type Arg3of4<F> = F extends (target: any, arg1: any, arg2: any, arg3: infer Arg3, arg4: any) => any ? Arg3 : never;
+type Arg4of4<F> = F extends (target: any, arg1: any, arg2: any, arg3: any, arg4: infer Arg4) => any ? Arg4 : never;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 
@@ -178,4 +190,9 @@ type Typed<O extends object, T extends string> = O & HasType<T>;
 declare function typed<T extends string>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, ReturnTypeOf, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };
+declare function wrap<Func extends (...args: any[]) => any>(func: Func, arg: Arg<Func>): (target: Target<Func>) => Return<Func>;
+declare function wrap<Func extends (...args: any[]) => any>(func: Func, arg1: Arg1of2<Func>, arg2: Arg<Func>): (target: Target<Func>) => Return<Func>;
+declare function wrap<Func extends (...args: any[]) => any>(func: Func, arg1: Arg1of3<Func>, arg2: Arg2of3<Func>, arg3: Arg3of3<Func>): (target: Target<Func>) => Return<Func>;
+declare function wrap<Func extends (...args: any[]) => any>(func: Func, arg1: Arg1of4<Func>, arg2: Arg2of4<Func>, arg3: Arg3of4<Func>, arg4: Arg4of4<Func>): (target: Target<Func>) => Return<Func>;
+
+export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg1of2, Arg1of3, Arg1of4, Arg2of2, Arg2of3, Arg2of4, Arg3of3, Arg3of4, Arg4of4, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Target, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
