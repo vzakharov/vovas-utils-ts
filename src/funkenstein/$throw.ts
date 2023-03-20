@@ -1,4 +1,4 @@
-import { FunctionThatReturns } from "./types";
+import { FunctionThatReturns } from "../types";
 
 export function $throw<T extends Error>(error: T): never
 export function $throw(message: string): never

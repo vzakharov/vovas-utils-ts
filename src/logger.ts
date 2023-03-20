@@ -16,8 +16,7 @@ import _ from 'lodash';
 import fs from 'fs';
 import yaml from 'js-yaml';
 import { isPrimitive } from './types.js';
-import { $try } from './$try.js';
-import { $throw } from './$throw.js';
+import { $throw, $try } from './funkenstein';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;

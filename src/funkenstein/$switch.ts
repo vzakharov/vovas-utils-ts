@@ -1,5 +1,5 @@
 // Implement code that would allow something like:
-import { $throw, $thrower } from '../$throw';
+import { $throw, $thrower } from './$throw';
 
 export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
   const itemNames = 
