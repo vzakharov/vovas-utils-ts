@@ -178,10 +178,10 @@ declare class Resolvable<T = void> {
     reset(value?: T | PromiseLike<T>): void;
 }
 
-declare function reverseArgs<Arg, Arg2, Result>(func: (arg: Arg, arg2: Arg2) => Result): (arg2: Arg2, arg: Arg) => Result;
-declare function reverseArgs<Arg, Arg2, Arg3, Result>(func: (arg: Arg, arg2: Arg2, arg3: Arg3) => Result): (arg3: Arg3, arg2: Arg2, arg: Arg) => Result;
-declare function reverseArgs<Arg, Arg2, Arg3, Arg4, Result>(func: (arg: Arg, arg2: Arg2, arg3: Arg3, arg4: Arg4) => Result): (arg4: Arg4, arg3: Arg3, arg2: Arg2, arg: Arg) => Result;
-declare function reverseArgs<Arg, Arg2, Arg3, Arg4, Arg5, Result>(func: (arg: Arg, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => Result): (arg5: Arg5, arg4: Arg4, arg3: Arg3, arg2: Arg2, arg: Arg) => Result;
+declare function reverseArgs<Func extends (arg: any, arg2: any) => any>(func: Func): (arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
+declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any) => any>(func: Func): (arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
+declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any, arg4: any) => any>(func: Func): (arg4: Arg4<Func>, arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
+declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any, arg4: any, arg5: any) => any>(func: Func): (arg5: Arg5<Func>, arg4: Arg4<Func>, arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
 
 type HasType<T extends string> = {
     type: T;
