@@ -1,5 +1,5 @@
 // Implement code that would allow something like:
-import { $throw, $thrower } from './$throw';
+import { $throw, $thrower } from '../$throw';
 
 export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
   const itemNames = 
@@ -18,7 +18,7 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 // Implementation:
 
 import _ from 'lodash';
-import { FunctionThatReturns } from './types';
+import { FunctionThatReturns } from '../types';
 
 export type Typeguard<Arg, TypedArg extends Arg> = 
   ( (arg: Arg) => arg is TypedArg )
@@ -76,7 +76,7 @@ function warp<T, ConditionBased extends boolean>(value: T) {
 
 export function $if<Arg, TypedArg extends Arg, IfResult>(
   arg: Arg,
-  typeguard: (arg: Arg) => arg is TypedArg,
+  typeguard: (arg: Arg) => arg is TypedArg, 
   transform: Transform<TypedArg, IfResult>
 ): Switch<Exclude<Arg, TypedArg>, IfResult, false>
 

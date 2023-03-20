@@ -1,4 +1,4 @@
-export * from './$switch.js';
+export * from './funkenstein';
 export * from './$throw.js';
 export * from './$try.js';
 export * from './createEnv.js';
