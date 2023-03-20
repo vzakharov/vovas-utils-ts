@@ -72,6 +72,9 @@ function isDefined(value) {
 function $(value) {
   return (...args) => value;
 }
+function itself(value) {
+  return value;
+}
 function guard(checker) {
   return checker;
 }
@@ -440,4 +443,4 @@ function wrap(func, ...args) {
   return (target) => func(target, ...args);
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, reverseArgs, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, reverseArgs, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

@@ -74,6 +74,9 @@ function isDefined(value) {
 function $(value) {
   return (...args) => value;
 }
+function itself(value) {
+  return value;
+}
 function guard(checker) {
   return checker;
 }
@@ -473,6 +476,7 @@ exports.is = is;
 exports.isDefined = isDefined;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
+exports.itself = itself;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;

@@ -194,6 +194,10 @@ export function $<T>(value: T): (...args: any[]) => T {
   return (...args: any[]) => value;
 }
 
+export function itself<T>(value: T): T {
+  return value;
+}
+
 export function guard<BroadType, NarrowType extends BroadType>(
   checker: (value: BroadType) => boolean
 ): (value: BroadType) => value is NarrowType {
