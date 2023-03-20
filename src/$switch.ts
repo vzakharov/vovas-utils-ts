@@ -135,18 +135,31 @@ function ifWithCondition<Result>(
 
 export function $switch<Arg, Result = never>(arg: Arg) {
 
+  function _if<TypedArg extends Arg, IfResult>(
+    typeguard: (arg: Arg) => arg is TypedArg,
+    transform: (arg: TypedArg) => IfResult
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
+  function _if<TypedArg extends Arg, IfResult>(
+    type: TypedArg,
+    transform: Transform<TypedArg, IfResult>
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
+  function _if<TypedArg extends Arg, IfResult>(
+    typeguardOrType: TypeguardOrType<Arg, TypedArg>,
+    transform: Transform<TypedArg, IfResult>
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+  {
+    return $if(arg, 
+      _.isFunction(typeguardOrType) 
+        ? typeguardOrType 
+        : is<Arg, TypedArg>(typeguardOrType), transform
+    );
+  };
+
   return {
 
-    if<TypedArg extends Arg, IfResult>(
-      typeguardOrType: TypeguardOrType<Arg, TypedArg>,
-      transform: Transform<TypedArg, IfResult>
-    ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false> {
-      return $if(arg, 
-        _.isFunction(typeguardOrType) 
-          ? typeguardOrType 
-          : is<Arg, TypedArg>(typeguardOrType), transform
-      );
-    },
+    if: _if,
 
     else(transform: (arg: Arg) => Result): Result {
       return transform(arg);

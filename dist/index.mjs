@@ -52,14 +52,15 @@ function ifWithCondition(condition, transform) {
   };
 }
 function $switch(arg) {
+  function _if(typeguardOrType, transform) {
+    return $if(
+      arg,
+      _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
+      transform
+    );
+  }
   return {
-    if(typeguardOrType, transform) {
-      return $if(
-        arg,
-        _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
-        transform
-      );
-    },
+    if: _if,
     else(transform) {
       return transform(arg);
     }

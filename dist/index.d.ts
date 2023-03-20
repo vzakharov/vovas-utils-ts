@@ -19,7 +19,10 @@ declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
 declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
 declare function $switch<Arg, Result = never>(arg: Arg): {
-    if<TypedArg extends Arg, IfResult>(typeguardOrType: TypeguardOrType<Arg, TypedArg>, transform: Transform<TypedArg, IfResult>): SwitchWithArg<Exclude<Arg, TypedArg>, Result | IfResult>;
+    if: {
+        <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: (arg: TypedArg) => IfResult): SwitchWithArg<Exclude<Arg, TypedArg>, Result | IfResult>;
+        <TypedArg_1 extends Arg, IfResult_1>(type: TypedArg_1, transform: Transform<TypedArg_1, IfResult_1>): SwitchWithArg<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
+    };
     else(transform: (arg: Arg) => Result): Result;
 };
 declare function isDefined<T>(value: T | undefined): value is T;
