@@ -8,11 +8,11 @@ type SwitchWithArg<Arg, Result> = {
     if<TypedArg extends Arg, IfResult>(typeguard: ((arg: Arg) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
     if<TypedArg extends Arg, IfResult>(typeguard: ((arg: any) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
     if<TypedArg extends Arg, IfResult>(type: TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
-    else(transform: (arg: Arg) => Result): Result;
+    else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult;
 };
 type SwitchWithCondition<Result> = {
-    if: <Result>(condition: boolean, transform: () => Result) => SwitchWithCondition<Result>;
-    else(transform: () => Result): Result;
+    if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult>;
+    else<ElseResult>(transform: () => ElseResult): ElseResult | Result;
 };
 type Switch<Arg, Result, ConditionBased extends boolean> = ConditionBased extends true ? SwitchWithCondition<Result> : SwitchWithArg<Arg, Result>;
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;

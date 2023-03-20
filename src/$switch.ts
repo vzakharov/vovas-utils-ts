@@ -1,5 +1,5 @@
 // Implement code that would allow something like:
-import { $throw } from './$throw';
+import { $throw, $thrower } from './$throw';
 
 export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
   const itemNames = 
@@ -7,7 +7,7 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
       .if(_.isString, _.castArray)
       .if(_.isArray, array => array.map(_.toString))
       .if(_.isObject, _.keys)
-      .else($throw("Expected string, array or object"))
+      .else($thrower("Expected string, array or object"))
     // (Once we see `default`, the expression is evaluated and the result is returned)
   return itemNames;
 };
@@ -46,14 +46,14 @@ export type SwitchWithArg<Arg, Result> = {
   ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
 
 
-  else(transform: (arg: Arg) => Result): Result;
+  else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult;
   
 };
 
 export type SwitchWithCondition<Result> = {
 
-  if: <Result>(condition: boolean, transform: () => Result) => SwitchWithCondition<Result>
-  else(transform: () => Result): Result;
+  if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult>;
+  else<ElseResult>(transform: () => ElseResult): ElseResult | Result;
   
 };
 
@@ -136,8 +136,10 @@ function ifWithCondition<Result>(
   }
 
   return {
-    if: ifWithCondition,
-    else(transform: () => Result): Result {
+    if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult> {
+      return ifWithCondition(condition, transform);
+    },
+    else<ElseResult>(transform: () => ElseResult): Result | ElseResult {
       return transform();
     },
   };
@@ -177,7 +179,7 @@ export function $switch<Arg, Result = never>(arg: Arg): Switch<Arg, Result, fals
 
     if: _if,
 
-    else(transform: (arg: Arg) => Result): Result {
+    else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult {
       return transform(arg);
     }
 

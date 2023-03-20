@@ -16,7 +16,7 @@ function $thrower(errorOrMessage) {
 }
 
 function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($throw("Expected string, array or object"));
+  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
   return itemNames;
 }
 function warp(value) {
@@ -47,7 +47,9 @@ function ifWithCondition(condition, transform) {
     return warp(transform());
   }
   return {
-    if: ifWithCondition,
+    if(condition2, transform2) {
+      return ifWithCondition(condition2, transform2);
+    },
     else(transform2) {
       return transform2();
     }
