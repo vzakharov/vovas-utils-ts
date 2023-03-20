@@ -425,6 +425,10 @@ class Resolvable {
   }
 }
 
+function reverseArgs(func) {
+  return (...args) => func(...args.reverse());
+}
+
 function typed(type) {
   return (object) => Object.assign(object, { type });
 }
@@ -477,6 +481,7 @@ exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
 exports.paint = paint;
+exports.reverseArgs = reverseArgs;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.typed = typed;

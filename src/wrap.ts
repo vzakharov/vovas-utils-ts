@@ -1,38 +1,31 @@
-import { Arg, Arg1of2, Arg1of3, Arg1of4, Arg2of3, Arg2of4, Arg3of3, Arg3of4, Arg4of4, Return, Target } from "./types";
+import { Arg, Arg2, Arg3, Arg4, Arg5, FunctionThatReturns, Return } from "./types";
 
-export function wrap<Func extends (...args: any[]) => any>(
+export function wrap<Func extends FunctionThatReturns<any>>(
   func: Func,
-  arg: Arg<Func>
-): (
-  target: Target<Func>,
-) => Return<Func>;
+  arg2: Arg2<Func>
+): ( arg: Arg<Func> ) => Return<Func>;
 
-export function wrap<Func extends (...args: any[]) => any>(
+export function wrap<Func extends FunctionThatReturns<any>>(
   func: Func,
-  arg1: Arg1of2<Func>,
-  arg2: Arg<Func>,
-): (
-  target: Target<Func>,
-) => Return<Func>;
+  arg2: Arg2<Func>,
+  arg3: Arg3<Func>
+): ( arg: Arg<Func> ) => Return<Func>;
 
-export function wrap<Func extends (...args: any[]) => any>(
+export function wrap<Func extends FunctionThatReturns<any>>(
   func: Func,
-  arg1: Arg1of3<Func>,
-  arg2: Arg2of3<Func>,
-  arg3: Arg3of3<Func>,
-): (
-  target: Target<Func>,
-) => Return<Func>;
+  arg2: Arg2<Func>,
+  arg3: Arg3<Func>,
+  arg4: Arg4<Func>
+): ( arg: Arg<Func> ) => Return<Func>;
 
-export function wrap<Func extends (...args: any[]) => any>(
+export function wrap<Func extends FunctionThatReturns<any>>(
   func: Func,
-  arg1: Arg1of4<Func>,
-  arg2: Arg2of4<Func>,
-  arg3: Arg3of4<Func>,
-  arg4: Arg4of4<Func>,
-): (
-  target: Target<Func>,
-) => Return<Func>;
+  arg2: Arg2<Func>,
+  arg3: Arg3<Func>,
+  arg4: Arg4<Func>,
+  arg5: Arg5<Func>
+): ( arg: Arg<Func> ) => Return<Func>;
+
 
 export function wrap<Func extends (...args: any[]) => any>(
   func: Func,
