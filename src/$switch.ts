@@ -31,9 +31,20 @@ export type Transform<Arg, Result> = (arg: Arg) => Result;
 export type SwitchWithArg<Arg, Result> = {
 
   if<TypedArg extends Arg, IfResult>(
-    typeguardOrType: ( (arg: Arg) => arg is TypedArg ) | TypedArg,
+    typeguard: ( (arg: Arg) => arg is TypedArg ),
     transform: (arg: TypedArg) => IfResult
   ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
+  if<TypedArg extends Arg, IfResult>(
+    typeguard: ( (arg: any) => arg is TypedArg ),
+    transform: (arg: TypedArg) => IfResult
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
+  if<TypedArg extends Arg, IfResult>(
+    type: TypedArg,
+    transform: (arg: TypedArg) => IfResult
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
 
   else(transform: (arg: Arg) => Result): Result;
   
@@ -133,7 +144,7 @@ function ifWithCondition<Result>(
 
 };
 
-export function $switch<Arg, Result = never>(arg: Arg) {
+export function $switch<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false> {
 
   function _if<TypedArg extends Arg, IfResult>(
     typeguard: (arg: Arg) => arg is TypedArg,

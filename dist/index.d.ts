@@ -5,7 +5,9 @@ type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg) | ((
 type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type SwitchWithArg<Arg, Result> = {
-    if<TypedArg extends Arg, IfResult>(typeguardOrType: ((arg: Arg) => arg is TypedArg) | TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: Arg) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: any) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    if<TypedArg extends Arg, IfResult>(type: TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
     else(transform: (arg: Arg) => Result): Result;
 };
 type SwitchWithCondition<Result> = {
@@ -18,14 +20,7 @@ declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
 declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
 declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
-declare function $switch<Arg, Result = never>(arg: Arg): {
-    if: {
-        <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: (arg: TypedArg) => IfResult): SwitchWithArg<Exclude<Arg, TypedArg>, Result | IfResult>;
-        <TypedArg_1 extends Arg, IfResult_1>(typeguard: (arg: any) => arg is TypedArg_1, transform: (arg: TypedArg_1) => IfResult_1): SwitchWithArg<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
-        <TypedArg_2 extends Arg, IfResult_2>(type: TypedArg_2, transform: Transform<TypedArg_2, IfResult_2>): SwitchWithArg<Exclude<Arg, TypedArg_2>, Result | IfResult_2>;
-    };
-    else(transform: (arg: Arg) => Result): Result;
-};
+declare function $switch<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false>;
 declare function isDefined<T>(value: T | undefined): value is T;
 declare function $<T>(value: T): (...args: any[]) => T;
 declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
