@@ -141,6 +141,11 @@ export function $switch<Arg, Result = never>(arg: Arg) {
   ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
 
   function _if<TypedArg extends Arg, IfResult>(
+    typeguard: (arg: any) => arg is TypedArg,
+    transform: (arg: TypedArg) => IfResult
+  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
+
+  function _if<TypedArg extends Arg, IfResult>(
     type: TypedArg,
     transform: Transform<TypedArg, IfResult>
   ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>

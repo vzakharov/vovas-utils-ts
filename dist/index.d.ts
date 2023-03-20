@@ -21,7 +21,8 @@ declare function $if<Result>(condition: boolean, transform: () => Result): Switc
 declare function $switch<Arg, Result = never>(arg: Arg): {
     if: {
         <TypedArg extends Arg, IfResult>(typeguard: (arg: Arg) => arg is TypedArg, transform: (arg: TypedArg) => IfResult): SwitchWithArg<Exclude<Arg, TypedArg>, Result | IfResult>;
-        <TypedArg_1 extends Arg, IfResult_1>(type: TypedArg_1, transform: Transform<TypedArg_1, IfResult_1>): SwitchWithArg<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
+        <TypedArg_1 extends Arg, IfResult_1>(typeguard: (arg: any) => arg is TypedArg_1, transform: (arg: TypedArg_1) => IfResult_1): SwitchWithArg<Exclude<Arg, TypedArg_1>, Result | IfResult_1>;
+        <TypedArg_2 extends Arg, IfResult_2>(type: TypedArg_2, transform: Transform<TypedArg_2, IfResult_2>): SwitchWithArg<Exclude<Arg, TypedArg_2>, Result | IfResult_2>;
     };
     else(transform: (arg: Arg) => Result): Result;
 };
