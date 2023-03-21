@@ -396,6 +396,13 @@ function jsonClone(obj) {
 function jsonEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
+function isJsonable(obj) {
+  try {
+    return jsonEqual(obj, jsonClone(obj));
+  } catch (e) {
+    return false;
+  }
+}
 
 const log = logger(23, "yellow");
 function getNpmLinks() {
@@ -499,4 +506,4 @@ function wrap(func, ...args) {
   return (target) => func(target, ...args);
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isJsonable, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

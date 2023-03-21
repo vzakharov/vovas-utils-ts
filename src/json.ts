@@ -7,3 +7,11 @@ export function jsonClone<T>(obj: T): T & Jsonable {
 export function jsonEqual<T>(a: T, b: T): boolean {
   return JSON.stringify(a) === JSON.stringify(b);
 }
+
+export function isJsonable(obj: any): obj is Jsonable {
+  try {
+    return jsonEqual(obj, jsonClone(obj));
+  } catch (e) {
+    return false;
+  }
+}

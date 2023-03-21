@@ -398,6 +398,13 @@ function jsonClone(obj) {
 function jsonEqual(a, b) {
   return JSON.stringify(a) === JSON.stringify(b);
 }
+function isJsonable(obj) {
+  try {
+    return jsonEqual(obj, jsonClone(obj));
+  } catch (e) {
+    return false;
+  }
+}
 
 const log = logger(23, "yellow");
 function getNpmLinks() {
@@ -535,6 +542,7 @@ exports.guard = guard;
 exports.humanize = humanize;
 exports.is = is;
 exports.isDefined = isDefined;
+exports.isJsonable = isJsonable;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
 exports.itself = itself;
