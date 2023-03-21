@@ -123,7 +123,7 @@ const get = fetchWith.method("get");
 const post = fetchWith.method("post");
 const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
 const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
-function chainified($function, chainedKeys, chainedParameterIndex) {
+function chainified($function, chainedParameterIndex, chainedKeys) {
   return chainedKeys.reduce(
     (output, key, index, keys) => {
       output[key] = (value) => (

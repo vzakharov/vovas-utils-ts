@@ -59,8 +59,8 @@ export function chainified<
   ChainedParameterIndex extends number,
 >(
   $function: Function,
-  chainedKeys: ChainedKeys,
   chainedParameterIndex: ChainedParameterIndex,
+  chainedKeys: ChainedKeys,
 ): Chainified<Function, ChainedParameterIndex, ChainedKeys>
 {
   return chainedKeys.reduce<Chainified<Function, ChainedParameterIndex, ChainedKeys>>(
