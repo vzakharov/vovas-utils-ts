@@ -52,6 +52,7 @@ type Arg4<F> = F extends (arg: any, arg2: any, arg3: any, arg4: infer Arg4, ...a
 type Arg5<F> = F extends (arg: any, arg2: any, arg3: any, arg4: any, arg5: infer Arg5, ...args: any[]) => any ? Arg5 : never;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
+declare function assign<T extends {}, U>(target: T, source: U): T & U;
 
 declare function $throw<T extends Error>(error: T): never;
 declare function $throw(message: string): never;
@@ -60,6 +61,18 @@ declare function $thrower<T extends Error>(errorOrMessage: T | string): Function
 
 declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
 declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
+
+declare const fetchWith: Chainified<typeof fetch, 1, ("method" | "headers" | "body")[]>;
+declare const get: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) & Chainified<typeof fetch, 1, ("method" | "headers" | "body")[]>;
+declare const post: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) & Chainified<typeof fetch, 1, ("method" | "headers" | "body")[]>;
+declare const postJson: (body: Jsonable) => ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) & Chainified<typeof fetch, 1, ("method" | "headers" | "body")[]>;
+declare const authorizedFetch: (Authorization: string) => ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) & Chainified<typeof fetch, 1, ("method" | "headers" | "body")[]>;
+type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
+type ChainableTypes<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = Pick<NonNullable<Parameters<Function>[ChainedParameterIndex]>, ChainedKeys[number]>;
+type Chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = {
+    [Key in ChainedKeys[number]]: (value: ChainableTypes<Function, ChainedParameterIndex, [Key]>[Key]) => ((...args: Parameters<Function>) => ReturnType<Function>) & Chainified<Function, ChainedParameterIndex, Exclude<ChainedKeys, Key>>;
+};
+declare function chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]>($function: Function, chainedParameterIndex: ChainedParameterIndex, chainedKeys: ChainedKeys): Chainified<Function, ChainedParameterIndex, ChainedKeys>;
 
 declare function lazily<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
 declare function lazily<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
@@ -214,4 +227,4 @@ declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: A
 declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>): (arg: Arg<Func>) => Return<Func>;
 declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>, arg5: Arg5<Func>): (arg: Arg<Func>) => Return<Func>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg2, Arg3, Arg4, Arg5, BroadType, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg2, Arg3, Arg4, Arg5, BroadType, ChainableKeys, ChainableTypes, Chainified, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

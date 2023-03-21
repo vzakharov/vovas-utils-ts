@@ -104,6 +104,52 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function isPrimitive(v) {
+  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
+  return result;
+}
+function functionThatReturns(value) {
+  return (...args) => value;
+}
+function $as(what) {
+  return _.isFunction(what) ? what : what;
+}
+function assign(target, source) {
+  return Object.assign(target, source);
+}
+
+const fetchWith = chainified(fetch, 1, ["method", "headers", "body"]);
+const get = fetchWith.method("get");
+const post = fetchWith.method("post");
+const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
+const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
+function chainified($function, chainedKeys, chainedParameterIndex) {
+  return chainedKeys.reduce(
+    (output, key, index, keys) => {
+      output[key] = (value) => (
+        //
+        assign(
+          (...args) => $function(
+            ...args.slice(0, chainedParameterIndex),
+            {
+              ...args[chainedParameterIndex],
+              [key]: value
+            },
+            ...args.slice(chainedParameterIndex + 1)
+          ),
+          chainified(
+            $function,
+            chainedParameterIndex,
+            keys.splice(index, 1)
+          )
+        )
+      );
+      return output;
+    },
+    {}
+  );
+}
+
 function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
@@ -227,17 +273,6 @@ function humanize(str) {
 }
 function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
-}
-
-function isPrimitive(v) {
-  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
-  return result;
-}
-function functionThatReturns(value) {
-  return (...args) => value;
-}
-function $as(what) {
-  return _.isFunction(what) ? what : what;
 }
 
 function jsObjectString(obj) {
@@ -477,6 +512,9 @@ exports.Resolvable = Resolvable;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
+exports.assign = assign;
+exports.authorizedFetch = authorizedFetch;
+exports.chainified = chainified;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;
@@ -485,8 +523,10 @@ exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
+exports.fetchWith = fetchWith;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
+exports.get = get;
 exports.getItemNames = getItemNames;
 exports.getNpmLinks = getNpmLinks;
 exports.go = go;
@@ -507,6 +547,8 @@ exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
 exports.paint = paint;
+exports.post = post;
+exports.postJson = postJson;
 exports.respectively = respectively;
 exports.reverseArgs = reverseArgs;
 exports.serializer = serializer;

@@ -102,6 +102,52 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function isPrimitive(v) {
+  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
+  return result;
+}
+function functionThatReturns(value) {
+  return (...args) => value;
+}
+function $as(what) {
+  return _.isFunction(what) ? what : what;
+}
+function assign(target, source) {
+  return Object.assign(target, source);
+}
+
+const fetchWith = chainified(fetch, 1, ["method", "headers", "body"]);
+const get = fetchWith.method("get");
+const post = fetchWith.method("post");
+const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
+const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
+function chainified($function, chainedKeys, chainedParameterIndex) {
+  return chainedKeys.reduce(
+    (output, key, index, keys) => {
+      output[key] = (value) => (
+        //
+        assign(
+          (...args) => $function(
+            ...args.slice(0, chainedParameterIndex),
+            {
+              ...args[chainedParameterIndex],
+              [key]: value
+            },
+            ...args.slice(chainedParameterIndex + 1)
+          ),
+          chainified(
+            $function,
+            chainedParameterIndex,
+            keys.splice(index, 1)
+          )
+        )
+      );
+      return output;
+    },
+    {}
+  );
+}
+
 function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
@@ -225,17 +271,6 @@ function humanize(str) {
 }
 function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
-}
-
-function isPrimitive(v) {
-  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
-  return result;
-}
-function functionThatReturns(value) {
-  return (...args) => value;
-}
-function $as(what) {
-  return _.isFunction(what) ? what : what;
 }
 
 function jsObjectString(obj) {
@@ -464,4 +499,4 @@ function wrap(func, ...args) {
   return (target) => func(target, ...args);
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
