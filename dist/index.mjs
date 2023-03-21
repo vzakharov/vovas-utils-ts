@@ -104,6 +104,12 @@ function respectively(...typeguards) {
     return values.every((value, index) => typeguards[index](value));
   };
 }
+function respectivelyReturn(...transforms) {
+  return (values) => {
+    return values.map((value, index) => transforms[index](value));
+  };
+}
+respectively.return = respectivelyReturn;
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
