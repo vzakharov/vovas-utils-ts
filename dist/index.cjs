@@ -405,6 +405,9 @@ function isJsonable(obj) {
     return false;
   }
 }
+function isJsonableObject(obj) {
+  return isJsonable(obj) && _.isPlainObject(obj);
+}
 
 const log = logger(23, "yellow");
 function getNpmLinks() {
@@ -543,6 +546,7 @@ exports.humanize = humanize;
 exports.is = is;
 exports.isDefined = isDefined;
 exports.isJsonable = isJsonable;
+exports.isJsonableObject = isJsonableObject;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
 exports.itself = itself;

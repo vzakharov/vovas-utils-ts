@@ -1,4 +1,5 @@
-import { Jsonable } from "./types.js";
+import _ from "lodash";
+import { Jsonable, JsonableObject } from "./types.js";
 
 export function jsonClone<T>(obj: T): T & Jsonable {
   return JSON.parse(JSON.stringify(obj));
@@ -14,4 +15,8 @@ export function isJsonable(obj: any): obj is Jsonable {
   } catch (e) {
     return false;
   }
+}
+
+export function isJsonableObject(obj: any): obj is JsonableObject {
+  return isJsonable(obj) && _.isPlainObject(obj);
 }
