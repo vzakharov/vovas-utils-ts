@@ -90,11 +90,6 @@ function is(valueToCheck) {
 function map(transform) {
   return (items) => items.map(transform);
 }
-function respectively(...typeguards) {
-  return (values) => {
-    return values.every((value, index) => typeguards[index](value));
-  };
-}
 
 function $try(fn, fallback = $throw, finallyCallback) {
   try {
@@ -104,6 +99,12 @@ function $try(fn, fallback = $throw, finallyCallback) {
   } finally {
     finallyCallback?.();
   }
+}
+
+function respectively(...typeguards) {
+  return (values) => {
+    return values.every((value, index) => typeguards[index](value));
+  };
 }
 
 function ensure(x, variableName) {
