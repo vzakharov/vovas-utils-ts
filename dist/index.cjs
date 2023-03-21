@@ -79,6 +79,9 @@ function $(value) {
 function itself(value) {
   return value;
 }
+function themselves(values) {
+  return values;
+}
 function guard(checker) {
   return checker;
 }
@@ -503,6 +506,7 @@ exports.respectively = respectively;
 exports.reverseArgs = reverseArgs;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
+exports.themselves = themselves;
 exports.typed = typed;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;

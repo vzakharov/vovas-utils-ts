@@ -207,6 +207,10 @@ export function itself<T>(value: T): T {
   return value;
 }
 
+export function themselves<T extends any[]>(values: T): T {
+  return values;
+}
+
 export function guard<BroadType, NarrowType extends BroadType>(
   checker: (value: BroadType) => boolean
 ): (value: BroadType) => value is NarrowType {
