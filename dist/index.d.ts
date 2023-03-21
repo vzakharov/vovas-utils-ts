@@ -61,7 +61,8 @@ declare function $thrower<T extends Error>(errorOrMessage: T | string): Function
 declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
 declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
 
-declare function lazy<Func extends (...args: any[]) => any>(func: Func, ...args: Parameters<Func>): () => ReturnType<Func>;
+declare function lazy<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
+declare function lazy<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
 
 declare function respectively<BroadType1, NarrowType1 extends BroadType1, BroadType2, NarrowType2 extends BroadType2>(typeguard1: Typeguard<BroadType1, NarrowType1>, typeguard2: Typeguard<BroadType2, NarrowType2>): Typeguard<[BroadType1, BroadType2], [NarrowType1, NarrowType2]>;
 declare function respectively<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3>(tg1: Typeguard<BT1, NT1>, tg2: Typeguard<BT2, NT2>, tg3: Typeguard<BT3, NT3>): Typeguard<[BT1, BT2, BT3], [NT1, NT2, NT3]>;

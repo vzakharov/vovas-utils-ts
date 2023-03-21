@@ -103,7 +103,7 @@ function $try(fn, fallback = $throw, finallyCallback) {
 }
 
 function lazy(func, ...args) {
-  return () => func(...args);
+  return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
 function respectively(...typeguards) {
