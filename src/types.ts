@@ -46,4 +46,4 @@ export function $as<AsWhat>(
   return _.isFunction(what)
     ? what as FunctionThatReturns<AsWhat>
     : what as AsWhat;
-}
+};

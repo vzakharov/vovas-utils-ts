@@ -104,6 +104,10 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function lazy(func, ...args) {
+  return () => func(...args);
+}
+
 function respectively(...typeguards) {
   return (values) => {
     return values.every((value, index) => typeguards[index](value));
@@ -498,6 +502,7 @@ exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
 exports.labelize = labelize;
+exports.lazy = lazy;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;

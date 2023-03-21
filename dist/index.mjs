@@ -102,6 +102,10 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function lazy(func, ...args) {
+  return () => func(...args);
+}
+
 function respectively(...typeguards) {
   return (values) => {
     return values.every((value, index) => typeguards[index](value));
@@ -460,4 +464,4 @@ function wrap(func, ...args) {
   return (target) => func(target, ...args);
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazy, logger, loggerInfo, map, paint, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
