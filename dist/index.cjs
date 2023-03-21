@@ -104,7 +104,7 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
-function lazy(func, ...args) {
+function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
@@ -502,7 +502,7 @@ exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
 exports.labelize = labelize;
-exports.lazy = lazy;
+exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
