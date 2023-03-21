@@ -1,8 +1,10 @@
 import fs from 'fs';
 
 declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
-type Typeguard<Arg, TypedArg extends Arg> = ((arg: Arg) => arg is TypedArg) | ((arg: any) => arg is TypedArg);
-type TypeguardOrType<Arg, TypedArg extends Arg> = Typeguard<Arg, TypedArg> | TypedArg;
+type Typeguard<BroadType, NarrowType extends BroadType> = ((arg: BroadType) => arg is NarrowType) | ((arg: any) => arg is NarrowType);
+type TypeguardOrType<BroadType, NarrowType extends BroadType> = Typeguard<BroadType, NarrowType> | NarrowType;
+type BroadType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<infer BroadType, any> ? BroadType : any;
+type NarrowType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<any, infer NarrowType> ? NarrowType : TG;
 type Transform<Arg, Result> = (arg: Arg) => Result;
 type SwitchWithArg<Arg, Result> = {
     if<TypedArg extends Arg, IfResult>(typeguard: ((arg: Arg) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
@@ -27,6 +29,10 @@ declare function itself<T>(value: T): T;
 declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
 declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
 declare function map<Item, Result>(transform: Transform<Item, Result>): (items: Item[]) => Result[];
+declare function respectively<BroadType1, NarrowType1 extends BroadType1, BroadType2, NarrowType2 extends BroadType2>(typeguard1: Typeguard<BroadType1, NarrowType1>, typeguard2: Typeguard<BroadType2, NarrowType2>): Typeguard<[BroadType1, BroadType2], [NarrowType1, NarrowType2]>;
+declare function respectively<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3>(tg1: Typeguard<BT1, NT1>, tg2: Typeguard<BT2, NT2>, tg3: Typeguard<BT3, NT3>): Typeguard<[BT1, BT2, BT3], [NT1, NT2, NT3]>;
+declare function respectively<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4>(tg1: Typeguard<BT1, NT1>, tg2: Typeguard<BT2, NT2>, tg3: Typeguard<BT3, NT3>, tg4: Typeguard<BT4, NT4>): Typeguard<[BT1, BT2, BT3, BT4], [NT1, NT2, NT3, NT4]>;
+declare function respectively<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4, BT5, NT5 extends BT5>(tg1: Typeguard<BT1, NT1>, tg2: Typeguard<BT2, NT2>, tg3: Typeguard<BT3, NT3>, tg4: Typeguard<BT4, NT4>, tg5: Typeguard<BT5, NT5>): Typeguard<[BT1, BT2, BT3, BT4, BT5], [NT1, NT2, NT3, NT4, NT5]>;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -195,4 +201,4 @@ declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: A
 declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>): (arg: Arg<Func>) => Return<Func>;
 declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>, arg5: Arg5<Func>): (arg: Arg<Func>) => Return<Func>;
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg2, Arg3, Arg4, Arg5, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, reverseArgs, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg2, Arg3, Arg4, Arg5, BroadType, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, forceUpdateNpmLinks, functionThatReturns, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, logger, loggerInfo, map, paint, respectively, reverseArgs, serializer, setLastLogIndex, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

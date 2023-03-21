@@ -90,6 +90,11 @@ function is(valueToCheck) {
 function map(transform) {
   return (items) => items.map(transform);
 }
+function respectively(...typeguards) {
+  return (values) => {
+    return values.every((value, index) => typeguards[index](value));
+  };
+}
 
 function $try(fn, fallback = $throw, finallyCallback) {
   try {
@@ -487,6 +492,7 @@ exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
 exports.paint = paint;
+exports.respectively = respectively;
 exports.reverseArgs = reverseArgs;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
