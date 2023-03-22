@@ -9,5 +9,5 @@
     "lib": ["DOM"],
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "../1env/src"],
 }
