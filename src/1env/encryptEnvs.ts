@@ -2,8 +2,6 @@ import fs from 'fs';
 import { ensure, logger } from "..";
 import { encrypt } from './encryption';
 
-const log = logger('always')
-
 export function encryptSecrets(filename: string = '.secrets.json') {
   // 1. Reads the `[root]/.secrets.json` file for the secrets (making sure it is git-ignored)
   // 2. Reads the (secret) process.env.ONE_ENV_KEY variable for the encryption key
@@ -14,7 +12,7 @@ export function encryptSecrets(filename: string = '.secrets.json') {
 
   const secretsFilename = `${process.cwd()}/${filename}`;
   if ( !fs.existsSync(secretsFilename) ) {
-    log.yellow(`Warning: no ${secretsFilename} file found, skipping encryption`);
+    console.log(`\x1b[33mWarning: no ${secretsFilename} file found, skipping encryption`);
     return;
   }
 

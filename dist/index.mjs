@@ -20,11 +20,10 @@ function encrypt(plain, key) {
   return encrypted;
 }
 
-const log$1 = logger("always");
 function encryptSecrets(filename = ".secrets.json") {
   const secretsFilename = `${process.cwd()}/${filename}`;
   if (!fs.existsSync(secretsFilename)) {
-    log$1.yellow(`Warning: no ${secretsFilename} file found, skipping encryption`);
+    console.log(`\x1B[33mWarning: no ${secretsFilename} file found, skipping encryption`);
     return;
   }
   const gitIgnoreFilename = `${process.cwd()}/.gitignore`;
