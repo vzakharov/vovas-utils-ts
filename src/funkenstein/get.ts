@@ -1,4 +1,4 @@
-import { $if, check, has, shouldntExist } from ".";
+import { check, has, shouldntExist } from ".";
 
 export function get<T extends object>(key: keyof T): (obj: T) => T[keyof T] {
   return (obj) => obj[key];

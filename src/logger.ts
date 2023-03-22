@@ -12,11 +12,11 @@
 // ```
 // The util will only log the message if the index is equal to the last log index. This way, we can easily switch between logging different contexts by changing the index, without cluttering the console with logs from other contexts which are no longer relevant.
 
-import _ from 'lodash';
 import fs from 'fs';
 import yaml from 'js-yaml';
-import { isPrimitive } from './types.js';
+import _ from 'lodash';
 import { $throw, $try } from './funkenstein';
+import { isPrimitive } from './types.js';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;

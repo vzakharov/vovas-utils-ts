@@ -1,5 +1,5 @@
 // Implement code that would allow something like:
-import { $throw, $thrower } from './$throw';
+import { $thrower } from './$throw';
 
 export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
   const itemNames = 
@@ -18,7 +18,6 @@ export function getItemNames(itemStringOrArrayOrObject: string | string[] | Reco
 // Implementation:
 
 import _ from 'lodash';
-import { FunctionThatReturns } from '../types';
 
 export type Typeguard<BroadType, NarrowType extends BroadType> = 
   ( (arg: BroadType) => arg is NarrowType )

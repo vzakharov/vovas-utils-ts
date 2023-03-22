@@ -1,4 +1,3 @@
-import { ensure } from "../ensure";
 import { assign, Jsonable } from "../types";
 
 // Make a `chainified` function for something like
