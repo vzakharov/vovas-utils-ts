@@ -7,17 +7,20 @@ import os from 'os';
 import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
-function decrypt(encrypted, key) {
-  const decipher = crypto.createDecipheriv("aes-256-gcm", key, Buffer.alloc(16, 0));
+function encrypt(plain, password) {
+  const cipher = crypto.createCipheriv("aes-256-gcm", createKey(password), Buffer.alloc(16, 0));
+  let encrypted = cipher.update(plain, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  return encrypted;
+}
+function decrypt(encrypted, password) {
+  const decipher = crypto.createDecipheriv("aes-256-gcm", createKey(password), Buffer.alloc(16, 0));
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
 }
-function encrypt(plain, key) {
-  const cipher = crypto.createCipheriv("aes-256-gcm", key, Buffer.alloc(16, 0));
-  let encrypted = cipher.update(plain, "utf8", "hex");
-  encrypted += cipher.final("hex");
-  return encrypted;
+function createKey(password) {
+  return crypto.createHash("sha256").update(password).digest();
 }
 
 function encryptSecrets(filename = ".secrets.json") {
