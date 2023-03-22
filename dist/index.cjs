@@ -32,8 +32,8 @@ function encryptSecrets(filename = ".secrets.json") {
   if (!fs.existsSync(gitIgnoreFilename)) {
     throw new Error(`${secretsFilename} has to be git-ignored, but no ${gitIgnoreFilename} file found`);
   }
-  const gitIgnore = fs.readFileSync(gitIgnoreFilename, "utf8");
-  if (!gitIgnore.match(/^\s*\.1env\.secrets\.json\s*$/m)) {
+  const gitIgnores = fs.readFileSync(gitIgnoreFilename, "utf8").split("\n");
+  if (!gitIgnores.includes(filename)) {
     throw new Error(`${secretsFilename} has to be git-ignored, but it is not in ${gitIgnoreFilename}`);
   }
   const secrets = JSON.parse(fs.readFileSync(secretsFilename, "utf8"));
