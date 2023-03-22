@@ -13,10 +13,12 @@ function encrypt(plain, password) {
   const cipher = crypto.createCipheriv("aes-256-gcm", createKey(password), Buffer.alloc(16, 0));
   let encrypted = cipher.update(plain, "utf8", "hex");
   encrypted += cipher.final("hex");
-  return encrypted;
+  const authTag = cipher.getAuthTag().toString("hex");
+  return { encrypted, authTag };
 }
-function decrypt(encrypted, password) {
+function decrypt(encrypted, authTag, password) {
   const decipher = crypto.createDecipheriv("aes-256-gcm", createKey(password), Buffer.alloc(16, 0));
+  decipher.setAuthTag(Buffer.from(authTag, "hex"));
   let decrypted = decipher.update(encrypted, "hex", "utf8");
   decrypted += decipher.final("utf8");
   return decrypted;
@@ -41,8 +43,8 @@ function encryptSecrets(filename = ".secrets.json") {
   }
   const secrets = JSON.parse(fs.readFileSync(secretsFilename, "utf8"));
   const key = ensure(process.env.ONE_ENV_KEY);
-  const encrypted = encrypt(JSON.stringify(secrets), key);
-  if (process.env.ONE_ENV_ENCRYPTED !== encrypted) {
+  const { encrypted, authTag } = encrypt(JSON.stringify(secrets), key);
+  if (process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag) {
     throw new Error(`ONE_ENV_ENCRYPTED variable is not set or out of date, please update it to:
 ${encrypted}`);
   }
@@ -52,7 +54,8 @@ ${encrypted}`);
 function loadEnvs() {
   const key = ensure(process.env.ONE_ENV_KEY);
   const encrypted = ensure(process.env.ONE_ENV_ENCRYPTED);
-  const decrypted = decrypt(encrypted, key);
+  const authTag = ensure(process.env.ONE_ENV_AUTH_TAG);
+  const decrypted = decrypt(encrypted, authTag, key);
   const parsed = JSON.parse(decrypted);
   Object.assign(process.env, parsed);
 }

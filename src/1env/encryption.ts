@@ -4,11 +4,13 @@ export function encrypt(plain: string, password: string) {
   const cipher = crypto.createCipheriv('aes-256-gcm', createKey(password), Buffer.alloc(16, 0));
   let encrypted = cipher.update(plain, 'utf8', 'hex');
   encrypted += cipher.final('hex');
-  return encrypted;
+  const authTag = cipher.getAuthTag().toString('hex');
+  return { encrypted, authTag };
 }
 
-export function decrypt(encrypted: string, password: string) {
+export function decrypt(encrypted: string, authTag: string, password: string) {
   const decipher = crypto.createDecipheriv('aes-256-gcm', createKey(password), Buffer.alloc(16, 0));
+  decipher.setAuthTag(Buffer.from(authTag, 'hex'));
   let decrypted = decipher.update(encrypted, 'hex', 'utf8');
   decrypted += decipher.final('utf8');
   return decrypted;
