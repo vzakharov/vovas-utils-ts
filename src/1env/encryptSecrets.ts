@@ -30,7 +30,10 @@ export function encryptSecrets(filename: string = '.secrets.json') {
   const { encrypted, authTag } = encrypt(JSON.stringify(secrets), key);
 
   if ( process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag ) {
-    throw new Error(`ONE_ENV_ENCRYPTED variable is not set or out of date, please update it to:\n${encrypted}`);
+    throw new Error(`1env environment variables are not set or outdated, please update as follows:
+
+ONE_ENV_ENCRYPTED=${encrypted}
+ONE_ENV_AUTH_TAG=${authTag}`);
   }
 
   return encrypted;

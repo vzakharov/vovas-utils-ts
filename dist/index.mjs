@@ -43,8 +43,10 @@ function encryptSecrets(filename = ".secrets.json") {
   const key = ensure(process.env.ONE_ENV_KEY);
   const { encrypted, authTag } = encrypt(JSON.stringify(secrets), key);
   if (process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag) {
-    throw new Error(`ONE_ENV_ENCRYPTED variable is not set or out of date, please update it to:
-${encrypted}`);
+    throw new Error(`1env environment variables are not set or outdated, please update as follows:
+
+ONE_ENV_ENCRYPTED=${encrypted}
+ONE_ENV_AUTH_TAG=${authTag}`);
   }
   return encrypted;
 }
