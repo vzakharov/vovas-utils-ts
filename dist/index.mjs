@@ -41,6 +41,7 @@ function encryptSecrets(filename = ".secrets.json") {
     throw new Error(`ONE_ENV_ENCRYPTED variable is out of date, please update it to:
 ${encrypted}`);
   }
+  return encrypted;
 }
 
 function loadEnvs() {

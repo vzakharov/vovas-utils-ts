@@ -1,2 +1,2 @@
-export * from './encryptEnvs';
+export * from './encryptSecrets';
 export * from './loadEnvs';

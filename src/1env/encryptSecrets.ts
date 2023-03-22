@@ -33,4 +33,6 @@ export function encryptSecrets(filename: string = '.secrets.json') {
     throw new Error(`ONE_ENV_ENCRYPTED variable is out of date, please update it to:\n${encrypted}`);
   }
 
+  return encrypted;
+
 };

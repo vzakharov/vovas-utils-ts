@@ -1,6 +1,6 @@
 import fs from 'fs';
 
-declare function encryptSecrets(filename?: string): void;
+declare function encryptSecrets(filename?: string): string | undefined;
 
 declare function loadEnvs(): void;
 
