@@ -1,36 +1,5 @@
 import fs from 'fs';
 
-declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
-type Typeguard<BroadType, NarrowType extends BroadType> = ((arg: BroadType) => arg is NarrowType) | ((arg: any) => arg is NarrowType);
-type TypeguardOrType<BroadType, NarrowType extends BroadType> = Typeguard<BroadType, NarrowType> | NarrowType;
-type BroadType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<infer BroadType, any> ? BroadType : any;
-type NarrowType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<any, infer NarrowType> ? NarrowType : TG;
-type Transform<Arg, Result> = (arg: Arg) => Result;
-type SwitchWithArg<Arg, Result> = {
-    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: Arg) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
-    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: any) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
-    if<TypedArg extends Arg, IfResult>(type: TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
-    else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult;
-};
-type SwitchWithCondition<Result> = {
-    if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult>;
-    else<ElseResult>(transform: () => ElseResult): ElseResult | Result;
-};
-type Switch<Arg, Result, ConditionBased extends boolean> = ConditionBased extends true ? SwitchWithCondition<Result> : SwitchWithArg<Arg, Result>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
-declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
-declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
-declare function check<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false>;
-declare function isDefined<T>(value: T | undefined): value is T;
-declare function $<T>(value: T): (...args: any[]) => T;
-declare function itself<T>(value: T): T;
-declare function themselves<T extends any[]>(values: T): T;
-declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
-declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
-declare function map<Item, Result>(transform: Transform<Item, Result>): (items: Item[]) => Result[];
-
 type Dict<T = any> = {
     [key: string]: T;
 } | Promise<Dict>;
@@ -67,6 +36,37 @@ type Chainified<Function extends (...args: any[]) => any, ChainedParameterIndex 
     [Key in ChainedKeys[number]]: (value: ChainableTypes<Function, ChainedParameterIndex, [Key]>[Key]) => ((...args: Parameters<Function>) => ReturnType<Function>) & Chainified<Function, ChainedParameterIndex, Exclude<ChainedKeys, Key>>;
 };
 declare function chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]>($function: Function, chainedParameterIndex: ChainedParameterIndex, chainedKeys: ChainedKeys): Chainified<Function, ChainedParameterIndex, ChainedKeys>;
+
+declare function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[];
+type Typeguard<BroadType, NarrowType extends BroadType> = ((arg: BroadType) => arg is NarrowType) | ((arg: any) => arg is NarrowType);
+type TypeguardOrType<BroadType, NarrowType extends BroadType> = Typeguard<BroadType, NarrowType> | NarrowType;
+type BroadType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<infer BroadType, any> ? BroadType : any;
+type NarrowType<TG extends TypeguardOrType<any, any>> = TG extends Typeguard<any, infer NarrowType> ? NarrowType : TG;
+type Transform<Arg, Result> = (arg: Arg) => Result;
+type SwitchWithArg<Arg, Result> = {
+    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: Arg) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    if<TypedArg extends Arg, IfResult>(typeguard: ((arg: any) => arg is TypedArg), transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    if<TypedArg extends Arg, IfResult>(type: TypedArg, transform: (arg: TypedArg) => IfResult): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>;
+    else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult;
+};
+type SwitchWithCondition<Result> = {
+    if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult>;
+    else<ElseResult>(transform: () => ElseResult): ElseResult | Result;
+};
+type Switch<Arg, Result, ConditionBased extends boolean> = ConditionBased extends true ? SwitchWithCondition<Result> : SwitchWithArg<Arg, Result>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: Arg) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, typeguard: (arg: any) => arg is TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Arg, TypedArg extends Arg, IfResult>(arg: Arg, type: TypedArg, transform: Transform<TypedArg, IfResult>): Switch<Exclude<Arg, TypedArg>, IfResult, false>;
+declare function $if<Result>(condition: boolean, transform: () => Result): Switch<never, Result, true>;
+declare function check<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false>;
+declare function isDefined<T>(value: T | undefined): value is T;
+declare function $<T>(value: T): (...args: any[]) => T;
+declare function itself<T>(value: T): T;
+declare function themselves<T extends any[]>(values: T): T;
+declare function guard<BroadType, NarrowType extends BroadType>(checker: (value: BroadType) => boolean): (value: BroadType) => value is NarrowType;
+declare function is<BroadType, NarrowType extends BroadType>(valueToCheck: BroadType): Typeguard<BroadType, NarrowType>;
+declare function map<Item, Result>(transform: Transform<Item, Result>): (items: Item[]) => Result[];
 
 declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
 

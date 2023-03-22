@@ -13,6 +13,62 @@ function $thrower(errorOrMessage) {
   return () => $throw(errorOrMessage);
 }
 
+function $try(fn, fallback = $throw, finallyCallback) {
+  try {
+    return fn();
+  } catch (e) {
+    return _.isFunction(fallback) ? fallback(e) : fallback;
+  } finally {
+    finallyCallback?.();
+  }
+}
+
+function isPrimitive(v) {
+  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
+  return result;
+}
+function functionThatReturns(value) {
+  return (...args) => value;
+}
+function $as(what) {
+  return _.isFunction(what) ? what : what;
+}
+function assign(target, source) {
+  return Object.assign(target, source);
+}
+
+const fetchWith = chainified(fetch, 1, ["method", "headers", "body"]);
+const get = fetchWith.method("get");
+const post = fetchWith.method("post");
+const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
+const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
+function chainified($function, chainedParameterIndex, chainedKeys) {
+  return chainedKeys.reduce(
+    (output, key, index, keys) => {
+      output[key] = (value) => (
+        //
+        assign(
+          (...args) => $function(
+            ...args.slice(0, chainedParameterIndex),
+            {
+              ...args[chainedParameterIndex],
+              [key]: value
+            },
+            ...args.slice(chainedParameterIndex + 1)
+          ),
+          chainified(
+            $function,
+            chainedParameterIndex,
+            keys.splice(index, 1)
+          )
+        )
+      );
+      return output;
+    },
+    {}
+  );
+}
+
 function getItemNames(itemStringOrArrayOrObject) {
   const itemNames = check(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
   return itemNames;
@@ -90,62 +146,6 @@ function is(valueToCheck) {
 }
 function map(transform) {
   return (items) => items.map(transform);
-}
-
-function $try(fn, fallback = $throw, finallyCallback) {
-  try {
-    return fn();
-  } catch (e) {
-    return _.isFunction(fallback) ? fallback(e) : fallback;
-  } finally {
-    finallyCallback?.();
-  }
-}
-
-function isPrimitive(v) {
-  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
-  return result;
-}
-function functionThatReturns(value) {
-  return (...args) => value;
-}
-function $as(what) {
-  return _.isFunction(what) ? what : what;
-}
-function assign(target, source) {
-  return Object.assign(target, source);
-}
-
-const fetchWith = chainified(fetch, 1, ["method", "headers", "body"]);
-const get = fetchWith.method("get");
-const post = fetchWith.method("post");
-const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
-const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
-function chainified($function, chainedParameterIndex, chainedKeys) {
-  return chainedKeys.reduce(
-    (output, key, index, keys) => {
-      output[key] = (value) => (
-        //
-        assign(
-          (...args) => $function(
-            ...args.slice(0, chainedParameterIndex),
-            {
-              ...args[chainedParameterIndex],
-              [key]: value
-            },
-            ...args.slice(chainedParameterIndex + 1)
-          ),
-          chainified(
-            $function,
-            chainedParameterIndex,
-            keys.splice(index, 1)
-          )
-        )
-      );
-      return output;
-    },
-    {}
-  );
 }
 
 function has(source) {
