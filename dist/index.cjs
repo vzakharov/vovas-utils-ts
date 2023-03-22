@@ -170,6 +170,10 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
+function wrap(fn, ...args) {
+  return (target) => fn(target, ...args);
+}
+
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
     throw new Error(
@@ -566,3 +570,4 @@ exports.typed = typed;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;
+exports.wrap = wrap;
