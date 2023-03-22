@@ -154,45 +154,23 @@ function ifWithCondition<Result>(
 
 export function check<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false> {
 
-  function _if<TypedArg extends Arg, IfResult>(
-    typeguard: (arg: Arg) => arg is TypedArg,
-    transform: (arg: TypedArg) => IfResult
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-  function _if<TypedArg extends Arg, IfResult>(
-    typeguard: (arg: any) => arg is TypedArg,
-    transform: (arg: TypedArg) => IfResult
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-  function _if<TypedArg extends Arg, IfResult>(
-    type: TypedArg,
-    transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-  function _if<TypedArg extends Arg, IfResult>(
-    typeguardOrType: TypeguardOrType<Arg, TypedArg>,
-    transform: Transform<TypedArg, IfResult>
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-  {
-    return $if(arg, 
-      _.isFunction(typeguardOrType) 
-        ? typeguardOrType 
-        : is<Arg, TypedArg>(typeguardOrType), transform
-    );
-  };
-
   return {
 
-    if: _if,
+    if: <TypedArg extends Arg, IfResult>(
+      typeguardOrType: TypeguardOrType<Arg, TypedArg>,
+      transform: Transform<TypedArg, IfResult>
+    ) => $if(arg,
+      _.isFunction(typeguardOrType)
+        ? typeguardOrType
+        : is<Arg, TypedArg>(typeguardOrType), transform
+    ),
 
-    else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult {
-      return transform(arg);
-    }
+    else: <ElseResult>(transform: (arg: Arg) => ElseResult) =>
+      transform(arg)
 
   };
 
 };
-
 
 export function isDefined<T>(value: T | undefined): value is T {
   return !_.isUndefined(value);

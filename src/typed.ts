@@ -6,7 +6,7 @@ export type HasType<T extends string | number> = {
 
 export type Typed<O extends object, T extends string | number> = O & HasType<T>;
 
-export function typed<T extends string | number>(
+export function toType<T extends string | number>(
   type: T
 ): <O extends object>(object: O) => Typed<O, T> {
   return object => Object.assign(object, { type });
