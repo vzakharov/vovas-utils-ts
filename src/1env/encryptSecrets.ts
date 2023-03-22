@@ -12,7 +12,7 @@ export function encryptSecrets(filename: string = '.secrets.json') {
 
   const secretsFilename = `${process.cwd()}/${filename}`;
   if ( !fs.existsSync(secretsFilename) ) {
-    console.log(`\x1b[33mWarning: no ${secretsFilename} file found, skipping encryption`);
+    console.log(`\x1b[33mWarning: no ${secretsFilename} file found, skipping encryption\x1b[0m`);
     return;
   }
 
@@ -33,6 +33,7 @@ export function encryptSecrets(filename: string = '.secrets.json') {
     throw new Error(`1env environment variables are not set or outdated, please update as follows:
 
 \x1b[33mONE_ENV_ENCRYPTED=${encrypted}
+
 ONE_ENV_AUTH_TAG=${authTag}\x1b[0m`);
   }
 
