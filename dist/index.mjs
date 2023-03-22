@@ -148,6 +148,10 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
   );
 }
 
+function has(source) {
+  return (target) => _.isMatch(target, source);
+}
+
 function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
@@ -492,10 +496,6 @@ class Resolvable {
   }
 }
 
-function reverseArgs(func) {
-  return (...args) => func(...args.reverse());
-}
-
 function typed(type) {
   return (object) => Object.assign(object, { type });
 }
@@ -505,8 +505,4 @@ function isTyped(type) {
   };
 }
 
-function wrap(func, ...args) {
-  return (target) => func(target, ...args);
-}
-
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

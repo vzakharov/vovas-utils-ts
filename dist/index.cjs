@@ -150,6 +150,10 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
   );
 }
 
+function has(source) {
+  return (target) => _.isMatch(target, source);
+}
+
 function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
@@ -494,10 +498,6 @@ class Resolvable {
   }
 }
 
-function reverseArgs(func) {
-  return (...args) => func(...args.reverse());
-}
-
 function typed(type) {
   return (object) => Object.assign(object, { type });
 }
@@ -505,10 +505,6 @@ function isTyped(type) {
   return function(object) {
     return object.type === type;
   };
-}
-
-function wrap(func, ...args) {
-  return (target) => func(target, ...args);
 }
 
 exports.$ = $;
@@ -542,6 +538,7 @@ exports.getNpmLinks = getNpmLinks;
 exports.go = go;
 exports.goer = goer;
 exports.guard = guard;
+exports.has = has;
 exports.humanize = humanize;
 exports.is = is;
 exports.isDefined = isDefined;
@@ -562,7 +559,6 @@ exports.paint = paint;
 exports.post = post;
 exports.postJson = postJson;
 exports.respectively = respectively;
-exports.reverseArgs = reverseArgs;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.themselves = themselves;
@@ -570,4 +566,3 @@ exports.typed = typed;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;
-exports.wrap = wrap;

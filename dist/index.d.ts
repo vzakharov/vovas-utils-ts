@@ -44,12 +44,6 @@ type JsonableNonArray = Primitive | JsonableObject;
 type Jsonable = JsonableNonArray | Jsonable[];
 type FunctionThatReturns<T> = (...args: any[]) => T;
 declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
-type Return<F> = F extends (...args: any[]) => infer R ? R : never;
-type Arg<F> = F extends (arg: infer Arg, ...args: any[]) => any ? Arg : never;
-type Arg2<F> = F extends (arg: any, arg2: infer Arg2, ...args: any[]) => any ? Arg2 : never;
-type Arg3<F> = F extends (arg: any, arg2: any, arg3: infer Arg3, ...args: any[]) => any ? Arg3 : never;
-type Arg4<F> = F extends (arg: any, arg2: any, arg3: any, arg4: infer Arg4, ...args: any[]) => any ? Arg4 : never;
-type Arg5<F> = F extends (arg: any, arg2: any, arg3: any, arg4: any, arg5: infer Arg5, ...args: any[]) => any ? Arg5 : never;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 declare function assign<T extends {}, U>(target: T, source: U): T & U;
@@ -73,6 +67,8 @@ type Chainified<Function extends (...args: any[]) => any, ChainedParameterIndex 
     [Key in ChainedKeys[number]]: (value: ChainableTypes<Function, ChainedParameterIndex, [Key]>[Key]) => ((...args: Parameters<Function>) => ReturnType<Function>) & Chainified<Function, ChainedParameterIndex, Exclude<ChainedKeys, Key>>;
 };
 declare function chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]>($function: Function, chainedParameterIndex: ChainedParameterIndex, chainedKeys: ChainedKeys): Chainified<Function, ChainedParameterIndex, ChainedKeys>;
+
+declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
 
 declare function lazily<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
 declare function lazily<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
@@ -212,11 +208,6 @@ declare class Resolvable<T = void> {
     reset(value?: T | PromiseLike<T>): void;
 }
 
-declare function reverseArgs<Func extends (arg: any, arg2: any) => any>(func: Func): (arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
-declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any) => any>(func: Func): (arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
-declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any, arg4: any) => any>(func: Func): (arg4: Arg4<Func>, arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
-declare function reverseArgs<Func extends (arg: any, arg2: any, arg3: any, arg4: any, arg5: any) => any>(func: Func): (arg5: Arg5<Func>, arg4: Arg4<Func>, arg3: Arg3<Func>, arg2: Arg2<Func>, arg: Arg<Func>) => Return<Func>;
-
 type HasType<T extends string | number> = {
     type: T;
 };
@@ -224,9 +215,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function typed<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>): (arg: Arg<Func>) => Return<Func>;
-declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>): (arg: Arg<Func>) => Return<Func>;
-declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>): (arg: Arg<Func>) => Return<Func>;
-declare function wrap<Func extends FunctionThatReturns<any>>(func: Func, arg2: Arg2<Func>, arg3: Arg3<Func>, arg4: Arg4<Func>, arg5: Arg5<Func>): (arg: Arg<Func>) => Return<Func>;
-
-export { $, $as, $if, $switch, $throw, $thrower, $try, Arg, Arg2, Arg3, Arg4, Arg5, BroadType, ChainableKeys, ChainableTypes, Chainified, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, Return, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, reverseArgs, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $switch, $throw, $thrower, $try, BroadType, ChainableKeys, ChainableTypes, Chainified, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks };

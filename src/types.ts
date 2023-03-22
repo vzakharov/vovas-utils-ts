@@ -28,13 +28,6 @@ export function functionThatReturns<T>(value: T): FunctionThatReturns<T> {
   return (...args: any[]) => value;
 };
 
-export type Return<F> = F extends (...args: any[]) => infer R ? R : never;
-export type Arg<F> = F extends (arg: infer Arg, ...args: any[]) => any ? Arg : never;
-export type Arg2<F> = F extends (arg: any, arg2: infer Arg2, ...args: any[]) => any ? Arg2 : never;
-export type Arg3<F> = F extends (arg: any, arg2: any, arg3: infer Arg3, ...args: any[]) => any ? Arg3 : never;
-export type Arg4<F> = F extends (arg: any, arg2: any, arg3: any, arg4: infer Arg4, ...args: any[]) => any ? Arg4 : never;
-export type Arg5<F> = F extends (arg: any, arg2: any, arg3: any, arg4: any, arg5: infer Arg5, ...args: any[]) => any ? Arg5 : never;
-
 export function $as<AsWhat>(what: any): AsWhat
 export function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>
 export function $as<AsWhat>(
@@ -47,4 +40,4 @@ export function $as<AsWhat>(
 
 export function assign<T extends {}, U>(target: T, source: U): T & U {
   return Object.assign<T, U>(target, source);
-}
+};

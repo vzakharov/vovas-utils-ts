@@ -10,7 +10,5 @@ export * from './logger.js';
 export * from './json.js';
 export * from './npmLinks.js';
 export * from './resolvable.js';
-export * from './reverseArgs.js';
 export * from './typed.js';
 export * from './types.js';
-export * from './wrap.js';
