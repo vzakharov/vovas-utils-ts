@@ -10,7 +10,7 @@ export function loadEnvs() {
   const key = ensure(process.env.ONE_ENV_KEY);
   const encrypted = ensure(process.env.ONE_ENV_ENCRYPTED);
   const authTag = ensure(process.env.ONE_ENV_AUTH_TAG);
-  const decrypted = decrypt(encrypted, authTag, key);
+  const decrypted = decrypt(encrypted, key);
   const parsed = JSON.parse(decrypted);
   Object.assign(process.env, parsed);
 

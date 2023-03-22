@@ -1,5 +1,5 @@
-import fs from 'fs';
 import crypto from 'crypto';
+import fs from 'fs';
 import _ from 'lodash';
 import https from 'https';
 import path from 'path';
@@ -12,9 +12,10 @@ function encrypt(plain, password) {
   let encrypted = cipher.update(plain, "utf8", "hex");
   encrypted += cipher.final("hex");
   const authTag = cipher.getAuthTag().toString("hex");
-  return { encrypted, authTag };
+  return `${encrypted}_${authTag}`;
 }
-function decrypt(encrypted, authTag, password) {
+function decrypt(encrypted_authTag, password) {
+  const [encrypted, authTag] = encrypted_authTag.split("_");
   const decipher = crypto.createDecipheriv("aes-256-gcm", createKey(password), Buffer.alloc(16, 0));
   decipher.setAuthTag(Buffer.from(authTag, "hex"));
   let decrypted = decipher.update(encrypted, "hex", "utf8");
@@ -41,13 +42,11 @@ function encryptSecrets(filename = ".secrets.json") {
   }
   const secrets = JSON.parse(fs.readFileSync(secretsFilename, "utf8"));
   const key = ensure(process.env.ONE_ENV_KEY);
-  const { encrypted, authTag } = encrypt(JSON.stringify(secrets), key);
-  if (process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag) {
+  const encrypted = encrypt(JSON.stringify(secrets), key);
+  if (process.env.ONE_ENV_ENCRYPTED !== encrypted) {
     throw new Error(`1env environment variables are not set or outdated, please update as follows:
 
-\x1B[33mONE_ENV_ENCRYPTED=${encrypted}
-
-ONE_ENV_AUTH_TAG=${authTag}\x1B[0m`);
+\x1B[33mONE_ENV_ENCRYPTED=${encrypted}\x1B[0m`);
   }
   return encrypted;
 }
@@ -55,8 +54,8 @@ ONE_ENV_AUTH_TAG=${authTag}\x1B[0m`);
 function loadEnvs() {
   const key = ensure(process.env.ONE_ENV_KEY);
   const encrypted = ensure(process.env.ONE_ENV_ENCRYPTED);
-  const authTag = ensure(process.env.ONE_ENV_AUTH_TAG);
-  const decrypted = decrypt(encrypted, authTag, key);
+  ensure(process.env.ONE_ENV_AUTH_TAG);
+  const decrypted = decrypt(encrypted, key);
   const parsed = JSON.parse(decrypted);
   Object.assign(process.env, parsed);
 }
@@ -568,4 +567,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, encryptSecrets, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, loadEnvs, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, decrypt, doWith, download, downloadAsStream, encrypt, encryptSecrets, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, loadEnvs, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

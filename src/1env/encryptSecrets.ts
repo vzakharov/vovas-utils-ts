@@ -27,14 +27,12 @@ export function encryptSecrets(filename: string = '.secrets.json') {
 
   const secrets = JSON.parse(fs.readFileSync(secretsFilename, 'utf8'));
   const key = ensure(process.env.ONE_ENV_KEY);
-  const { encrypted, authTag } = encrypt(JSON.stringify(secrets), key);
+  const encrypted= encrypt(JSON.stringify(secrets), key);
 
-  if ( process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag ) {
+  if ( process.env.ONE_ENV_ENCRYPTED !== encrypted ) {
     throw new Error(`1env environment variables are not set or outdated, please update as follows:
 
-\x1b[33mONE_ENV_ENCRYPTED=${encrypted}
-
-ONE_ENV_AUTH_TAG=${authTag}\x1b[0m`);
+\x1b[33mONE_ENV_ENCRYPTED=${encrypted}\x1b[0m`);
   }
 
   return encrypted;
