@@ -16,7 +16,7 @@ function $thrower(errorOrMessage) {
 }
 
 function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
+  const itemNames = check(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
   return itemNames;
 }
 function warp(value) {
@@ -40,7 +40,7 @@ function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
   if (typeguard(arg)) {
     return warp(transform(arg));
   }
-  return $switch(arg);
+  return check(arg);
 }
 function ifWithCondition(condition, transform) {
   if (condition) {
@@ -55,7 +55,7 @@ function ifWithCondition(condition, transform) {
     }
   };
 }
-function $switch(arg) {
+function check(arg) {
   function _if(typeguardOrType, transform) {
     return $if(
       arg,
@@ -518,7 +518,6 @@ function isTyped(type) {
 exports.$ = $;
 exports.$as = $as;
 exports.$if = $if;
-exports.$switch = $switch;
 exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
@@ -529,6 +528,7 @@ exports.assert = assert;
 exports.assign = assign;
 exports.authorizedFetch = authorizedFetch;
 exports.chainified = chainified;
+exports.check = check;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;

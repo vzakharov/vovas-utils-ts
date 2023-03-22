@@ -1,5 +1,5 @@
 import _ from "lodash";
-import { $if } from "./$switch";
+import { $if } from "./check";
 
 export function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U {
   return ( (target) => _.isMatch(target, source) ) as (target: T) => target is T & U;

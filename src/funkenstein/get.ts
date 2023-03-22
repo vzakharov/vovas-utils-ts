@@ -1,4 +1,4 @@
-import { $if, $switch, has, shouldntExist } from ".";
+import { $if, check, has, shouldntExist } from ".";
 
 export function get<T extends object>(key: keyof T): (obj: T) => T[keyof T] {
   return (obj) => obj[key];
@@ -11,7 +11,7 @@ type Car = { class: "car", make: string };
 type Person = { class: "person", ethnicity: string };
 
 const category = (item: Dog | Car | Person): string =>
-  $switch(item)
+  check( item )
     .if( has({ class: 
       "dog" } as const), // `as const` is needed to make the type narrowing work
         get(

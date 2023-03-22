@@ -1,4 +1,4 @@
-export * from './$switch';
+export * from './check';
 export * from './$throw';
 export * from './$try';
 export * from './chainified';

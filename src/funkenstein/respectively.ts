@@ -1,4 +1,4 @@
-import { Transform, Typeguard } from "./$switch";
+import { Transform, Typeguard } from "./check";
 
 export function respectively<BroadType1, NarrowType1 extends BroadType1, BroadType2, NarrowType2 extends BroadType2>(
   typeguard1: Typeguard<BroadType1, NarrowType1>,

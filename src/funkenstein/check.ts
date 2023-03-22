@@ -3,7 +3,7 @@ import { $throw, $thrower } from './$throw';
 
 export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
   const itemNames = 
-    $switch(itemStringOrArrayOrObject)
+    check(itemStringOrArrayOrObject)
       .if(_.isString, _.castArray)
       .if(_.isArray, array => array.map(_.toString))
       .if(_.isObject, _.keys)
@@ -130,7 +130,7 @@ export function $if<Arg, TypedArg extends Arg, Result>(
     return warp(transform(arg));
   }
 
-  return $switch<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
+  return check<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
 };
 
 function ifWithCondition<Result>(
@@ -153,7 +153,7 @@ function ifWithCondition<Result>(
 
 };
 
-export function $switch<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false> {
+export function check<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false> {
 
   function _if<TypedArg extends Arg, IfResult>(
     typeguard: (arg: Arg) => arg is TypedArg,

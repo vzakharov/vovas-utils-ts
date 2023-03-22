@@ -14,7 +14,7 @@ function $thrower(errorOrMessage) {
 }
 
 function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = $switch(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
+  const itemNames = check(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
   return itemNames;
 }
 function warp(value) {
@@ -38,7 +38,7 @@ function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
   if (typeguard(arg)) {
     return warp(transform(arg));
   }
-  return $switch(arg);
+  return check(arg);
 }
 function ifWithCondition(condition, transform) {
   if (condition) {
@@ -53,7 +53,7 @@ function ifWithCondition(condition, transform) {
     }
   };
 }
-function $switch(arg) {
+function check(arg) {
   function _if(typeguardOrType, transform) {
     return $if(
       arg,
@@ -513,4 +513,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $switch, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
