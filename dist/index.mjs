@@ -45,8 +45,8 @@ function encryptSecrets(filename = ".secrets.json") {
   if (process.env.ONE_ENV_ENCRYPTED !== encrypted || process.env.ONE_ENV_AUTH_TAG !== authTag) {
     throw new Error(`1env environment variables are not set or outdated, please update as follows:
 
-ONE_ENV_ENCRYPTED=${encrypted}
-ONE_ENV_AUTH_TAG=${authTag}`);
+\x1B[33mONE_ENV_ENCRYPTED=${encrypted}
+ONE_ENV_AUTH_TAG=${authTag}\x1B[0m`);
   }
   return encrypted;
 }
