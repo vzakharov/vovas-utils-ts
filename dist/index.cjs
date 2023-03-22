@@ -170,6 +170,10 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
+function shouldntExist(item) {
+  throw new Error(`This should not exist: ${item}`);
+}
+
 function wrap(fn, ...args) {
   return (target) => fn(target, ...args);
 }
@@ -565,6 +569,7 @@ exports.postJson = postJson;
 exports.respectively = respectively;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
+exports.shouldntExist = shouldntExist;
 exports.themselves = themselves;
 exports.typed = typed;
 exports.unEnvCase = unEnvCase;
