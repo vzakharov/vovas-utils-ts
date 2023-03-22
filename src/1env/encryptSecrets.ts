@@ -29,8 +29,8 @@ export function encryptSecrets(filename: string = '.secrets.json') {
   const key = ensure(process.env.ONE_ENV_KEY);
   const encrypted = encrypt(JSON.stringify(secrets), key);
 
-  if ( ensure(process.env.ONE_ENV_ENCRYPTED) !== encrypted ) {
-    throw new Error(`ONE_ENV_ENCRYPTED variable is out of date, please update it to:\n${encrypted}`);
+  if ( process.env.ONE_ENV_ENCRYPTED !== encrypted ) {
+    throw new Error(`ONE_ENV_ENCRYPTED variable is not set or out of date, please update it to:\n${encrypted}`);
   }
 
   return encrypted;

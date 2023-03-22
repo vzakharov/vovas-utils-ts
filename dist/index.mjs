@@ -40,8 +40,8 @@ function encryptSecrets(filename = ".secrets.json") {
   const secrets = JSON.parse(fs.readFileSync(secretsFilename, "utf8"));
   const key = ensure(process.env.ONE_ENV_KEY);
   const encrypted = encrypt(JSON.stringify(secrets), key);
-  if (ensure(process.env.ONE_ENV_ENCRYPTED) !== encrypted) {
-    throw new Error(`ONE_ENV_ENCRYPTED variable is out of date, please update it to:
+  if (process.env.ONE_ENV_ENCRYPTED !== encrypted) {
+    throw new Error(`ONE_ENV_ENCRYPTED variable is not set or out of date, please update it to:
 ${encrypted}`);
   }
   return encrypted;
