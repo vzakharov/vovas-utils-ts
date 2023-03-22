@@ -1,10 +1,56 @@
-import _ from 'lodash';
 import fs from 'fs';
+import crypto from 'crypto';
+import _ from 'lodash';
 import https from 'https';
 import path from 'path';
 import os from 'os';
 import yaml from 'js-yaml';
 import childProcess from 'child_process';
+
+function decrypt(encrypted, key) {
+  const decipher = crypto.createDecipheriv("aes-256-gcm", key, Buffer.alloc(16, 0));
+  let decrypted = decipher.update(encrypted, "hex", "utf8");
+  decrypted += decipher.final("utf8");
+  return decrypted;
+}
+function encrypt(plain, key) {
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, Buffer.alloc(16, 0));
+  let encrypted = cipher.update(plain, "utf8", "hex");
+  encrypted += cipher.final("hex");
+  return encrypted;
+}
+
+const log$1 = logger("always");
+function encryptSecrets(filename = ".secrets.json") {
+  const secretsFilename = `${process.cwd()}/${filename}`;
+  if (!fs.existsSync(secretsFilename)) {
+    log$1.yellow(`Warning: no ${secretsFilename} file found, skipping encryption`);
+    return;
+  }
+  const gitIgnoreFilename = `${process.cwd()}/.gitignore`;
+  if (!fs.existsSync(gitIgnoreFilename)) {
+    throw new Error(`${secretsFilename} has to be git-ignored, but no ${gitIgnoreFilename} file found`);
+  }
+  const gitIgnore = fs.readFileSync(gitIgnoreFilename, "utf8");
+  if (!gitIgnore.match(/^\s*\.1env\.secrets\.json\s*$/m)) {
+    throw new Error(`${secretsFilename} has to be git-ignored, but it is not in ${gitIgnoreFilename}`);
+  }
+  const secrets = JSON.parse(fs.readFileSync(secretsFilename, "utf8"));
+  const key = ensure(process.env.ONE_ENV_KEY);
+  const encrypted = encrypt(JSON.stringify(secrets), key);
+  if (ensure(process.env.ONE_ENV_ENCRYPTED) !== encrypted) {
+    throw new Error(`ONE_ENV_ENCRYPTED variable is out of date, please update it to:
+${encrypted}`);
+  }
+}
+
+function loadEnvs() {
+  const key = ensure(process.env.ONE_ENV_KEY);
+  const encrypted = ensure(process.env.ONE_ENV_ENCRYPTED);
+  const decrypted = decrypt(encrypted, key);
+  const parsed = JSON.parse(decrypted);
+  Object.assign(process.env, parsed);
+}
 
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
@@ -513,4 +559,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, encryptSecrets, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, loadEnvs, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

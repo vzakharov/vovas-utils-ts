@@ -1,3 +1,4 @@
+export * from './1env';
 export * from './funkenstein';
 export * from './createEnv.js';
 export * from './doWith.js';
