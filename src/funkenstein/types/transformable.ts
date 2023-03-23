@@ -1,5 +1,5 @@
 import { Check } from "./check-next";
-import { CommonTransforms } from "./types/transforms";
+import { CommonTransforms } from "./transforms";
 
 export type Transformable<ReceivedSoFar, ReturnedSoFar, IsFinal extends boolean> = {
 
@@ -21,5 +21,5 @@ export type Transformable<ReceivedSoFar, ReturnedSoFar, IsFinal extends boolean>
           ? ReturnedSoFar | Returns
           : Check<ReceivedSoFar, ReturnedSoFar | Returns, false>
         : never;
-        
+
 }

@@ -1,9 +1,7 @@
-import { Transform } from "./check";
-import { CommonCheckers } from "./common/checkers";
-import { Transformable } from "./transformables";
-import { Checker, GuardedType, IsTypeguard } from "./types/checkers";
-import { Maker } from "./types/misc";
-import { CommonTransformResultsFor } from "./types/transforms";
+import { CommonCheckers } from "../common/checkers";
+import { Checker, IsTypeguard, GuardedType } from "./checkers";
+import { Transformable } from "./transformable";
+import { CommonTransformResultsFor, Transform } from "./transforms";
 
 export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
 
@@ -13,7 +11,7 @@ export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
 
       <
         Chkr extends Checker,
-        Trfm extends Transform<GuardedType<Chkr>, any>
+        Trfm extends Transform
       >
       (checker: Chkr, transform: Trfm):
         Check<

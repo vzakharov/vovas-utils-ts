@@ -3,6 +3,8 @@ import { shouldNotBe } from "../shouldNotBe";
 
 export const commonTransforms = {
 
+  // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
+
   itself: <T>(arg: T): T => arg,
   themselves: <T extends any[]>(arrayArg: T): T => arrayArg,
 
@@ -19,9 +21,11 @@ export const commonTransforms = {
   emptyArray: $([] as const), 
   emptyObject: $({} as const),
   
-  throw: $thrower,
+  shouldNotBe,
 
-  shouldNotBe
+  // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
+
+  throw: $thrower,
 
 };
 
