@@ -1,5 +1,5 @@
 import { Primitive } from "../types";
-import { BaseType, Checker } from "./types/checkers";
+import { BaseType, Checker } from "./check/types/checkers";
 
 export function not<Base, Guarded extends Base>(typeguard: (arg: Base) => arg is Guarded):
   (arg: Base) => arg is Exclude<Base, Guarded>;

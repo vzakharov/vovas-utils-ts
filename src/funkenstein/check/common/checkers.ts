@@ -1,7 +1,7 @@
 import _ from 'lodash';
-import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, Primitive, respectively } from '../..';
-import { objectWithKeys } from '../../objectWithKeys';
-import { Not, not } from '../not';
+import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, Primitive, respectively } from '../../..';
+import { objectWithKeys } from '../../../objectWithKeys';
+import { Not, not } from '../../not';
 import { Checker } from '../types/checkers';
 
 export const commonCheckers = {

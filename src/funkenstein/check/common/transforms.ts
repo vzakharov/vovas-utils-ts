@@ -1,5 +1,5 @@
-import { $throw, $thrower } from "../$throw";
-import { shouldNotBe } from "../shouldNotBe";
+import { $throw, $thrower } from "../../$throw";
+import { shouldNotBe } from "../../shouldNotBe";
 
 export const commonTransforms = {
 
