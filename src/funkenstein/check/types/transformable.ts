@@ -1,4 +1,4 @@
-import { Check } from "./check-next";
+import { Check } from "./check";
 import { CommonTransforms } from "./transforms";
 
 export type Transformable<ReceivedSoFar, ReturnedSoFar, IsFinal extends boolean> = {
