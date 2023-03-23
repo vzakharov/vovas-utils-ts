@@ -1,0 +1,1 @@
+export type Maker<T, MakerArgs extends any[]> = (...makerArgs: MakerArgs) => T;

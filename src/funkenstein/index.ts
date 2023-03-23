@@ -5,5 +5,5 @@ export * from './check';
 export * from './has';
 export * from './lazy';
 export * from './respectively';
-export * from './shouldntExist';
+export * from './shouldNotBe';
 export * from './wrap';

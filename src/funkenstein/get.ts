@@ -1,4 +1,4 @@
-import { check, has, shouldntExist } from ".";
+import { check, has, shouldNotBe } from ".";
 
 export function get<T extends object>(key: keyof T): (obj: T) => T[keyof T] {
   return (obj) => obj[key];
@@ -25,4 +25,4 @@ const category = (item: Dog | Car | Person): string =>
         get(
           "ethnicity") )
     .else( 
-      shouldntExist ); // should give a compile-time error if any of the above cases are commented out
+      shouldNotBe ); // should give a compile-time error if any of the above cases are commented out

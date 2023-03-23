@@ -110,18 +110,13 @@ function ifWithCondition(condition, transform) {
   };
 }
 function check(arg) {
-  function _if(typeguardOrType, transform) {
-    return $if(
+  return {
+    if: (typeguardOrType, transform) => $if(
       arg,
       _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
       transform
-    );
-  }
-  return {
-    if: _if,
-    else(transform) {
-      return transform(arg);
-    }
+    ),
+    else: (transform) => transform(arg)
   };
 }
 function isDefined(value) {
@@ -168,7 +163,7 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function shouldntExist(item) {
+function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
 
@@ -504,7 +499,7 @@ class Resolvable {
   }
 }
 
-function typed(type) {
+function toType(type) {
   return (object) => Object.assign(object, { type });
 }
 function isTyped(type) {
@@ -513,4 +508,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, typed, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

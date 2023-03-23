@@ -112,18 +112,13 @@ function ifWithCondition(condition, transform) {
   };
 }
 function check(arg) {
-  function _if(typeguardOrType, transform) {
-    return $if(
+  return {
+    if: (typeguardOrType, transform) => $if(
       arg,
       _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
       transform
-    );
-  }
-  return {
-    if: _if,
-    else(transform) {
-      return transform(arg);
-    }
+    ),
+    else: (transform) => transform(arg)
   };
 }
 function isDefined(value) {
@@ -170,7 +165,7 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function shouldntExist(item) {
+function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
 
@@ -506,7 +501,7 @@ class Resolvable {
   }
 }
 
-function typed(type) {
+function toType(type) {
   return (object) => Object.assign(object, { type });
 }
 function isTyped(type) {
@@ -569,9 +564,9 @@ exports.postJson = postJson;
 exports.respectively = respectively;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
-exports.shouldntExist = shouldntExist;
+exports.shouldNotBe = shouldNotBe;
 exports.themselves = themselves;
-exports.typed = typed;
+exports.toType = toType;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;
