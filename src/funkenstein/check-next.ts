@@ -1,5 +1,6 @@
-import { CommonTransformResultsFor, CommonTransforms } from "./common/transforms";
-import { Transform, GuardedType, IsTypeguard, Checker } from "./types/checkers";
+import { Transform } from "./check";
+import { Checker, GuardedType, IsTypeguard } from "./types/checkers";
+import { CommonTransformResultsFor } from "./types/transforms";
 
 export type Check<IsRoot extends boolean, ReceivedSoFar, ReturnedSoFar> = {
 
@@ -8,7 +9,7 @@ export type Check<IsRoot extends boolean, ReceivedSoFar, ReturnedSoFar> = {
     if: {
 
       <
-        Chkr extends Checker<ReceivedSoFar, any>,
+        Chkr extends Checker,
         Trfm extends Transform<GuardedType<Chkr>, any>
       >
       (checker: Chkr, transform: Trfm):

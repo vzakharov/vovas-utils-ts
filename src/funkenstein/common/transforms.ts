@@ -28,18 +28,3 @@ export const commonTransforms = {
 export function $<T>(arg: T): (...args: any[]) => T {
   return () => arg;
 }
-
-export type CommonTransforms = typeof commonTransforms;
-
-export type CommonTransformsFor<ReceivedSoFar> = {
-  [K in keyof CommonTransforms]: CommonTransforms[K] extends (arg: ReceivedSoFar) => any
-    ? CommonTransforms[K]
-    : never
-};
-
-export type CommonTransformResultsFor<ReceivedSoFar, IgnoreOriginalReturnTypes extends boolean = false> = {
-  [K in keyof CommonTransformsFor<ReceivedSoFar>]: 
-    IgnoreOriginalReturnTypes extends true 
-      ? any
-      : ReturnType<CommonTransformsFor<ReceivedSoFar>[K]>
-};
