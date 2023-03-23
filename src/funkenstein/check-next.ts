@@ -1,8 +1,11 @@
 import { Transform } from "./check";
+import { CommonCheckers } from "./common/checkers";
+import { Transformable } from "./transformables";
 import { Checker, GuardedType, IsTypeguard } from "./types/checkers";
+import { Maker } from "./types/misc";
 import { CommonTransformResultsFor } from "./types/transforms";
 
-export type Check<IsRoot extends boolean, ReceivedSoFar, ReturnedSoFar> = {
+export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
 
   (arg: ReceivedSoFar): {
 
@@ -14,25 +17,58 @@ export type Check<IsRoot extends boolean, ReceivedSoFar, ReturnedSoFar> = {
       >
       (checker: Chkr, transform: Trfm):
         Check<
-          false,
           IsTypeguard<Chkr> extends true
             ? Exclude<ReceivedSoFar, GuardedType<Chkr>>
             : ReceivedSoFar,
-          ReturnedSoFar | ReturnType<Trfm>
+          ReturnedSoFar | ReturnType<Trfm>,
+          false
         >;
+
+    } & {
+
+      [K in keyof CommonCheckers]:
+        CommonCheckers[K] extends ( ( arg: any ) => arg is any ) | ( ( arg: any ) => boolean )
+          ? {
+
+            then: Transformable<
+              CommonCheckers[K] extends ( ( arg: any ) => arg is infer Guarded )
+                ? Exclude<ReceivedSoFar, Guarded>
+                : ReceivedSoFar,
+              ReturnedSoFar,
+              false
+            >;
+
+          }
+          : CommonCheckers[K] extends ( ...makerArgs: infer MakerArgs ) => any
+            ? ( ...makerArgs: MakerArgs ) => {
+
+              then: Transformable<
+                CommonCheckers[K] extends (
+                  ( ...makerArgs: any ) => ( arg: any ) => arg is infer Guarded
+                )
+                  ? Exclude<ReceivedSoFar, Guarded>
+                  : ReceivedSoFar,
+                ReturnedSoFar,
+                false
+              >;
+              
+            }
+            : never;
 
     }
 
   } & IsRoot extends true ? {} : {
 
-    else: {
+    // else: {
 
-      <
-        Trfm extends Transform<ReceivedSoFar, any>
-      >
-      (transform: Trfm): ReturnedSoFar | ReturnType<Trfm>;
+    //   <
+    //     Trfm extends Transform<ReceivedSoFar, any>
+    //   >
+    //   (transform: Trfm): ReturnedSoFar | ReturnType<Trfm>;
 
-    } & CommonTransformResultsFor<ReceivedSoFar>
+    // } & CommonTransformResultsFor<ReceivedSoFar>
+
+    else: Transformable<ReceivedSoFar, ReturnedSoFar, true>;
 
   };
 
