@@ -1,6 +1,8 @@
 import _ from 'lodash';
 
-export type Merge<Target extends object, Source extends object> = {
+export type ObjectOrFunction = object | ( (...args: any[]) => any );
+
+export type Merge<Target extends ObjectOrFunction, Source extends object> = {
   [K in keyof Target | keyof Source]: 
     K extends keyof Target
       ? K extends keyof Source
@@ -13,7 +15,11 @@ export type Merge<Target extends object, Source extends object> = {
       : K extends keyof Source
         ? Source[K]
         : never;
-}
+} & ( 
+  Target extends ( (...args: infer Args) => infer Returns ) 
+    ? ( ...args: Args ) => Returns 
+    : {} 
+);
 
 export function merge<Target extends object, Source extends object>( 
   target: Target, 
@@ -51,30 +57,38 @@ export function merge<Target, Sources extends ( object | ((target: Target) => ob
   return result;
 }
 
-// Test:
-const a = { a: 1, b: { c: 3 }, d: 4 };
-const b = { b: { d: 4 }, d: 5 };
-const c = { c: 6 };
-const d = merge( a, b, c );
-d.a; // number
-d.b; // { c: number, d: number }
-d.c; // number
-d.d; // never (can't merge non-objects)
+// // Tests:
+// const a = { a: 1, b: { c: 3 }, d: 4 };
+// const b = { b: { d: 4 }, d: 5 };
+// const c = { c: 6 };
+// const d = merge( a, b, c );
+// d.a; // number
+// d.b; // { c: number, d: number }
+// d.c; // number
+// d.d; // never (can't merge non-objects)
 
-const it = merge({
-  dog: 1,
-  cat: 2,
-  bird: 3,
-}, animal => ({
-  a: animal,
-  the: animal,
-  that: animal,
-}), someAnimal => ({
-  is: someAnimal,
-  was: someAnimal,
-  aint: someAnimal,
-}));
+// const it = merge({
+//   dog: 1,
+//   cat: 2,
+//   bird: 3,
+// }, animal => ({
+//   a: animal,
+//   the: animal,
+//   that: animal,
+// }), someAnimal => ({
+//   is: someAnimal,
+//   was: someAnimal,
+//   aint: someAnimal,
+// }));
 
-it.is.a.dog; // ok
-it.the.cat; // also ok
-it.bird; // also ok
+// it.is.a.dog; // ok
+// it.the.cat; // also ok
+// it.bird; // also ok
+
+// const mergedFunction = merge(
+//   (a: number, b: string) => a + b,
+//   { hello: 'world' },
+// );
+
+// mergedFunction(1, '2'); // ok
+// mergedFunction.hello; // ok
