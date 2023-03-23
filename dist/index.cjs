@@ -416,6 +416,18 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -558,6 +570,7 @@ exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
+exports.merge = merge;
 exports.paint = paint;
 exports.post = post;
 exports.postJson = postJson;

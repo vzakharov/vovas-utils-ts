@@ -1,8 +1,6 @@
 import _ from 'lodash';
 
-export type ObjectOrFunction = object | ( (...args: any[]) => any );
-
-export type Merge<Target extends ObjectOrFunction, Source extends object> = {
+export type Merge<Target extends object | ( (...args: any[]) => any ), Source extends object> = {
   [K in keyof Target | keyof Source]: 
     K extends keyof Target
       ? K extends keyof Source

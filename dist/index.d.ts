@@ -176,6 +176,14 @@ declare function jsonEqual<T>(a: T, b: T): boolean;
 declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
 
+type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
+    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
+} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
+declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
+
 interface INpmLsOutput {
     dependencies: Record<string, {
         resolved?: string;
@@ -220,4 +228,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $throw, $thrower, $try, BroadType, ChainableKeys, ChainableTypes, Chainified, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, BroadType, ChainableKeys, ChainableTypes, Chainified, Color, ColorMap, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NarrowType, NewResolvableArgs, NpmLink, Paint, Painter, PossiblySerializedLogFunction, Primitive, Resolvable, SerializeAs, Switch, SwitchWithArg, SwitchWithCondition, Transform, Typed, Typeguard, TypeguardOrType, UnixTimestamp, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, merge, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
