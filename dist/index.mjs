@@ -163,7 +163,7 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function shouldntExist(item) {
+function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
 
@@ -508,4 +508,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldntExist, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
