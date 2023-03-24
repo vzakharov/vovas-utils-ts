@@ -8,7 +8,6 @@ export type Transform =
   (arg: any) => any
 
 export type CheckState = {
-  step: 'check' | 'if' | 'then' | 'stack' | 'evaluate';
   switchKind?: 'first' | 'last';
   argumentSet: boolean;
   argument?: any;
@@ -21,97 +20,96 @@ export type CheckState = {
 };
 
 
-export function stateMachine<State extends CheckState>(state: State): NextState<State> {
+export const StateMachine = {
 
-  switch (state.step) {
+  check<State extends CheckState>(state: State) {
 
-    case 'check':
+    return StateMachine.if({
+      ...state,
+      switchKind: 'first',
+      argumentSet: true,
+      argument: state.argument
+    });
 
-      return <T>(argument: T) => stateMachine({
-        ...state,
-        step: 'if',
-        switchKind: 'first',
-        argumentSet: true,
-        argument
-      });
+  },
 
-    case 'if':
 
-      return {
+  if<State extends CheckState>(state: State) {
 
-        if: <P extends Predicate, T extends Transform>(predicate: P, transform?: T) => stateMachine({
+    return {
+
+      if: <P extends Predicate, T extends Transform>(predicate: P, transform?: T) =>
+        state.transform
+          ? StateMachine.stack({ ...state, predicate, transform })
+          : StateMachine.then({ ...state, predicate, transform }),
+
+      ...( state.switchKind === 'first' ? {} : {
+
+        else: <T extends Transform>(transform: T) => StateMachine.then({
           ...state,
-          step: transform ? 'stack' : 'then',
-          predicate,
+          switchKind: 'last',
+          predicate: () => true,
           transform
-        }),
+        })
 
-        ...( state.switchKind === 'first' ? {} : {
+      }),
 
-          else: <T extends Transform>(transform: T) => stateMachine({
-            ...state,
-            switchKind: 'last',
-            step: 'then',
-            predicate: () => true,
-            transform
-          })
+    };
 
-        }),
-
-      };
+  },
 
 
-    case 'then':
+  then<State extends CheckState>(state: State) {
 
-      return {
-          
-        then: <T extends Transform>(transform: T) => stateMachine({
-          ...state,
-          step: 'stack',
-          transform
-        }),
+    return {
 
-      };
-
-    case 'stack':
-
-      return stateMachine({
+      then: <T extends Transform>(transform: T) => StateMachine.stack({
         ...state,
-        step: state.switchKind === 'last' ? 'evaluate' : 'if',
-        switchKind: undefined,
-        predicate: undefined,
-        transform: undefined,
-        switchStack: [
-          ...state.switchStack,
-          [ensure(state.predicate), ensure(state.transform)]
-        ]
-      });
+        transform
+      }),
 
-    case 'evaluate':
+    };
 
-      function evaluateForArgument(argument: any) {
+  },
 
-        for (const [predicate, transform] of state.switchStack) {
+  stack<State extends CheckState>(state: State) {
 
-          // const predicate = typeof predicateOrKey === 'string' ? commonCheckers[predicateOrKey] : predicateOrKey;
-          // const transform = typeof transformOrKey === 'string' ? commonTransforms[transformOrKey] : transformOrKey;
+    const machineArgs = {
+      ...state,
+      switchKind: undefined,
+      predicate: undefined,
+      transform: undefined,
+      switchStack: [
+        ...state.switchStack,
+        [ensure(state.predicate), ensure(state.transform)]
+      ]
+    };
 
-          if ( predicate(argument) ) {
-            return transform(argument);
-          }
+    return state.switchKind === 'last'
+      ? StateMachine.evaluate(machineArgs)
+      : StateMachine.if(machineArgs);
 
+  },
+
+
+  evaluate<State extends CheckState>(state: State) {
+
+    function evaluateForArgument(argument: any) {
+
+      for (const [predicate, transform] of state.switchStack) {
+
+        if ( predicate(argument) ) {
+          return transform(argument);
         }
-
-        throw new Error(`No matching predicate found for argument ${argument} (this should never happen)`);
 
       }
 
-      return state.argumentSet ? evaluateForArgument(state.argument) : evaluateForArgument;
+      throw new Error(`No matching predicate found for argument ${argument} (this should never happen)`);
 
-    default:
+    };
 
-      throw new Error(`Invalid state: ${state.step} (this should never happen)`);
+    return state.argumentSet ? evaluateForArgument(state.argument) : evaluateForArgument;
 
-  }
+  },
 
 };
