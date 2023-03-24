@@ -46,7 +46,7 @@ export function stateMachine<State extends CheckState>(state: State): NextState<
           transform
         }),
 
-        ...( switchKind === 'first' ? {} : {
+        ...( state.switchKind === 'first' ? {} : {
 
           else: <T extends Transform>(transform: T) => stateMachine({
             ...state,
@@ -77,13 +77,13 @@ export function stateMachine<State extends CheckState>(state: State): NextState<
 
       return stateMachine({
         ...state,
-        step: switchKind === 'last' ? 'evaluate' : 'if',
+        step: state.switchKind === 'last' ? 'evaluate' : 'if',
         switchKind: undefined,
         predicate: undefined,
         transform: undefined,
         switchStack: [
-          ...switchStack,
-          [ensure(predicate), ensure(transform)]
+          ...state.switchStack,
+          [ensure(state.predicate), ensure(state.transform)]
         ]
       });
 
@@ -91,7 +91,7 @@ export function stateMachine<State extends CheckState>(state: State): NextState<
 
       function evaluateForArgument(argument: any) {
 
-        for (const [predicate, transform] of switchStack) {
+        for (const [predicate, transform] of state.switchStack) {
 
           // const predicate = typeof predicateOrKey === 'string' ? commonCheckers[predicateOrKey] : predicateOrKey;
           // const transform = typeof transformOrKey === 'string' ? commonTransforms[transformOrKey] : transformOrKey;
@@ -106,7 +106,7 @@ export function stateMachine<State extends CheckState>(state: State): NextState<
 
       }
 
-      return argumentSet ? evaluateForArgument(argument) : evaluateForArgument;
+      return state.argumentSet ? evaluateForArgument(state.argument) : evaluateForArgument;
 
     default:
 
@@ -115,62 +115,3 @@ export function stateMachine<State extends CheckState>(state: State): NextState<
   }
 
 };
-
-export type NextState<State extends CheckState> =
-
-    State['step'] extends 'check' ?
-
-      <T>(argument: T) => NextState<State & {
-        step: 'if';
-        switchKind: 'first';
-        argumentSet: true;
-        argument: T;
-      }>
-
-  : State['step'] extends 'if' ? {
-
-      if: <P extends Predicate, T extends Transform>(predicate: P, transform?: T) => NextState<State & {
-        step: T extends Transform ? 'stack' : 'then';
-        predicate: P;
-        transform: T;
-      }>;
-
-    } & ( State['switchKind'] extends 'first' ? {} : {
-      
-      else: <T extends Transform>(transform: T) => NextState<State & {
-        switchKind: 'last';
-        step: 'then';
-        predicate: () => true;
-        transform: T;
-      }>;
-
-    } )
-
-  : State['step'] extends 'then' ? {
-
-      then: <T extends Transform>(transform: T) => NextState<State & {
-        step: 'stack';
-        transform: T;
-      }>;
-
-    }
-
-  : State['step'] extends 'stack' ? NextState<State & {
-      step: State['switchKind'] extends 'last' ? 'evaluate' : 'if';
-      switchKind: undefined;
-      predicate: undefined;
-      transform: undefined;
-      switchStack: [
-        ...State['switchStack'],
-        [Predicate, Transform]
-      ];
-    }>
-
-  : State['step'] extends 'evaluate' ? (
-
-    State['argumentSet'] extends true ?
-      any: (argument: any) => any
-
-  )
-
-  : never;
