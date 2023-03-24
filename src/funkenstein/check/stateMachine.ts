@@ -20,32 +20,20 @@ export type CheckState = {
 };
 
 
-export const StateMachine = {
+export const stateMachine = {
 
-  check<State extends CheckState>(state: State) {
-
-    return StateMachine.if({
-      ...state,
-      switchKind: 'first',
-      argumentSet: true,
-      argument: state.argument
-    });
-
-  },
-
-
-  if<State extends CheckState>(state: State) {
+  switch<State extends CheckState>(state: State) {
 
     return {
 
       if: <P extends Predicate, T extends Transform>(predicate: P, transform?: T) =>
         state.transform
-          ? StateMachine.stack({ ...state, predicate, transform })
-          : StateMachine.then({ ...state, predicate, transform }),
+          ? stateMachine.stack({ ...state, predicate, transform })
+          : stateMachine.transform({ ...state, predicate, transform }),
 
       ...( state.switchKind === 'first' ? {} : {
 
-        else: <T extends Transform>(transform: T) => StateMachine.then({
+        else: <T extends Transform>(transform: T) => stateMachine.transform({
           ...state,
           switchKind: 'last',
           predicate: () => true,
@@ -59,11 +47,11 @@ export const StateMachine = {
   },
 
 
-  then<State extends CheckState>(state: State) {
+  transform<State extends CheckState>(state: State) {
 
     return {
 
-      then: <T extends Transform>(transform: T) => StateMachine.stack({
+      then: <T extends Transform>(transform: T) => stateMachine.stack({
         ...state,
         transform
       }),
@@ -86,8 +74,8 @@ export const StateMachine = {
     };
 
     return state.switchKind === 'last'
-      ? StateMachine.evaluate(machineArgs)
-      : StateMachine.if(machineArgs);
+      ? stateMachine.evaluate(machineArgs)
+      : stateMachine.switch(machineArgs);
 
   },
 
@@ -113,3 +101,14 @@ export const StateMachine = {
   },
 
 };
+
+export function check<T>(argument: T) {
+
+  return stateMachine.switch({
+    switchKind: 'first',
+    argumentSet: true,
+    argument,
+    switchStack: []
+  });
+
+}
