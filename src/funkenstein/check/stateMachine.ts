@@ -23,12 +23,10 @@ export type PredicateResult<Pdct extends Predicate> =
       : Base
     : never;
 
-export type NarrowedAfterPredicate<Pdct extends Predicate> =
-  Pdct extends Predicate<infer Base, infer IsTypeguard, infer Guarded>
-    ? IsTypeguard extends true
-      ? Exclude<Base, Guarded>
-      : Base
-    : never;
+export type Narrowed<Base, IsTypeguard extends boolean, Guarded extends Base> =
+  IsTypeguard extends true
+    ? Exclude<Base, Guarded>
+    : Base;
 
 export type MatchingTransform<Pdct extends Predicate, Result = any> =
   Transform<
@@ -67,29 +65,27 @@ export function parseSwitch<
   hasArgument: HasArgument,
   argument: Argument,
   switchStack: [ Predicate, Transform ][]
-// ) {
-): ParseSwitch<Kind, HasArgument, Argument, CombinedResult> {
+): ParseSwitchOutput<Kind, HasArgument, Argument, CombinedResult> {
+  function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
+    predicate: Predicate<Argument, IsTypeguard, Guarded>,
+    transform?: Transform<Narrowed<Argument, IsTypeguard, Guarded>, TransformResult>
+  ) {
 
-  type MatchingPredicate = Predicate<Argument>;
-
-  // function $if<P extends MatchingPredicate>(predicate: P): typeof parseTransform;
-  // function $if<P extends MatchingPredicate, T extends MatchingTransform<P>>(predicate: P, transform: T): typeof stack;
-
-  function $if<P extends MatchingPredicate, T extends MatchingTransform<P>>(predicate: P, transform?: T) {
+      type NarrowedArgument = Narrowed<Argument, IsTypeguard, Guarded>;
       
       return transform
-        ? pushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>(
+        ? pushToStack(
             kind,
             hasArgument,
-            argument as NarrowedAfterPredicate<P>,
+            argument as NarrowedArgument,
             predicate,
             transform,
             switchStack
           )
-        : parseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>(
+        : parseTransform(
             kind,
             hasArgument,
-            argument as NarrowedAfterPredicate<P>,
+            argument as NarrowedArgument,
             predicate,
             switchStack
           );
@@ -99,8 +95,7 @@ export function parseSwitch<
   function $else<T extends MatchingTransform<typeof alwaysTrue>>(transform: T) {
 
     const alwaysTrue: (arg: Argument) => true = () => true;
-
-    return pushToStack<'last', HasArgument, Argument, typeof alwaysTrue, T, CombinedResult>(
+    return pushToStack(
       'last',
       hasArgument,
       argument,
@@ -114,22 +109,26 @@ export function parseSwitch<
   return {
     if: $if,
     ...( kind === 'last' ? { else: $else } : {} )
-  } as ParseSwitch<Kind, HasArgument, Argument, CombinedResult>;
+  } as ParseSwitchOutput<Kind, HasArgument, Argument, CombinedResult>;
 
 };
 
-export type ParseSwitch<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
-
-  if<P extends Predicate<Argument>>(predicate: P): 
-    ParseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>;
-
-  if<P extends Predicate<Argument>, T extends MatchingTransform<P>>(predicate: P, transform: T):
-    PushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>;
+export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
+  if<IsTypeguard extends boolean, Guarded extends Argument>(
+    predicate: Predicate<Argument, IsTypeguard, Guarded>
+  ): 
+    ParseTransformOutput<Kind, HasArgument, Narrowed<Argument, IsTypeguard, Guarded>, CombinedResult>;
+  if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
+    predicate: Predicate<Argument, IsTypeguard, Guarded>,
+    transform: Transform<Narrowed<Argument, IsTypeguard, Guarded>, TransformResult>
+  ):
+    PushToStackOutput<Kind, HasArgument, Narrowed<Argument, IsTypeguard, Guarded>, TransformResult, CombinedResult>;
 
 } & ( Kind extends 'first' ? {} : {
-
-  else<T extends MatchingTransform<(arg: Argument) => true>>(transform: T):
-    PushToStack<'last', HasArgument, Argument, (arg: Argument) => true, T, CombinedResult>;
+  else<TransformResult extends any>(
+    transform: Transform<Argument, TransformResult>
+  ):
+    PushToStackOutput<'last', HasArgument, Argument, TransformResult, CombinedResult>;
 
 } );
 
@@ -137,19 +136,16 @@ export function parseTransform<
   Kind extends SwitchKind,
   HasArgument extends boolean,
   Argument extends any,
-  P extends Predicate<Argument>,
   CombinedResult extends any
 >(
   kind: Kind,
   hasArgument: HasArgument,
   argument: Argument,
-  predicate: P,
+  predicate: Predicate,
   switchStack: [ Predicate, Transform ][]
-// ) {
-): ParseTransform<Kind, HasArgument, Argument, P, CombinedResult> { 
+): ParseTransformOutput<Kind, HasArgument, Argument, CombinedResult> {
   return {
-
-    then: <T extends MatchingTransform<P>>(transform: T) => pushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>(
+    then: <TransformResult extends any>(transform: Transform<Argument, TransformResult>) => pushToStack(
       kind,
       hasArgument,
       argument,
@@ -160,11 +156,11 @@ export function parseTransform<
 
   };
 }
-
-export type ParseTransform<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any> = {
-
-  then<T extends MatchingTransform<P>>(transform: T):
-    PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>;
+export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
+  then<TransformResult extends any>(
+    transform: Transform<Argument, TransformResult>
+  ):
+    PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
 
 };
 
@@ -173,37 +169,35 @@ export function pushToStack<
   Kind extends SwitchKind,
   HasArgument extends boolean,
   Argument extends any,
-  P extends Predicate<Argument>,
-  T extends MatchingTransform<P>,
+  TransformResult extends any,
   CombinedResult extends any
 >(
   kind: Kind,
   hasArgument: HasArgument,
   argument: Argument,
-  predicate: P,
-  transform: T,
+  predicate: Predicate,
+  transform: Transform<Argument, TransformResult>,
   switchStack: [ Predicate, Transform ][]
-): PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult> {
+): PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult> {
 
   switchStack.push([predicate, transform]);
 
   return (
     kind === 'last'
-      ? evaluate<HasArgument, Argument, CombinedResult>(
+      ? evaluate(
         hasArgument, argument, switchStack
       )
-      : parseSwitch<undefined, HasArgument, Argument, CombinedResult>(
+      : parseSwitch(
         undefined, hasArgument, argument, switchStack
       )
-  ) as PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>;
+  ) as PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
 
 };
-
-export type PushToStack<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, T extends MatchingTransform<P>, CombinedResult extends any> = (
+export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, TransformResult extends any, CombinedResult extends any> = (
 
   Kind extends 'last'
     ? Evaluate<HasArgument, Argument, CombinedResult>
-    : ParseSwitch<undefined, HasArgument, Argument, CombinedResult>
+    : ParseSwitchOutput<undefined, HasArgument, Argument, CombinedResult>
 
 );
 
@@ -215,7 +209,6 @@ export function evaluate<
   hasArgument: HasArgument,
   argument: Argument,
   switchStack: [ Predicate, Transform ][]
-// ) {
 ): Evaluate<HasArgument, Argument, CombinedResult> {
 
   function evaluateForArgument(argument: Argument): CombinedResult {
@@ -256,7 +249,7 @@ function check<T>(value: T) {
 };
 
 const keyNames = check('key' as string | string[] | object)
-  .if(is.array, keys => keys)
-  .if(is.string, key => [key])
-  .if(is.object, obj => Object.keys(obj))
+  .if<true, any[], string[]>(is.array, keys => keys)
+  .if<true, string, string[]>(is.string, key => [key])
+  .if<true, object, string[]>(is.object, obj => Object.keys(obj))
   .else(invalidArgument => { throw new Error(`Invalid argument ${invalidArgument}`) });
