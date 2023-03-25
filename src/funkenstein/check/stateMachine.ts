@@ -68,7 +68,7 @@ export function parseSwitch<
   argument: Argument,
   switchStack: [ Predicate, Transform ][]
 // ) {
-): ReturnType<ParseSwitch<Kind, HasArgument, Argument, CombinedResult>> {
+): ParseSwitch<Kind, HasArgument, Argument, CombinedResult> {
 
   type MatchingPredicate = Predicate<Argument>;
 
@@ -114,24 +114,22 @@ export function parseSwitch<
   return {
     if: $if,
     ...( kind === 'last' ? { else: $else } : {} )
-  } as ReturnType<ParseSwitch<Kind, HasArgument, Argument, CombinedResult>>;
+  } as ParseSwitch<Kind, HasArgument, Argument, CombinedResult>;
 
 };
 
-export type ParseSwitch<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = (
-  kind: Kind, hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
-) => {
+export type ParseSwitch<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
 
   if<P extends Predicate<Argument>>(predicate: P): 
-    ReturnType<ParseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>>;
+    ParseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>;
 
   if<P extends Predicate<Argument>, T extends MatchingTransform<P>>(predicate: P, transform: T):
-    ReturnType<PushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>>;
+    PushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>;
 
 } & ( Kind extends 'first' ? {} : {
 
   else<T extends MatchingTransform<(arg: Argument) => true>>(transform: T):
-    ReturnType<PushToStack<'last', HasArgument, Argument, (arg: Argument) => true, T, CombinedResult>>;
+    PushToStack<'last', HasArgument, Argument, (arg: Argument) => true, T, CombinedResult>;
 
 } );
 
@@ -148,7 +146,7 @@ export function parseTransform<
   predicate: P,
   switchStack: [ Predicate, Transform ][]
 // ) {
-): ReturnType<ParseTransform<Kind, HasArgument, Argument, P, CombinedResult>> { 
+): ParseTransform<Kind, HasArgument, Argument, P, CombinedResult> { 
   return {
 
     then: <T extends MatchingTransform<P>>(transform: T) => pushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>(
@@ -160,15 +158,13 @@ export function parseTransform<
       switchStack
     ),
 
-  } as ReturnType<ParseTransform<Kind, HasArgument, Argument, P, CombinedResult>>;
+  };
 }
 
-export type ParseTransform<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any> = (
-  kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, switchStack: [ Predicate, Transform ][]
-) => {
+export type ParseTransform<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any> = {
 
   then<T extends MatchingTransform<P>>(transform: T):
-    ReturnType<PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>>;
+    PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>;
 
 };
 
@@ -187,8 +183,7 @@ export function pushToStack<
   predicate: P,
   transform: T,
   switchStack: [ Predicate, Transform ][]
-// ) {
-): ReturnType<PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>> {
+): PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult> {
 
   switchStack.push([predicate, transform]);
 
@@ -200,17 +195,15 @@ export function pushToStack<
       : parseSwitch<undefined, HasArgument, Argument, CombinedResult>(
         undefined, hasArgument, argument, switchStack
       )
-  ) as ReturnType<PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>>;
+  ) as PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>;
 
 };
 
 export type PushToStack<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, T extends MatchingTransform<P>, CombinedResult extends any> = (
-  kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, transform: T, switchStack: [ Predicate, Transform ][]
-) => (
 
   Kind extends 'last'
-    ? ReturnType<Evaluate<HasArgument, Argument, CombinedResult>>
-    : ReturnType<ParseSwitch<undefined, HasArgument, Argument, CombinedResult>>
+    ? Evaluate<HasArgument, Argument, CombinedResult>
+    : ParseSwitch<undefined, HasArgument, Argument, CombinedResult>
 
 );
 
@@ -223,7 +216,7 @@ export function evaluate<
   argument: Argument,
   switchStack: [ Predicate, Transform ][]
 // ) {
-): ReturnType<Evaluate<HasArgument, Argument, CombinedResult>> {
+): Evaluate<HasArgument, Argument, CombinedResult> {
 
   function evaluateForArgument(argument: Argument): CombinedResult {
 
@@ -241,13 +234,11 @@ export function evaluate<
     hasArgument
       ? evaluateForArgument(argument)
       : evaluateForArgument
-  ) as ReturnType<Evaluate<HasArgument, Argument, CombinedResult>>;
+  ) as Evaluate<HasArgument, Argument, CombinedResult>;
 
 };
 
 export type Evaluate<HasArgument extends boolean, Argument extends any, CombinedResult extends any> = (
-  hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
-) => (
 
   HasArgument extends true
     ? CombinedResult
