@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { shouldNotBe } from "../shouldNotBe";
 import { is } from "./common/checkers";
-import { give } from "./common/transforms";
+import { give, then, to } from "./common/transforms";
 
 export type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded extends Base = Base> =
   IsTypeguard extends true
@@ -263,7 +263,6 @@ export function $if<Argument, Guarded extends Argument, TransformResult>(
   typeguard: Typeguard<Argument, Guarded>,
   transform: Transform<Guarded, TransformResult>
 ) {
-  type GuardedArgument = Guarded extends Argument ? Argument : never;
   return parseSwitch<'first', true, Argument, never>(
     'first',
     true,
@@ -272,10 +271,13 @@ export function $if<Argument, Guarded extends Argument, TransformResult>(
   ).if(typeguard, transform);
 };
 
+const castArray =
+  $if('something' as string | string[], is.array, give.map(to.string))
+  .else(give.array);
 
 const keyNames = 
   check('something' as string | string[] | object)
-    .if(is.array, give.map(give.string))
+    .if(is.array, give.map(to.string))
     .if(is.string, give.array)
     .if(is.object, give.keys)
     .else(shouldNotBe);
