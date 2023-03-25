@@ -114,7 +114,7 @@ export function parseSwitch<
 
 };
 
-export type ParseSwitch = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any>(
+export type ParseSwitch<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = (
   kind: Kind, hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
 ) => {
 
@@ -158,7 +158,7 @@ export function parseTransform<
   }
 }
 
-export type ParseTransform = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any>(
+export type ParseTransform<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any> = (
   kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, switchStack: [ Predicate, Transform ][]
 ) => {
 
@@ -207,7 +207,7 @@ export function pushToStack<
 
 };
 
-export type PushToStack = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, T extends MatchingTransform<P>, CombinedResult extends any>(
+export type PushToStack<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, T extends MatchingTransform<P>, CombinedResult extends any> = (
   kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, transform: T, switchStack: [ Predicate, Transform ][]
 ) => (
 
@@ -247,7 +247,7 @@ export function evaluate<
 
 };
 
-export type Evaluate = <HasArgument extends boolean, Argument extends any, CombinedResult extends any>(
+export type Evaluate<HasArgument extends boolean, Argument extends any, CombinedResult extends any> = (
   hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
 ) => (
 
