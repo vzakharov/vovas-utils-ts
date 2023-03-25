@@ -51,16 +51,16 @@ export type SwitchKind = 'first' | 'last' | undefined;
 export function parseSwitch<
   Kind extends SwitchKind, 
   HasArgument extends boolean, 
-  OriginalArgument extends any,
-  Argument extends any, 
-  CombinedResult extends any
+  OriginalArgument,
+  Argument, 
+  CombinedResult
 >(
   kind: Kind,
   hasArgument: HasArgument,
   argument: Argument | undefined,
   switchStack: [ Predicate, Transform ][]
 ) {
-  function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
+  function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
     predicate: Predicate<Argument, IsTypeguard, Guarded>,
     transform?: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
   ) {
@@ -85,7 +85,7 @@ export function parseSwitch<
   };
 
   // function $else<T extends MatchingTransform<typeof alwaysTrue>>(transform: T) {
-  function $else<TransformResult extends any>(
+  function $else<TransformResult>(
     transform: Transform<Argument, TransformResult>
   ) {
 
@@ -108,7 +108,7 @@ export function parseSwitch<
 
 };
 
-export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument extends any, Argument extends any, CombinedResult extends any> = {
+export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument, CombinedResult> = {
 
   if<Guarded extends Argument>(typeguard: Typeguard<Argument, Guarded>): 
     ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Exclude<Argument, Guarded>, CombinedResult>;
@@ -116,13 +116,13 @@ export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boole
   if(predicate: NonTypeguard<Argument>): 
     ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Argument, CombinedResult>;
 
-  if<Guarded extends Argument, TransformResult extends any>(
+  if<Guarded extends Argument, TransformResult>(
     typeguard: Typeguard<Argument, Guarded>,
     transform: Transform<Guarded, TransformResult>
   ):
     PushToStackOutput<Kind, HasArgument, OriginalArgument, Exclude<Argument, Guarded>, TransformResult, CombinedResult>;
   
-  if<TransformResult extends any>(
+  if<TransformResult>(
     predicate: NonTypeguard<Argument>,
     transform: Transform<Argument, TransformResult>
   ):
@@ -130,7 +130,7 @@ export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boole
 
 } & ( Kind extends 'first' ? {} : {
 
-  else<TransformResult extends any>(
+  else<TransformResult>(
     transform: Transform<Argument, TransformResult>
   ):
     PushToStackOutput<'last', HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
@@ -141,9 +141,9 @@ export function parseTransform<
   Kind extends SwitchKind,
   HasArgument extends boolean,
   OriginalArgument,
-  Argument extends any,
+  Argument,
   Narrowed extends Argument,
-  CombinedResult extends any
+  CombinedResult
 >(
   kind: Kind,
   hasArgument: HasArgument,
@@ -153,7 +153,7 @@ export function parseTransform<
 ) {
   return {
 
-    then: <TransformResult extends any>(transform: Transform<Argument, TransformResult>) => pushToStack(
+    then: <TransformResult>(transform: Transform<Argument, TransformResult>) => pushToStack(
       kind,
       hasArgument,
       argument,
@@ -164,8 +164,8 @@ export function parseTransform<
 
   } as ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Narrowed, CombinedResult>;
 }
-export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument extends any, Narrowed extends Argument, CombinedResult extends any> = {
-  then<TransformResult extends any>(
+export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument, Narrowed extends Argument, CombinedResult> = {
+  then<TransformResult>(
     transform: Transform<Argument, TransformResult>
   ):
     // PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
@@ -178,9 +178,9 @@ export function pushToStack<
   Kind extends SwitchKind,
   HasArgument extends boolean,
   OriginalArgument, 
-  Argument extends any,
-  TransformResult extends any,
-  CombinedResult extends any
+  Argument,
+  TransformResult,
+  CombinedResult
 >(
   kind: Kind,
   hasArgument: HasArgument,
@@ -204,7 +204,7 @@ export function pushToStack<
 
 };
 
-export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument extends any, TransformResult extends any, CombinedResult extends any> = (
+export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument, TransformResult, CombinedResult> = (
 
   Kind extends 'last'
     ? Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult | TransformResult>
@@ -215,8 +215,8 @@ export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boole
 export function evaluate<
   HasArgument extends boolean,
   OriginalArgument,
-  Argument extends any,
-  CombinedResult extends any
+  Argument,
+  CombinedResult
 >(
   hasArgument: HasArgument,
   argument: Argument,
@@ -243,7 +243,7 @@ export function evaluate<
 
 };
 
-export type Evaluate<HasArgument extends boolean, OriginalArgument, Argument extends any, CombinedResult extends any> = (
+export type Evaluate<HasArgument extends boolean, OriginalArgument, Argument, CombinedResult> = (
 
   HasArgument extends true
     ? CombinedResult
@@ -277,7 +277,7 @@ export function $if<Argument, TransformResult>(
   transform: Transform<Argument, TransformResult>
 ): PushToStackOutput<'first', true, Argument, Argument, TransformResult, never>;
 
-export function $if<Argument, IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
+export function $if<Argument, IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
   argument: Argument,
   predicate: Predicate<Argument, IsTypeguard, Guarded>,
   transform: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
