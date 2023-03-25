@@ -1,7 +1,8 @@
+import _ from "lodash";
 import { $throw, $thrower } from "../../$throw";
-import { shouldNotBe } from "../../shouldNotBe";
+import { compileTimeError, shouldNotBe } from "../../shouldNotBe";
 
-export const commonTransforms = {
+export const give = {
 
   // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
 
@@ -20,14 +21,34 @@ export const commonTransforms = {
   emptyString: $("" as const),
   emptyArray: $([] as const), 
   emptyObject: $({} as const),
+
+  string: (arg: any): string => arg.toString(),
+  array: <T>(arg: T): T[] => _.castArray(arg),
+  keys: (arg: any) => _.keys(arg),
+  json: (arg: any) => JSON.stringify(arg),
+
+  head: <T>(arg: T[]): T => {
+
+    console.log("Give h**d? Ha-ha, very funny. But just in case you mean the first element, here you go.")
+
+    return arg[0];
+
+  },
   
-  shouldNotBe,
+  compileTimeError,
 
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
 
   throw: $thrower,
+  map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
 
 };
+
+export const to = give;
+
+export type CommonTransforms = typeof give;
+
+export type CommonTransformKey = keyof CommonTransforms;
 
 export function $<T>(arg: T): (...args: any[]) => T {
   return () => arg;

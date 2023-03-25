@@ -1,7 +1,7 @@
 import _ from "lodash";
 import { shouldNotBe } from "../shouldNotBe";
 import { is } from "./common/checkers";
-import { give, then, to } from "./common/transforms";
+import { give, to } from "./common/transforms";
 
 export type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded extends Base = Base> =
   IsTypeguard extends true
@@ -61,16 +61,14 @@ export function parseSwitch<
 ) {
   function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
     predicate: Predicate<Argument, IsTypeguard, Guarded>,
-    transform?: Transform<Narrowed<Argument, IsTypeguard, Guarded>, TransformResult>
+    transform?: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
   ) {
 
-      type NarrowedArgument = Narrowed<Argument, IsTypeguard, Guarded>;
-      
       return transform
         ? pushToStack(
             kind,
             hasArgument,
-            argument as NarrowedArgument,
+            argument as PredicateOutput<Argument, IsTypeguard, Guarded>,
             predicate,
             transform,
             switchStack
@@ -259,27 +257,42 @@ export function check<Argument>(value: Argument) {
 };
 
 export function $if<Argument, Guarded extends Argument, TransformResult>(
-  value: Argument,
+  argument: Argument,
   typeguard: Typeguard<Argument, Guarded>,
   transform: Transform<Guarded, TransformResult>
+): PushToStackOutput<'first', true, Exclude<Argument, Guarded>, TransformResult, never>;
+
+export function $if<Argument, TransformResult>(
+  argument: Argument,
+  predicate: NonTypeguard<Argument>,
+  transform: Transform<Argument, TransformResult>
+): PushToStackOutput<'first', true, Argument, TransformResult, never>;
+
+export function $if<Argument, IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
+  argument: Argument,
+  predicate: Predicate<Argument, IsTypeguard, Guarded>,
+  transform: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
 ) {
-  return parseSwitch<'first', true, Argument, never>(
-    'first',
-    true,
-    value,
-    []
-  ).if(typeguard, transform);
+  return pushToStack(
+    'first' as const, true, argument as PredicateOutput<Argument, IsTypeguard, Guarded>, predicate, transform, []
+  )
 };
+
+// Tests:
 
 const castArray =
   $if('something' as string | string[], is.array, give.map(to.string))
   .else(give.array);
+
+const absoluteValue = 
+  $if(-5, x => x < 0, x => -x)
+  .else(x => x);
 
 const keyNames = 
   check('something' as string | string[] | object)
     .if(is.array, give.map(to.string))
     .if(is.string, give.array)
     .if(is.object, give.keys)
-    .else(shouldNotBe);
+    .else(give.compileTimeError);
 
 console.log(keyNames);

@@ -35,7 +35,9 @@ export const commonCheckers = {
   atMost: (sample: number) => (arg: number) => arg <= sample,
 
   like: <T extends object, U extends object>(sample: U) =>
-    ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U
+    ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
+  
+  anything: (...args: any[]): true => true,
 
 }
 
@@ -79,7 +81,9 @@ export const is = {
     atLeast: (sample: number) => not(commonCheckers.atLeast(sample)),
     atMost: (sample: number) => not(commonCheckers.atMost(sample)),
 
-    like: <U extends object>(sample: U) => not(commonCheckers.like(sample))
+    like: <U extends object>(sample: U) => not(commonCheckers.like(sample)),
+
+    anything: not(commonCheckers.anything),
 
   } satisfies CommonCheckerMap
   // TODO: Find a way to make the above work in TS without having to manually type it out.
