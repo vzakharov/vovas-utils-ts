@@ -51,6 +51,7 @@ export type SwitchKind = 'first' | 'last' | undefined;
 export function parseSwitch<
   Kind extends SwitchKind, 
   HasArgument extends boolean, 
+  OriginalArgument extends any,
   Argument extends any, 
   CombinedResult extends any
 >(
@@ -103,42 +104,43 @@ export function parseSwitch<
   return {
     if: $if,
     ...( kind === 'last' ? { else: $else } : {} )
-  } as ParseSwitchOutput<Kind, HasArgument, Argument, CombinedResult>;
+  } as ParseSwitchOutput<Kind, HasArgument, OriginalArgument, Argument, CombinedResult>;
 
 };
 
-export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
+export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument extends any, Argument extends any, CombinedResult extends any> = {
 
   if<Guarded extends Argument>(typeguard: Typeguard<Argument, Guarded>): 
-    ParseTransformOutput<Kind, HasArgument, Argument, Exclude<Argument, Guarded>, CombinedResult>;
+    ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Exclude<Argument, Guarded>, CombinedResult>;
 
   if(predicate: NonTypeguard<Argument>): 
-    ParseTransformOutput<Kind, HasArgument, Argument, Argument, CombinedResult>;
+    ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Argument, CombinedResult>;
 
   if<Guarded extends Argument, TransformResult extends any>(
     typeguard: Typeguard<Argument, Guarded>,
     transform: Transform<Guarded, TransformResult>
   ):
-    PushToStackOutput<Kind, HasArgument, Exclude<Argument, Guarded>, TransformResult, CombinedResult>;
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Exclude<Argument, Guarded>, TransformResult, CombinedResult>;
   
   if<TransformResult extends any>(
     predicate: NonTypeguard<Argument>,
     transform: Transform<Argument, TransformResult>
   ):
-    PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
 
 } & ( Kind extends 'first' ? {} : {
 
   else<TransformResult extends any>(
     transform: Transform<Argument, TransformResult>
   ):
-    PushToStackOutput<'last', HasArgument, Argument, TransformResult, CombinedResult>;
+    PushToStackOutput<'last', HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
 
 } );
 
 export function parseTransform<
   Kind extends SwitchKind,
   HasArgument extends boolean,
+  OriginalArgument,
   Argument extends any,
   Narrowed extends Argument,
   CombinedResult extends any
@@ -160,14 +162,14 @@ export function parseTransform<
       switchStack
     ),
 
-  } as ParseTransformOutput<Kind, HasArgument, Argument, Narrowed, CombinedResult>;
+  } as ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Narrowed, CombinedResult>;
 }
-export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, Narrowed extends Argument, CombinedResult extends any> = {
+export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument extends any, Narrowed extends Argument, CombinedResult extends any> = {
   then<TransformResult extends any>(
     transform: Transform<Argument, TransformResult>
   ):
     // PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
-    PushToStackOutput<Kind, HasArgument, Narrowed, TransformResult, CombinedResult>;
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Narrowed, TransformResult, CombinedResult>;
 
 };
 
@@ -175,6 +177,7 @@ export type ParseTransformOutput<Kind extends SwitchKind, HasArgument extends bo
 export function pushToStack<
   Kind extends SwitchKind,
   HasArgument extends boolean,
+  OriginalArgument, 
   Argument extends any,
   TransformResult extends any,
   CombinedResult extends any
@@ -197,20 +200,21 @@ export function pushToStack<
       : parseSwitch(
         undefined, hasArgument, argument, switchStack
       )
-  ) as PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
+  ) as PushToStackOutput<Kind, HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
 
 };
 
-export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, TransformResult extends any, CombinedResult extends any> = (
+export type PushToStackOutput<Kind extends SwitchKind, HasArgument extends boolean, OriginalArgument, Argument extends any, TransformResult extends any, CombinedResult extends any> = (
 
   Kind extends 'last'
-    ? Evaluate<HasArgument, Argument, CombinedResult | TransformResult>
-    : ParseSwitchOutput<undefined, HasArgument, Argument, CombinedResult | TransformResult>
+    ? Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult | TransformResult>
+    : ParseSwitchOutput<undefined, HasArgument, OriginalArgument, Argument, CombinedResult | TransformResult>
 
 );
 
 export function evaluate<
   HasArgument extends boolean,
+  OriginalArgument,
   Argument extends any,
   CombinedResult extends any
 >(
@@ -235,22 +239,22 @@ export function evaluate<
     hasArgument
       ? evaluateForArgument(argument)
       : evaluateForArgument
-  ) as Evaluate<HasArgument, Argument, CombinedResult>;
+  ) as Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult>;
 
 };
 
-export type Evaluate<HasArgument extends boolean, Argument extends any, CombinedResult extends any> = (
+export type Evaluate<HasArgument extends boolean, OriginalArgument, Argument extends any, CombinedResult extends any> = (
 
   HasArgument extends true
     ? CombinedResult
-    : (arg: Argument) => CombinedResult
+    : (arg: OriginalArgument) => CombinedResult
 
 );
 
 
-export function check<Argument>(): ParseSwitchOutput<'first', false, Argument, never>;
+export function check<Argument>(): ParseSwitchOutput<'first', false, Argument, Argument, never>;
 
-export function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, never>;
+export function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
 
 export function check<Argument>(argument?: Argument) {
   return parseSwitch(
@@ -265,13 +269,13 @@ export function $if<Argument, Guarded extends Argument, TransformResult>(
   argument: Argument,
   typeguard: Typeguard<Argument, Guarded>,
   transform: Transform<Guarded, TransformResult>
-): PushToStackOutput<'first', true, Exclude<Argument, Guarded>, TransformResult, never>;
+): PushToStackOutput<'first', true, Argument, Exclude<Argument, Guarded>, TransformResult, never>;
 
 export function $if<Argument, TransformResult>(
   argument: Argument,
   predicate: NonTypeguard<Argument>,
   transform: Transform<Argument, TransformResult>
-): PushToStackOutput<'first', true, Argument, TransformResult, never>;
+): PushToStackOutput<'first', true, Argument, Argument, TransformResult, never>;
 
 export function $if<Argument, IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
   argument: Argument,
