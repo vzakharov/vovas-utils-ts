@@ -22,7 +22,7 @@ export type TransformResult<Trfm extends Transform> =
     ? Result
     : never;
 
-export type Guarded<Base, IsTypeguard extends boolean, Guarded extends Base> =
+export type PredicateOutput<Base, IsTypeguard extends boolean, Guarded extends Base> =
   IsTypeguard extends true
     ? Guarded
     : Base;
@@ -111,16 +111,23 @@ export function parseSwitch<
 
 export type ParseSwitchOutput<Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any> = {
 
-  if<IsTypeguard extends boolean, Guarded extends Argument>(
-    predicate: Predicate<Argument, IsTypeguard, Guarded>
-  ): 
-    ParseTransformOutput<Kind, HasArgument, Argument, Narrowed<Argument, IsTypeguard, Guarded>, CombinedResult>;
+  if<Guarded extends Argument>(typeguard: Typeguard<Argument, Guarded>): 
+    ParseTransformOutput<Kind, HasArgument, Argument, Exclude<Argument, Guarded>, CombinedResult>;
 
-  if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
-    predicate: Predicate<Argument, IsTypeguard, Guarded>,
+  if(predicate: NonTypeguard<Argument>): 
+    ParseTransformOutput<Kind, HasArgument, Argument, Argument, CombinedResult>;
+
+  if<Guarded extends Argument, TransformResult extends any>(
+    typeguard: Typeguard<Argument, Guarded>,
     transform: Transform<Guarded, TransformResult>
   ):
-    PushToStackOutput<Kind, HasArgument, Narrowed<Argument, IsTypeguard, Guarded>, TransformResult, CombinedResult>;
+    PushToStackOutput<Kind, HasArgument, Exclude<Argument, Guarded>, TransformResult, CombinedResult>;
+  
+  if<TransformResult extends any>(
+    predicate: NonTypeguard<Argument>,
+    transform: Transform<Argument, TransformResult>
+  ):
+    PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
 
 } & ( Kind extends 'first' ? {} : {
 
@@ -242,8 +249,8 @@ export type Evaluate<HasArgument extends boolean, Argument extends any, Combined
 
 );
 
-function check<T>(value: T) {
-  return parseSwitch<'first', true, T, never>(
+export function check<Argument>(value: Argument) {
+  return parseSwitch<'first', true, Argument, never>(
     'first',
     true,
     value,
@@ -251,11 +258,26 @@ function check<T>(value: T) {
   );
 };
 
-const keyNames = 
-  check('key' as string | string[] | object)
-    .if(is.array, keys => keys.map(_.toString))
-    .if(is.string, key => [key])
-    .if(is.object, obj => Object.keys(obj))
-    .else(invalidArgument => { throw new Error(`Invalid argument ${invalidArgument}`) });
+export function $if<Argument, Guarded extends Argument, TransformResult>(
+  value: Argument,
+  typeguard: Typeguard<Argument, Guarded>,
+  transform: Transform<Guarded, TransformResult>
+) {
+  type GuardedArgument = Guarded extends Argument ? Argument : never;
+  return parseSwitch<'first', true, Argument, never>(
+    'first',
+    true,
+    value,
+    []
+  ).if(typeguard, transform);
+};
 
-let x: Narrowed<string | string[], true, string[]>; // string
+
+const keyNames = 
+  check('something' as string | string[] | object)
+    .if(is.array, give.map(give.string))
+    .if(is.string, give.array)
+    .if(is.object, give.keys)
+    .else(shouldNotBe);
+
+console.log(keyNames);
