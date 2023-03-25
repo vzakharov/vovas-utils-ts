@@ -1,4 +1,4 @@
-import { commonTransforms } from "../common/transforms";
+import { give } from "../common/transforms";
 
 export type Transform = (arg: any) => any;
 
@@ -12,7 +12,7 @@ export type TransformsTo<Tfrm extends Transform> =
     ? To
     : never;
 
-    export type CommonTransforms = typeof commonTransforms;
+    export type CommonTransforms = typeof give;
 
     export type CommonTransformsFor<ReceivedSoFar> = {
       [K in keyof CommonTransforms]: CommonTransforms[K] extends (arg: ReceivedSoFar) => any
