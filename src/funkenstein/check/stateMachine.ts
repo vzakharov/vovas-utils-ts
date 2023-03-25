@@ -74,7 +74,7 @@ export function parseSwitch<
   function $if<P extends MatchingPredicate, T extends MatchingTransform<P>>(predicate: P, transform?: T) {
       
       return transform
-        ? stack<Kind, HasArgument, Argument, P, T, CombinedResult>(
+        ? pushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>(
             kind,
             hasArgument,
             argument as NarrowedAfterPredicate<P>,
@@ -82,7 +82,7 @@ export function parseSwitch<
             transform,
             switchStack
           )
-        : parseTransform<Kind, HasArgument, Argument, P, CombinedResult>(
+        : parseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>(
             kind,
             hasArgument,
             argument as NarrowedAfterPredicate<P>,
@@ -96,7 +96,7 @@ export function parseSwitch<
 
     const alwaysTrue: (arg: Argument) => true = () => true;
 
-    return stack<'last', HasArgument, Argument, typeof alwaysTrue, T, CombinedResult>(
+    return pushToStack<'last', HasArgument, Argument, typeof alwaysTrue, T, CombinedResult>(
       'last',
       hasArgument,
       argument,
@@ -114,6 +114,23 @@ export function parseSwitch<
 
 };
 
+export type ParseSwitch = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, CombinedResult extends any>(
+  kind: Kind, hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
+) => {
+
+  if<P extends Predicate<Argument>>(predicate: P): 
+    ParseTransform<Kind, HasArgument, NarrowedAfterPredicate<P>, P, CombinedResult>;
+
+  if<P extends Predicate<Argument>, T extends MatchingTransform<P>>(predicate: P, transform: T):
+    PushToStack<Kind, HasArgument, NarrowedAfterPredicate<P>, P, T, CombinedResult>;
+
+} & ( Kind extends 'last' ? {
+
+  else<T extends MatchingTransform<(arg: Argument) => true>>(transform: T):
+    PushToStack<'last', HasArgument, Argument, (arg: Argument) => true, T, CombinedResult>;
+
+} : {} );
+
 export function parseTransform<
   Kind extends SwitchKind,
   HasArgument extends boolean,
@@ -129,7 +146,7 @@ export function parseTransform<
 ) { 
   return {
 
-    then: <T extends MatchingTransform<P>>(transform: T) => stack<Kind, HasArgument, Argument, P, T, CombinedResult>(
+    then: <T extends MatchingTransform<P>>(transform: T) => pushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>(
       kind,
       hasArgument,
       argument,
@@ -141,9 +158,17 @@ export function parseTransform<
   }
 }
 
+export type ParseTransform = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, CombinedResult extends any>(
+  kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, switchStack: [ Predicate, Transform ][]
+) => {
+
+  then<T extends MatchingTransform<P>>(transform: T):
+    PushToStack<Kind, HasArgument, Argument, P, T, CombinedResult>;
+
+};
 
 
-export function stack<
+export function pushToStack<
   Kind extends SwitchKind,
   HasArgument extends boolean,
   Argument extends any,
@@ -182,6 +207,16 @@ export function stack<
 
 };
 
+export type PushToStack = <Kind extends SwitchKind, HasArgument extends boolean, Argument extends any, P extends Predicate<Argument>, T extends MatchingTransform<P>, CombinedResult extends any>(
+  kind: Kind, hasArgument: HasArgument, argument: Argument, predicate: P, transform: T, switchStack: [ Predicate, Transform ][]
+) => (
+
+  Kind extends 'last'
+    ? Evaluate<HasArgument, Argument, CombinedResult>
+    : ParseSwitch<undefined, HasArgument, Argument, CombinedResult>
+
+);
+
 export function evaluate<
   HasArgument extends boolean,
   Argument extends any,
@@ -212,7 +247,15 @@ export function evaluate<
 
 };
 
-// }; }
+export type Evaluate = <HasArgument extends boolean, Argument extends any, CombinedResult extends any>(
+  hasArgument: HasArgument, argument: Argument, switchStack: [ Predicate, Transform ][]
+) => (
+
+  HasArgument extends true
+    ? CombinedResult
+    : (arg: Argument) => CombinedResult
+
+);
 
 function check<T>(value: T) {
   return parseSwitch<'first', true, T, never>(
