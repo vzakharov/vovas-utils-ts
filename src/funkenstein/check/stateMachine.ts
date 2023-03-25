@@ -265,6 +265,15 @@ export function check<Argument>(argument?: Argument) {
   );
 };
 
+export const transform = check;
+// An alias to make the code more readable for cases where we perform actual transformations, like:
+
+const switchCase =
+  transform<string>()
+    .if( string => !!string.match(/^[A-Z]*$/), to.lowerCase )
+    .if( string => !!string.match(/^[a-z]*$/), to.upperCase )
+    .else( give.error("Only fully uppercase or lowercase strings are allowed") );
+
 export function $if<Argument, Guarded extends Argument, TransformResult>(
   argument: Argument,
   typeguard: Typeguard<Argument, Guarded>,
@@ -311,6 +320,6 @@ const getKeyNames =
     .if(is.object, give.keys)
     .else(give.compileTimeError);
 
-const keyNames2 = getKeyNames('something' as string | string[] | object);
+const keyNames2 = getKeyNames({ this: 'is', an: 'object' }); // ['this', 'an']
 
 console.log(keyNames);

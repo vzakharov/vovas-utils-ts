@@ -10,6 +10,7 @@ export const give = {
   themselves: <T extends any[]>(arrayArg: T): T => arrayArg,
 
   $,
+  exactly: $,
 
   undefined: $(undefined as undefined),
   null: $(null as null),
@@ -27,6 +28,9 @@ export const give = {
   keys: (arg: any) => _.keys(arg),
   json: (arg: any) => JSON.stringify(arg),
 
+  lowerCase: (arg: string) => arg.toLowerCase(),
+  upperCase: (arg: string) => arg.toUpperCase(),
+
   head: <T>(arg: T[]): T => {
 
     console.log("Give h**d? Ha-ha, very funny. But just in case you mean the first element, here you go.")
@@ -40,6 +44,7 @@ export const give = {
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
 
   throw: $thrower,
+  error: $thrower,
   map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
 
 };
