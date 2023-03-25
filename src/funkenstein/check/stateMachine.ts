@@ -56,7 +56,7 @@ export function parseSwitch<
 >(
   kind: Kind,
   hasArgument: HasArgument,
-  argument: Argument,
+  argument: Argument | undefined,
   switchStack: [ Predicate, Transform ][]
 ) {
   function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult extends any>(
@@ -181,7 +181,7 @@ export function pushToStack<
 >(
   kind: Kind,
   hasArgument: HasArgument,
-  argument: Argument,
+  argument: Argument | undefined,
   predicate: Predicate,
   transform: Transform<Argument, TransformResult>,
   switchStack: [ Predicate, Transform ][]
@@ -247,11 +247,16 @@ export type Evaluate<HasArgument extends boolean, Argument extends any, Combined
 
 );
 
-export function check<Argument>(value: Argument) {
-  return parseSwitch<'first', true, Argument, never>(
+
+export function check<Argument>(): ParseSwitchOutput<'first', false, Argument, never>;
+
+export function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, never>;
+
+export function check<Argument>(argument?: Argument) {
+  return parseSwitch(
     'first',
-    true,
-    value,
+    !!argument,
+    argument,
     []
   );
 };
@@ -294,5 +299,14 @@ const keyNames =
     .if(is.string, give.array)
     .if(is.object, give.keys)
     .else(give.compileTimeError);
+
+const getKeyNames =
+  check<string | string[] | object>()
+    .if(is.array, give.map(to.string))
+    .if(is.string, give.array)
+    .if(is.object, give.keys)
+    .else(give.compileTimeError);
+
+const keyNames2 = getKeyNames('something' as string | string[] | object);
 
 console.log(keyNames);
