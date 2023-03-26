@@ -8,13 +8,13 @@ const testObject = {
   name: "apple",
 } as const;
 
-export type AliasesDefinition<Key extends string = string> = {
-  readonly [key in Key]?: readonly string[];
+export type AliasesDefinition<Key extends keyof any = keyof any> = {
+  readonly [key in Key]?: readonly string[] | string
 };
 
 const testDefinitions = {
-  type: ["kind"],
-  color: ["colour"],
+  type: ["kind", "variety"],
+  color: "colour",
 } as const;
 
 type TestDefinitions = typeof testDefinitions;
@@ -26,36 +26,80 @@ type TestDefinitions = typeof testDefinitions;
 // }
 
 type MapToUnion<T> = {
-  [key in keyof T]: T[key] extends readonly (infer U)[] ? U : never;
-}
+  [key in keyof T]: 
+    T[key] extends readonly (infer U)[] ?
+      U :
+      T[key] extends infer U ?
+        U :
+        never;
+};
+
+type TestMapToUnion = MapToUnion<TestDefinitions>;
 
 type FlattenToPropsUnion<T extends object> = T[keyof T];
 
 type AllPropsUnion<T> = FlattenToPropsUnion<MapToUnion<T>>;
 
-export type AliasedKeys<Definition extends AliasesDefinition> = AllPropsUnion<Definition>;
+export type AliasedKeys<Definition extends AliasesDefinition> = AllPropsUnion<Definition> & string;
 
 type TestAliasedKeys = AliasedKeys<TestDefinitions>;
 
 // TS Tooltip:
 // type TestAliasedKeys = "kind" | "colour"
 
-
-type AliasesFor<Object extends Record<string, any>, Aliases extends AliasesDefinition<Object>> = {
-  [key in AliasedKeys<Object, Aliases>]: Object[{
-    [K in keyof Aliases]: Aliases[K] extends readonly (key & string)[] ? K : never;
-  }[key]];
+type ReverseKeysValues<T extends Record<string, string>> = {
+  [Value in FlattenToPropsUnion<T>]: {
+    [Key in keyof T]: Value extends T[Key] ? Key : never;
+  }[keyof T];
 };
 
-let aliases: AliasesFor<typeof testObject, AliasesDefinition<typeof testObject>>; // should give: { kind: "fruit", colour: "red" }
+type TestReverseKeysValues = ReverseKeysValues<MapToUnion<TestDefinitions>>;
 
+// TS Tooltip:
+// type TestReverseKeysValues = {
+//   kind: "type";
+//   variety: "type";
+//   colour: "color";
+// }
 
-export type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<Object>> = Merge<
+type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = {
+  [key in AliasedKeys<Definition>]: 
+    MapToUnion<Definition> extends Record<string, string> ?
+      key extends keyof ReverseKeysValues<MapToUnion<Definition>> ?
+        ReverseKeysValues<MapToUnion<Definition>>[key] extends keyof Object ?
+          Object[ReverseKeysValues<MapToUnion<Definition>>[key]] :
+          never
+        : never
+      : never
+};
+
+type TestAliasesFor = AliasesFor<typeof testObject, TestDefinitions>;
+
+// TS Tooltip:
+// type TestAliasesFor = {
+//   kind: "fruit";
+//   variety: "fruit";
+//   colour: "red";
+// }
+
+export type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Merge<
   Object,
   AliasesFor<Object, Definition>
 >;
 
-export function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<Object>>(
+type TestAliasified = Aliasified<typeof testObject, TestDefinitions>;
+
+// TS Tooltip:
+// type TestAliasified = {
+//   type: "fruit";
+//   color: "red";
+//   name: "apple";
+//   kind: "fruit";
+//   variety: "fruit";
+//   colour: "red";
+// }
+
+export function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(
   object: Object,
   aliasesDefinition: Definition,
 ) {
@@ -70,4 +114,3 @@ export function aliasify<Object extends Record<string, any>, Definition extends 
   };
   return retypedObject;
 };
-
