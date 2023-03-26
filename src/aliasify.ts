@@ -42,23 +42,10 @@ export type Aliasified<Object extends Record<string, any>, Definition extends Al
   AliasesFor<Object, Definition>
 >;
 
-type TestAliasified = Aliasified<typeof testObject, TestDefinitions>;
-
-// TS Tooltip:
-// type TestAliasified = {
-//   type: "fruit";
-//   color: "red";
-//   name: "apple";
-//   kind: "fruit";
-//   variety: "fruit";
-//   colour: "red";
-// }
-
 export function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(
   object: Object,
   aliasesDefinition: Definition,
-) {
-  // Go through every key of the aliases definition and add these keys to the object, with respective values from the original object
+): Aliasified<Object, Definition> {
   const retypedObject = object as Aliasified<Object, Definition>;
   for ( const key in aliasesDefinition ) {
     const aliases = aliasesDefinition[key];
