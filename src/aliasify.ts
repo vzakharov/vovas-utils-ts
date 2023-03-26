@@ -1,29 +1,9 @@
 import _ from "lodash";
 import { Merge } from "./merge";
 
-
-const testObject = {
-  type: "fruit",
-  color: "red",
-  name: "apple",
-} as const;
-
 export type AliasesDefinition<Key extends keyof any = keyof any> = {
   readonly [key in Key]?: readonly string[] | string
 };
-
-const testDefinitions = {
-  type: ["kind", "variety"],
-  color: "colour",
-} as const;
-
-type TestDefinitions = typeof testDefinitions;
-
-// TS Tooltip:
-// type TestDefinitions = {
-//   readonly type: readonly ["kind"];
-//   readonly color: readonly ["colour"];
-// }
 
 type MapToUnion<T> = {
   [key in keyof T]: 
@@ -34,33 +14,17 @@ type MapToUnion<T> = {
         never;
 };
 
-type TestMapToUnion = MapToUnion<TestDefinitions>;
-
 type FlattenToPropsUnion<T extends object> = T[keyof T];
 
 type AllPropsUnion<T> = FlattenToPropsUnion<MapToUnion<T>>;
 
 export type AliasedKeys<Definition extends AliasesDefinition> = AllPropsUnion<Definition> & string;
 
-type TestAliasedKeys = AliasedKeys<TestDefinitions>;
-
-// TS Tooltip:
-// type TestAliasedKeys = "kind" | "colour"
-
 type ReverseKeysValues<T extends Record<string, string>> = {
   [Value in FlattenToPropsUnion<T>]: {
     [Key in keyof T]: Value extends T[Key] ? Key : never;
   }[keyof T];
 };
-
-type TestReverseKeysValues = ReverseKeysValues<MapToUnion<TestDefinitions>>;
-
-// TS Tooltip:
-// type TestReverseKeysValues = {
-//   kind: "type";
-//   variety: "type";
-//   colour: "color";
-// }
 
 type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = {
   [key in AliasedKeys<Definition>]: 
@@ -72,15 +36,6 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
         : never
       : never
 };
-
-type TestAliasesFor = AliasesFor<typeof testObject, TestDefinitions>;
-
-// TS Tooltip:
-// type TestAliasesFor = {
-//   kind: "fruit";
-//   variety: "fruit";
-//   colour: "red";
-// }
 
 export type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Merge<
   Object,
@@ -114,3 +69,12 @@ export function aliasify<Object extends Record<string, any>, Definition extends 
   };
   return retypedObject;
 };
+
+const testAliasified = aliasify({
+  type: "fruit",
+  color: 0x00ff00,
+  isFruit: true,
+} as const, {
+  type: ["kind", "variety"],
+  color: "colour",
+} as const);
