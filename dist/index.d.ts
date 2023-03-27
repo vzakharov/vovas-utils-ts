@@ -20,24 +20,14 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
 type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
-type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
-    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
-} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
-declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
-
 type MethodKey<T, Args extends any[], Result> = {
     [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
 }[keyof T];
-declare function wrap<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
-declare function wrap<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
-declare function wrap<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare function wrap<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare const $do: Merge<typeof wrap, {
-    replace: (regex: RegExp, replacement: string) => (string: string) => string;
-}>;
+declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare const wrap: typeof $do;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -367,7 +357,7 @@ declare const commonTransforms: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -429,7 +419,7 @@ declare const give: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -491,7 +481,7 @@ declare const to: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -598,6 +588,14 @@ declare function jsonClone<T>(obj: T): T & Jsonable;
 declare function jsonEqual<T>(a: T, b: T): boolean;
 declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
+
+type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
+    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
+} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
+declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
 
 interface INpmLsOutput {
     dependencies: Record<string, {
