@@ -1,13 +1,13 @@
-export function wrap<Function extends (arg1: any, arg2: any) => any>(
-  fn: Function,
-  arg2: Parameters<Function>[1]
-): ( target: Parameters<Function>[0] ) => ReturnType<Function>
+export function wrap<Arg1, Arg2, Result>(
+  fn: (arg1: Arg1, arg2: Arg2) => Result,
+  arg2: Arg2
+): ( target: Arg1 ) => Result
 
-export function wrap<Function extends (arg1: any, arg2: any, arg3: any) => any>(
-  fn: Function,
-  arg2: Parameters<Function>[1],
-  arg3: Parameters<Function>[2]
-): ( target: Parameters<Function>[0] ) => ReturnType<Function>
+export function wrap<Arg1, Arg2, Arg3, Result>(
+  fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result,
+  arg2: Arg2,
+  arg3: Arg3
+): ( target: Arg1 ) => Result
 
 export function wrap<Function extends (...args: any[]) => any>(
   fn: Function,
