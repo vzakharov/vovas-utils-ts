@@ -50,6 +50,9 @@ declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => 
 declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
 
 declare function $with<T, R>(arg: T, fn: (arg: T) => R): R;
+declare function $with<T, R>(arg: T): {
+    do: (fn: (arg: T) => R) => R;
+};
 
 type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
 type ChainableTypes<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = Pick<NonNullable<Parameters<Function>[ChainedParameterIndex]>, ChainedKeys[number]>;
@@ -135,6 +138,7 @@ declare const commonPredicates: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: <T_20 extends object, U extends object>(sample: U) => (arg: T_20) => arg is T_20 & U;
+    describing: (string: string) => (regex: RegExp) => boolean;
     anything: (...args: any[]) => true;
 };
 type CommonPredicates = typeof commonPredicates;
@@ -143,6 +147,37 @@ type CommonPredicateMap = {
     [K in CommonPredicateName]: any;
 };
 declare const is: {
+    string: <T_2>(arg: string | T_2) => arg is string;
+    number: <T_4>(arg: number | T_4) => arg is number;
+    boolean: <T_6>(arg: boolean | T_6) => arg is boolean;
+    undefined: <T>(arg: T | undefined) => arg is undefined;
+    object: <T_10>(arg: object | T_10) => arg is object;
+    function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
+    null: <T_1>(arg: T_1 | null) => arg is null;
+    emptyString: <T_3>(arg: "" | T_3) => arg is "";
+    zero: <T_5>(arg: 0 | T_5) => arg is 0;
+    false: <T_7>(arg: false | T_7) => arg is false;
+    true: <T_8>(arg: true | T_8) => arg is true;
+    array: <T_11>(arg: any[] | T_11) => arg is any[];
+    primitive: <T_12>(arg: Primitive | T_12) => arg is Primitive;
+    jsonable: <T_13>(arg: Jsonable | T_13) => arg is Jsonable;
+    jsonableObject: <T_14>(arg: JsonableObject | T_14) => arg is JsonableObject;
+    defined: <T_15>(arg: T_15 | undefined) => arg is T_15;
+    empty: <T_16 extends {
+        length: number;
+    }>(arg: T_16) => arg is T_16 & {
+        length: 0;
+    };
+    truthy: <T_17>(arg: false | "" | 0 | T_17 | null | undefined) => arg is T_17;
+    falsy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_19>(sample: T_19) => (arg: T_19) => boolean;
+    above: (sample: number) => (arg: number) => boolean;
+    below: (sample: number) => (arg: number) => boolean;
+    atLeast: (sample: number) => (arg: number) => boolean;
+    atMost: (sample: number) => (arg: number) => boolean;
+    like: <T_20 extends object, U extends object>(sample: U) => (arg: T_20) => arg is T_20 & U;
+    describing: (string: string) => (regex: RegExp) => boolean;
+    anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
         null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
@@ -173,38 +208,9 @@ declare const is: {
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+        describing: (string: string) => (regex: RegExp) => (arg: RegExp) => boolean;
         anything: (arg: any) => false;
     };
-    undefined: <T>(arg: T | undefined) => arg is undefined;
-    null: <T_1>(arg: T_1 | null) => arg is null;
-    string: <T_2>(arg: string | T_2) => arg is string;
-    emptyString: <T_3>(arg: "" | T_3) => arg is "";
-    number: <T_4>(arg: number | T_4) => arg is number;
-    zero: <T_5>(arg: 0 | T_5) => arg is 0;
-    boolean: <T_6>(arg: boolean | T_6) => arg is boolean;
-    false: <T_7>(arg: false | T_7) => arg is false;
-    true: <T_8>(arg: true | T_8) => arg is true;
-    function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
-    object: <T_10>(arg: object | T_10) => arg is object;
-    array: <T_11>(arg: any[] | T_11) => arg is any[];
-    primitive: <T_12>(arg: Primitive | T_12) => arg is Primitive;
-    jsonable: <T_13>(arg: Jsonable | T_13) => arg is Jsonable;
-    jsonableObject: <T_14>(arg: JsonableObject | T_14) => arg is JsonableObject;
-    defined: <T_15>(arg: T_15 | undefined) => arg is T_15;
-    empty: <T_16 extends {
-        length: number;
-    }>(arg: T_16) => arg is T_16 & {
-        length: 0;
-    };
-    truthy: <T_17>(arg: false | "" | 0 | T_17 | null | undefined) => arg is T_17;
-    falsy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_19>(sample: T_19) => (arg: T_19) => boolean;
-    above: (sample: number) => (arg: number) => boolean;
-    below: (sample: number) => (arg: number) => boolean;
-    atLeast: (sample: number) => (arg: number) => boolean;
-    atMost: (sample: number) => (arg: number) => boolean;
-    like: <T_20 extends object, U extends object>(sample: U) => (arg: T_20) => arg is T_20 & U;
-    anything: (...args: any[]) => true;
 };
 
 declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
@@ -263,6 +269,7 @@ declare const give: Aliasified<{
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    formatted: (format: string) => (insert: string) => string;
     first: <T_6>(arg: T_6[]) => T_6;
     last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;
@@ -324,6 +331,7 @@ declare const to: Aliasified<{
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    formatted: (format: string) => (insert: string) => string;
     first: <T_6>(arg: T_6[]) => T_6;
     last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;
@@ -385,6 +393,7 @@ declare const get: Aliasified<{
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    formatted: (format: string) => (insert: string) => string;
     first: <T_6>(arg: T_6[]) => T_6;
     last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;

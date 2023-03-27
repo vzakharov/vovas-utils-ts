@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, Primitive } from '../..';
+import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, merge, Primitive } from '../..';
 import { not } from './not';
 
 export const commonPredicates = {
@@ -34,6 +34,8 @@ export const commonPredicates = {
 
   like: <T extends object, U extends object>(sample: U) =>
     ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
+
+  describing: (string: string) => (regex: RegExp) => regex.test(string),
   
   anything: (...args: any[]): true => true,
 
@@ -48,62 +50,62 @@ export type CommonPredicateMap = {
 };
 
 
-export const is = {
-  ...commonPredicates,
+export const is = merge(commonPredicates, is => ({
   not: {
-    undefined: not(commonPredicates.undefined),
-    null: not(commonPredicates.null),
-    string: not(commonPredicates.string),
-    emptyString: not(commonPredicates.emptyString),
-    number: not(commonPredicates.number),
-    zero: not(commonPredicates.zero),
-    boolean: not(commonPredicates.boolean),
-    false: not(commonPredicates.false),
-    true: not(commonPredicates.true),
-    function: not(commonPredicates.function),
-    object: not(commonPredicates.object),
-    array: not(commonPredicates.array),
+    undefined: not(is.undefined),
+    null: not(is.null),
+    string: not(is.string),
+    emptyString: not(is.emptyString),
+    number: not(is.number),
+    zero: not(is.zero),
+    boolean: not(is.boolean),
+    false: not(is.false),
+    true: not(is.true),
+    function: not(is.function),
+    object: not(is.object),
+    array: not(is.array),
 
-    primitive: not(commonPredicates.primitive),
-    jsonable: not(commonPredicates.jsonable),
-    jsonableObject: not(commonPredicates.jsonableObject),
+    primitive: not(is.primitive),
+    jsonable: not(is.jsonable),
+    jsonableObject: not(is.jsonableObject),
 
-    defined: not(commonPredicates.defined),
-    empty: not(commonPredicates.empty),
-    truthy: not(commonPredicates.truthy),
-    falsy: not(commonPredicates.falsy),
+    defined: not(is.defined),
+    empty: not(is.empty),
+    truthy: not(is.truthy),
+    falsy: not(is.falsy),
 
-    exactly: <T>(sample: T) => not(commonPredicates.exactly(sample)),
-    above: (sample: number) => not(commonPredicates.above(sample)),
-    below: (sample: number) => not(commonPredicates.below(sample)),
-    atLeast: (sample: number) => not(commonPredicates.atLeast(sample)),
-    atMost: (sample: number) => not(commonPredicates.atMost(sample)),
+    exactly: <T>(sample: T) => not(is.exactly(sample)),
+    above: (sample: number) => not(is.above(sample)),
+    below: (sample: number) => not(is.below(sample)),
+    atLeast: (sample: number) => not(is.atLeast(sample)),
+    atMost: (sample: number) => not(is.atMost(sample)),
 
-    like: <U extends object>(sample: U) => not(commonPredicates.like(sample)),
+    like: <U extends object>(sample: U) => not(is.like(sample)),
+    describing: (string: string) => (regex: RegExp) => not(is.describing(string)),
 
-    anything: not(commonPredicates.anything),
+    anything: not(is.anything),
 
-  } satisfies CommonPredicateMap
+  }
   // TODO: Find a way to make the above work in TS without having to manually type it out.
-}
+})) satisfies CommonPredicates & { not: CommonPredicateMap };
 
 // Tests:
-// function test(x: number | null) {
+function test(x: number | null) {
 
-//   if ( is.null(x) ) {
-//     x; // null
-//   } else {
-//     x; // number
-//   }
+  if ( is.null(x) ) {
+    x; // null
+  } else {
+    x; // number
+  }
 
-//   if ( not(is.null)(x) ) {
-//     x; // number
-//   } else {
-//     x; // null
-//   }
+  if ( not(is.null)(x) ) {
+    x; // number
+  } else {
+    x; // null
+  }
 
-//   if ( is.not.null(x) ) {
-//     x; // number
-//   }
+  if ( is.not.null(x) ) {
+    x; // number
+  }
 
-// }
+}

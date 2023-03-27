@@ -42,7 +42,9 @@ function $try(fn, fallback = $throw, finallyCallback) {
 }
 
 function $with(arg, fn) {
-  return fn(arg);
+  return typeof fn !== "undefined" ? fn(arg) : {
+    do: (fn2) => fn2(arg)
+  };
 }
 
 function isPrimitive(v) {
@@ -213,40 +215,41 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: (sample) => (arg) => _.isMatch(arg, sample),
+  describing: (string) => (regex) => regex.test(string),
   anything: (...args) => true
 };
-const is = {
-  ...commonPredicates,
+const is = merge(commonPredicates, (is2) => ({
   not: {
-    undefined: not(commonPredicates.undefined),
-    null: not(commonPredicates.null),
-    string: not(commonPredicates.string),
-    emptyString: not(commonPredicates.emptyString),
-    number: not(commonPredicates.number),
-    zero: not(commonPredicates.zero),
-    boolean: not(commonPredicates.boolean),
-    false: not(commonPredicates.false),
-    true: not(commonPredicates.true),
-    function: not(commonPredicates.function),
-    object: not(commonPredicates.object),
-    array: not(commonPredicates.array),
-    primitive: not(commonPredicates.primitive),
-    jsonable: not(commonPredicates.jsonable),
-    jsonableObject: not(commonPredicates.jsonableObject),
-    defined: not(commonPredicates.defined),
-    empty: not(commonPredicates.empty),
-    truthy: not(commonPredicates.truthy),
-    falsy: not(commonPredicates.falsy),
-    exactly: (sample) => not(commonPredicates.exactly(sample)),
-    above: (sample) => not(commonPredicates.above(sample)),
-    below: (sample) => not(commonPredicates.below(sample)),
-    atLeast: (sample) => not(commonPredicates.atLeast(sample)),
-    atMost: (sample) => not(commonPredicates.atMost(sample)),
-    like: (sample) => not(commonPredicates.like(sample)),
-    anything: not(commonPredicates.anything)
+    undefined: not(is2.undefined),
+    null: not(is2.null),
+    string: not(is2.string),
+    emptyString: not(is2.emptyString),
+    number: not(is2.number),
+    zero: not(is2.zero),
+    boolean: not(is2.boolean),
+    false: not(is2.false),
+    true: not(is2.true),
+    function: not(is2.function),
+    object: not(is2.object),
+    array: not(is2.array),
+    primitive: not(is2.primitive),
+    jsonable: not(is2.jsonable),
+    jsonableObject: not(is2.jsonableObject),
+    defined: not(is2.defined),
+    empty: not(is2.empty),
+    truthy: not(is2.truthy),
+    falsy: not(is2.falsy),
+    exactly: (sample) => not(is2.exactly(sample)),
+    above: (sample) => not(is2.above(sample)),
+    below: (sample) => not(is2.below(sample)),
+    atLeast: (sample) => not(is2.atLeast(sample)),
+    atMost: (sample) => not(is2.atMost(sample)),
+    like: (sample) => not(is2.like(sample)),
+    describing: (string) => (regex) => not(is2.describing(string)),
+    anything: not(is2.anything)
   }
   // TODO: Find a way to make the above work in TS without having to manually type it out.
-};
+}));
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -302,6 +305,7 @@ const give = aliasify({
   snakeCase: (arg) => _.snakeCase(arg),
   kebabCase: (arg) => _.kebabCase(arg),
   startCase: (arg) => _.startCase(arg),
+  formatted: (format) => (insert) => format.replace(/(?<!\\)%s/g, insert),
   first: (arg) => arg[0],
   last: (arg) => arg[arg.length - 1],
   prop: getProp,

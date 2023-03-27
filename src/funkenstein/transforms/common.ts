@@ -46,6 +46,8 @@ export const give = aliasify({
   kebabCase: (arg: string) => _.kebabCase(arg),
   startCase: (arg: string) => _.startCase(arg),
 
+  formatted: (format: string) => (insert: string) => format.replace(/(?<!\\)%s/g, insert),
+
   first: <T>(arg: T[]): T => arg[0],
   last: <T>(arg: T[]): T => arg[arg.length - 1],
 
@@ -59,6 +61,7 @@ export const give = aliasify({
 
   mapped: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
   valueMapped: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
+
   wrapped: $do
 
 }, {
