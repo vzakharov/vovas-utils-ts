@@ -215,6 +215,7 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: (sample) => (arg) => _.isMatch(arg, sample),
+  matching: (regex) => (string) => regex.test(string),
   describing: (string) => (regex) => regex.test(string),
   anything: (...args) => true
 };
@@ -245,7 +246,8 @@ const is = merge(commonPredicates, (is2) => ({
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
     like: (sample) => not(is2.like(sample)),
-    describing: (string) => (regex) => not(is2.describing(string)),
+    matching: (regex) => not(is2.matching(regex)),
+    describing: (string) => not(is2.describing(string)),
     anything: not(is2.anything)
   }
   // TODO: Find a way to make the above work in TS without having to manually type it out.

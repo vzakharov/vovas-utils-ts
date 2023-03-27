@@ -35,6 +35,7 @@ export const commonPredicates = {
   like: <T extends object, U extends object>(sample: U) =>
     ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
 
+  matching: (regex: RegExp) => (string: string) => regex.test(string),
   describing: (string: string) => (regex: RegExp) => regex.test(string),
   
   anything: (...args: any[]): true => true,
@@ -81,7 +82,9 @@ export const is = merge(commonPredicates, is => ({
     atMost: (sample: number) => not(is.atMost(sample)),
 
     like: <U extends object>(sample: U) => not(is.like(sample)),
-    describing: (string: string) => (regex: RegExp) => not(is.describing(string)),
+
+    matching: (regex: RegExp) => not(is.matching(regex)),
+    describing: (string: string) => not(is.describing(string)),
 
     anything: not(is.anything),
 
