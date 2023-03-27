@@ -238,10 +238,72 @@ declare function getProp<T extends object>(key: keyof T): (obj: T) => T[keyof T]
 
 declare function compileTimeError(item: never): never;
 
+declare const commonTransforms: Aliasified<{
+    itself: <T>(arg: T) => T;
+    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
+    $: typeof give$;
+    undefined: (...args: any[]) => undefined;
+    null: (...args: any[]) => null;
+    true: (...args: any[]) => true;
+    false: (...args: any[]) => false;
+    NaN: (...args: any[]) => number;
+    Infinity: (...args: any[]) => number;
+    zero: (...args: any[]) => 0;
+    emptyString: (...args: any[]) => "";
+    emptyArray: (...args: any[]) => readonly [];
+    emptyObject: (...args: any[]) => {};
+    string: <T_2 extends {
+        toString(): string;
+    }>(arg: T_2) => string;
+    boolean: <T_3>(arg: T_3) => boolean;
+    number: <T_4>(arg: T_4) => number;
+    array: <T_5>(arg: T_5) => T_5[];
+    keys: (arg: object) => string[];
+    json: (arg: Jsonable) => string;
+    yaml: (arg: Jsonable) => string;
+    parsedJson: (arg: string) => Jsonable;
+    parsedYaml: (arg: string) => Jsonable;
+    lowerCase: (arg: string) => string;
+    upperCase: (arg: string) => string;
+    camelCase: (arg: string) => string;
+    snakeCase: (arg: string) => string;
+    kebabCase: (arg: string) => string;
+    startCase: (arg: string) => string;
+    formatted: (format: string) => (insert: string) => string;
+    first: <T_6>(arg: T_6[]) => T_6;
+    last: <T_7>(arg: T_7[]) => T_7;
+    prop: typeof getProp;
+    compileTimeError: typeof compileTimeError;
+    error: typeof $thrower;
+    mapped: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
+    valueMapped: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
+        [key: string]: T_9;
+    }) => {
+        [key: string]: R_1;
+    };
+    wrapped: typeof $do;
+}, {
+    readonly $: readonly ["exactly", "value", "literal"];
+    readonly NaN: readonly ["nan", "notANumber"];
+    readonly Infinity: "infinity";
+    readonly zero: "0";
+    readonly emptyString: "";
+    readonly json: "JSON";
+    readonly yaml: "YAML";
+    readonly parsedJson: readonly ["unjson", "unJSON", "parsedJSON"];
+    readonly parsedYaml: readonly ["unyaml", "unYAML", "parsedYAML"];
+    readonly lowerCase: "lowercase";
+    readonly upperCase: readonly ["UPPERCASE", "ALLCAPS"];
+    readonly snakeCase: "snake_case";
+    readonly kebabCase: "kebab-case";
+    readonly startCase: "Start Case";
+    readonly first: readonly ["firstItem", "head"];
+    readonly last: readonly ["lastItem", "tail"];
+}>;
 declare const give: Aliasified<{
     itself: <T>(arg: T) => T;
     themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
-    $: typeof $;
+    $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
     true: (...args: any[]) => true;
@@ -303,7 +365,7 @@ declare const give: Aliasified<{
 declare const to: Aliasified<{
     itself: <T>(arg: T) => T;
     themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
-    $: typeof $;
+    $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
     true: (...args: any[]) => true;
@@ -362,71 +424,9 @@ declare const to: Aliasified<{
     readonly first: readonly ["firstItem", "head"];
     readonly last: readonly ["lastItem", "tail"];
 }>;
-declare const get: Aliasified<{
-    itself: <T>(arg: T) => T;
-    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
-    $: typeof $;
-    undefined: (...args: any[]) => undefined;
-    null: (...args: any[]) => null;
-    true: (...args: any[]) => true;
-    false: (...args: any[]) => false;
-    NaN: (...args: any[]) => number;
-    Infinity: (...args: any[]) => number;
-    zero: (...args: any[]) => 0;
-    emptyString: (...args: any[]) => "";
-    emptyArray: (...args: any[]) => readonly [];
-    emptyObject: (...args: any[]) => {};
-    string: <T_2 extends {
-        toString(): string;
-    }>(arg: T_2) => string;
-    boolean: <T_3>(arg: T_3) => boolean;
-    number: <T_4>(arg: T_4) => number;
-    array: <T_5>(arg: T_5) => T_5[];
-    keys: (arg: object) => string[];
-    json: (arg: Jsonable) => string;
-    yaml: (arg: Jsonable) => string;
-    parsedJson: (arg: string) => Jsonable;
-    parsedYaml: (arg: string) => Jsonable;
-    lowerCase: (arg: string) => string;
-    upperCase: (arg: string) => string;
-    camelCase: (arg: string) => string;
-    snakeCase: (arg: string) => string;
-    kebabCase: (arg: string) => string;
-    startCase: (arg: string) => string;
-    formatted: (format: string) => (insert: string) => string;
-    first: <T_6>(arg: T_6[]) => T_6;
-    last: <T_7>(arg: T_7[]) => T_7;
-    prop: typeof getProp;
-    compileTimeError: typeof compileTimeError;
-    error: typeof $thrower;
-    mapped: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
-    valueMapped: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
-        [key: string]: T_9;
-    }) => {
-        [key: string]: R_1;
-    };
-    wrapped: typeof $do;
-}, {
-    readonly $: readonly ["exactly", "value", "literal"];
-    readonly NaN: readonly ["nan", "notANumber"];
-    readonly Infinity: "infinity";
-    readonly zero: "0";
-    readonly emptyString: "";
-    readonly json: "JSON";
-    readonly yaml: "YAML";
-    readonly parsedJson: readonly ["unjson", "unJSON", "parsedJSON"];
-    readonly parsedYaml: readonly ["unyaml", "unYAML", "parsedYAML"];
-    readonly lowerCase: "lowercase";
-    readonly upperCase: readonly ["UPPERCASE", "ALLCAPS"];
-    readonly snakeCase: "snake_case";
-    readonly kebabCase: "kebab-case";
-    readonly startCase: "Start Case";
-    readonly first: readonly ["firstItem", "head"];
-    readonly last: readonly ["lastItem", "tail"];
-}>;
-type CommonTransforms = typeof give;
+type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
-declare function $<T>(arg: T): (...args: any[]) => T;
+declare function give$<T>(arg: T): (...args: any[]) => T;
 
 interface CreateEnvResult<T> {
     env: T;
@@ -565,4 +565,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

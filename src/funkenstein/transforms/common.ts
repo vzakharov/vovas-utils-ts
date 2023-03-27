@@ -1,29 +1,29 @@
 import yaml from "js-yaml";
 import _ from "lodash";
 import { $thrower } from "../$throw";
-import { aliasify, Jsonable, $do } from "../..";
+import { aliasify, Jsonable, $do, merge } from "../..";
 import { getProp } from "./getProp";
 import { compileTimeError } from "./compileTimeError";
 
-export const give = aliasify({
+export const commonTransforms = aliasify({
 
   // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
 
   itself: <T>(arg: T): T => arg,
   themselves: <T extends any[]>(arrayArg: T): T => arrayArg,
 
-  $,
+  $: give$,
 
-  undefined: $(undefined as undefined),
-  null: $(null as null),
-  true: $(true as const),
-  false: $(false as const),
-  NaN: $(NaN),
-  Infinity: $(Infinity),
-  zero: $(0 as const),
-  emptyString: $("" as const),
-  emptyArray: $([] as const), 
-  emptyObject: $({} as const),
+  undefined: give$(undefined as undefined),
+  null: give$(null as null),
+  true: give$(true as const),
+  false: give$(false as const),
+  NaN: give$(NaN),
+  Infinity: give$(Infinity),
+  zero: give$(0 as const),
+  emptyString: give$("" as const),
+  emptyArray: give$([] as const), 
+  emptyObject: give$({} as const),
 
   string: <
     T extends { toString(): string}
@@ -87,13 +87,13 @@ export const give = aliasify({
 
 } as const );
 
-export const to = give;
-export const get = give;
+export const give = commonTransforms;
+export const to = commonTransforms;
 
-export type CommonTransforms = typeof give;
+export type CommonTransforms = typeof commonTransforms;
 
 export type CommonTransformKey = keyof CommonTransforms;
 
-export function $<T>(arg: T): (...args: any[]) => T {
+export function give$<T>(arg: T): (...args: any[]) => T {
   return () => arg;
 }

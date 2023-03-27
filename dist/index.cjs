@@ -277,21 +277,21 @@ function getProp(key) {
   return (obj) => obj[key];
 }
 
-const give = aliasify({
+const commonTransforms = aliasify({
   // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
   itself: (arg) => arg,
   themselves: (arrayArg) => arrayArg,
-  $,
-  undefined: $(void 0),
-  null: $(null),
-  true: $(true),
-  false: $(false),
-  NaN: $(NaN),
-  Infinity: $(Infinity),
-  zero: $(0),
-  emptyString: $(""),
-  emptyArray: $([]),
-  emptyObject: $({}),
+  $: give$,
+  undefined: give$(void 0),
+  null: give$(null),
+  true: give$(true),
+  false: give$(false),
+  NaN: give$(NaN),
+  Infinity: give$(Infinity),
+  zero: give$(0),
+  emptyString: give$(""),
+  emptyArray: give$([]),
+  emptyObject: give$({}),
   string: (arg) => arg.toString(),
   boolean: (arg) => !!arg,
   number: (arg) => Number(arg),
@@ -335,9 +335,9 @@ const give = aliasify({
   first: ["firstItem", "head"],
   last: ["lastItem", "tail"]
 });
-const to = give;
-const get = give;
-function $(arg) {
+const give = commonTransforms;
+const to = commonTransforms;
+function give$(arg) {
   return () => arg;
 }
 
@@ -690,7 +690,6 @@ function isTyped(type) {
   };
 }
 
-exports.$ = $;
 exports.$as = $as;
 exports.$do = $do;
 exports.$if = $if;
@@ -708,6 +707,7 @@ exports.both = both;
 exports.chainified = chainified;
 exports.check = check;
 exports.commonPredicates = commonPredicates;
+exports.commonTransforms = commonTransforms;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;
@@ -719,10 +719,10 @@ exports.envKeys = envKeys;
 exports.evaluate = evaluate;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
-exports.get = get;
 exports.getNpmLinks = getNpmLinks;
 exports.getProp = getProp;
 exports.give = give;
+exports.give$ = give$;
 exports.go = go;
 exports.goer = goer;
 exports.has = has;
