@@ -252,6 +252,8 @@ const is = merge(commonPredicates, (is2) => ({
   }
   // TODO: Find a way to make the above work in TS without having to manually type it out.
 }));
+const isnt = is.not;
+const aint = is.not;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -698,6 +700,7 @@ exports.$thrower = $thrower;
 exports.$try = $try;
 exports.$with = $with;
 exports.Resolvable = Resolvable;
+exports.aint = aint;
 exports.aliasify = aliasify;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
@@ -732,6 +735,7 @@ exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
+exports.isnt = isnt;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;

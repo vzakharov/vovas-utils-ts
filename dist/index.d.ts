@@ -212,6 +212,72 @@ declare const is: {
         anything: (arg: any) => false;
     };
 };
+declare const isnt: {
+    undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
+    null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
+    string: <T_2>(arg: string | T_2) => arg is Exclude<T_2, string>;
+    emptyString: <T_3>(arg: "" | T_3) => arg is Exclude<T_3, "">;
+    number: <T_4>(arg: number | T_4) => arg is Exclude<T_4, number>;
+    zero: <T_5>(arg: 0 | T_5) => arg is Exclude<T_5, 0>;
+    boolean: <T_6>(arg: boolean | T_6) => arg is Exclude<T_6, boolean>;
+    false: <T_7>(arg: false | T_7) => arg is Exclude<T_7, false>;
+    true: <T_8>(arg: true | T_8) => arg is Exclude<T_8, true>;
+    function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is Exclude<T_9, (...args: any[]) => any>;
+    object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
+    array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
+    primitive: <T_12>(arg: Primitive | T_12) => arg is Exclude<T_12, Primitive>;
+    jsonable: <T_13>(arg: Jsonable | T_13) => arg is Exclude<T_13, Jsonable>;
+    jsonableObject: <T_14>(arg: JsonableObject | T_14) => arg is Exclude<T_14, JsonableObject>;
+    defined: <T_15>(arg: T_15 | undefined) => arg is Exclude<undefined, T_15> | Exclude<T_15, T_15>;
+    empty: <T_16 extends {
+        length: number;
+    }>(arg: T_16) => arg is Exclude<T_16, T_16 & {
+        length: 0;
+    }>;
+    truthy: <T_17>(arg: false | "" | 0 | T_17 | null | undefined) => arg is Exclude<undefined, T_17> | Exclude<null, T_17> | Exclude<false, T_17> | Exclude<"", T_17> | Exclude<0, T_17> | Exclude<T_17, T_17>;
+    falsy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<T_18, false | "" | 0 | null | undefined>;
+    exactly: <T_19>(sample: T_19) => (arg: T_19) => boolean;
+    above: (sample: number) => (arg: number) => boolean;
+    below: (sample: number) => (arg: number) => boolean;
+    atLeast: (sample: number) => (arg: number) => boolean;
+    atMost: (sample: number) => (arg: number) => boolean;
+    like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+    describing: (string: string) => (regex: RegExp) => (arg: RegExp) => boolean;
+    anything: (arg: any) => false;
+};
+declare const aint: {
+    undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
+    null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
+    string: <T_2>(arg: string | T_2) => arg is Exclude<T_2, string>;
+    emptyString: <T_3>(arg: "" | T_3) => arg is Exclude<T_3, "">;
+    number: <T_4>(arg: number | T_4) => arg is Exclude<T_4, number>;
+    zero: <T_5>(arg: 0 | T_5) => arg is Exclude<T_5, 0>;
+    boolean: <T_6>(arg: boolean | T_6) => arg is Exclude<T_6, boolean>;
+    false: <T_7>(arg: false | T_7) => arg is Exclude<T_7, false>;
+    true: <T_8>(arg: true | T_8) => arg is Exclude<T_8, true>;
+    function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is Exclude<T_9, (...args: any[]) => any>;
+    object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
+    array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
+    primitive: <T_12>(arg: Primitive | T_12) => arg is Exclude<T_12, Primitive>;
+    jsonable: <T_13>(arg: Jsonable | T_13) => arg is Exclude<T_13, Jsonable>;
+    jsonableObject: <T_14>(arg: JsonableObject | T_14) => arg is Exclude<T_14, JsonableObject>;
+    defined: <T_15>(arg: T_15 | undefined) => arg is Exclude<undefined, T_15> | Exclude<T_15, T_15>;
+    empty: <T_16 extends {
+        length: number;
+    }>(arg: T_16) => arg is Exclude<T_16, T_16 & {
+        length: 0;
+    }>;
+    truthy: <T_17>(arg: false | "" | 0 | T_17 | null | undefined) => arg is Exclude<undefined, T_17> | Exclude<null, T_17> | Exclude<false, T_17> | Exclude<"", T_17> | Exclude<0, T_17> | Exclude<T_17, T_17>;
+    falsy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<T_18, false | "" | 0 | null | undefined>;
+    exactly: <T_19>(sample: T_19) => (arg: T_19) => boolean;
+    above: (sample: number) => (arg: number) => boolean;
+    below: (sample: number) => (arg: number) => boolean;
+    atLeast: (sample: number) => (arg: number) => boolean;
+    atMost: (sample: number) => (arg: number) => boolean;
+    like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+    describing: (string: string) => (regex: RegExp) => (arg: RegExp) => boolean;
+    anything: (arg: any) => false;
+};
 
 declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
 
@@ -565,4 +631,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

@@ -89,23 +89,26 @@ export const is = merge(commonPredicates, is => ({
   // TODO: Find a way to make the above work in TS without having to manually type it out.
 })) satisfies CommonPredicates & { not: CommonPredicateMap };
 
+export const isnt = is.not;
+export const aint = is.not; // Alias
+
 // Tests:
-function test(x: number | null) {
+// function test(x: number | null) {
 
-  if ( is.null(x) ) {
-    x; // null
-  } else {
-    x; // number
-  }
+//   if ( is.null(x) ) {
+//     x; // null
+//   } else {
+//     x; // number
+//   }
 
-  if ( not(is.null)(x) ) {
-    x; // number
-  } else {
-    x; // null
-  }
+//   if ( not(is.null)(x) ) {
+//     x; // number
+//   } else {
+//     x; // null
+//   }
 
-  if ( is.not.null(x) ) {
-    x; // number
-  }
+//   if ( is.not.null(x) ) {
+//     x; // number
+//   }
 
-}
+// }
