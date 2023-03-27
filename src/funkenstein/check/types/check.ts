@@ -3,7 +3,7 @@ import { Checker, IsTypeguard, GuardedType } from "./checkers";
 import { Transformable } from "./transformable";
 import { CommonTransformResultsFor, Transform } from "./transforms";
 
-export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
+export interface Check<ReceivedSoFar, ReturnedSoFar> {
 
   if: {
 
@@ -12,12 +12,11 @@ export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
       Trfm extends Transform
     >
     (checker: Chkr, transform: Trfm):
-      Check<
+      NextCheck<
         IsTypeguard<Chkr> extends true
           ? Exclude<ReceivedSoFar, GuardedType<Chkr>>
           : ReceivedSoFar,
-        ReturnedSoFar | ReturnType<Trfm>,
-        false
+        ReturnedSoFar | ReturnType<Trfm>
       >;
 
   } & {
@@ -52,18 +51,11 @@ export type Check<ReceivedSoFar, ReturnedSoFar, IsRoot extends boolean> = {
           : never;
 
   }
+};
 
-} & IsRoot extends true ? {} : {
 
-  // else: {
+export interface NextCheck<ReceivedSoFar, ReturnedSoFar> extends Check<ReceivedSoFar, ReturnedSoFar> {
 
-  //   <
-  //     Trfm extends Transform<ReceivedSoFar, any>
-  //   >
-  //   (transform: Trfm): ReturnedSoFar | ReturnType<Trfm>;
-
-  // } & CommonTransformResultsFor<ReceivedSoFar>
-
-  else: Transformable<ReceivedSoFar, ReturnedSoFar, true>;
-
+  else: Transformable<ReceivedSoFar, ReturnedSoFar, true>
+  
 };

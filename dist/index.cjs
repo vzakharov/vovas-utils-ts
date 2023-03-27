@@ -8,6 +8,19 @@ const os = require('os');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
+function aliasify(object, aliasesDefinition) {
+  const retypedObject = object;
+  for (const key in aliasesDefinition) {
+    const aliases = aliasesDefinition[key];
+    if (!aliases)
+      continue;
+    for (const alias of aliases) {
+      retypedObject[alias] = object[key];
+    }
+  }
+  return retypedObject;
+}
+
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
@@ -168,6 +181,7 @@ respectively.return = respectivelyReturn;
 function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
+const compileTimeError = shouldNotBe;
 
 function wrap(fn, ...args) {
   return (target) => fn(target, ...args);
@@ -529,6 +543,7 @@ exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
 exports.Resolvable = Resolvable;
+exports.aliasify = aliasify;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
@@ -536,6 +551,7 @@ exports.assign = assign;
 exports.authorizedFetch = authorizedFetch;
 exports.chainified = chainified;
 exports.check = check;
+exports.compileTimeError = compileTimeError;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;

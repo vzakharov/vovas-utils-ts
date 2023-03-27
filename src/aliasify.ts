@@ -21,12 +21,12 @@ type AllPropsUnion<T> = FlattenToPropsUnion<MapToUnion<T>>;
 export type AliasedKeys<Definition extends AliasesDefinition> = AllPropsUnion<Definition> & string;
 
 type ReverseKeysValues<T extends Record<string, string>> = {
-  [Value in FlattenToPropsUnion<T>]: {
+  [Value in T[keyof T]]: {
     [Key in keyof T]: Value extends T[Key] ? Key : never;
   }[keyof T];
 };
 
-type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = {
+export type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = {
   [key in AliasedKeys<Definition>]: 
     MapToUnion<Definition> extends Record<string, string> ?
       key extends keyof ReverseKeysValues<MapToUnion<Definition>> ?
@@ -57,11 +57,11 @@ export function aliasify<Object extends Record<string, any>, Definition extends 
   return retypedObject;
 };
 
-const testAliasified = aliasify({
-  type: "fruit",
-  color: 0x00ff00,
-  isFruit: true,
-} as const, {
-  type: ["kind", "variety"],
-  color: "colour",
-} as const);
+// const testAliasified = aliasify({
+//   type: "fruit",
+//   color: 0x00ff00,
+//   isFruit: true,
+// } as const, {
+//   type: ["kind", "variety"],
+//   color: "colour",
+// } as const);

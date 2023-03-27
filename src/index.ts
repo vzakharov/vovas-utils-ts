@@ -1,3 +1,4 @@
+export * from './aliasify';
 export * from './funkenstein';
 export * from './createEnv';
 export * from './doWith';
