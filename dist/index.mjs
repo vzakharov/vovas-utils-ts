@@ -6,6 +6,19 @@ import os from 'os';
 import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
+function aliasify(object, aliasesDefinition) {
+  const retypedObject = object;
+  for (const key in aliasesDefinition) {
+    const aliases = aliasesDefinition[key];
+    if (!aliases)
+      continue;
+    for (const alias of aliases) {
+      retypedObject[alias] = object[key];
+    }
+  }
+  return retypedObject;
+}
+
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
@@ -166,6 +179,7 @@ respectively.return = respectivelyReturn;
 function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
+const compileTimeError = shouldNotBe;
 
 function wrap(fn, ...args) {
   return (target) => fn(target, ...args);
@@ -414,6 +428,18 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -508,4 +534,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, compileTimeError, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, merge, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

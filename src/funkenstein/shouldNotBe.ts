@@ -2,3 +2,5 @@
 export function shouldNotBe(item: never): never {
   throw new Error(`This should not exist: ${item}`);
 }
+
+export const compileTimeError = shouldNotBe;

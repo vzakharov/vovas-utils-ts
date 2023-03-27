@@ -8,6 +8,19 @@ const os = require('os');
 const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
+function aliasify(object, aliasesDefinition) {
+  const retypedObject = object;
+  for (const key in aliasesDefinition) {
+    const aliases = aliasesDefinition[key];
+    if (!aliases)
+      continue;
+    for (const alias of aliases) {
+      retypedObject[alias] = object[key];
+    }
+  }
+  return retypedObject;
+}
+
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
@@ -168,6 +181,7 @@ respectively.return = respectivelyReturn;
 function shouldNotBe(item) {
   throw new Error(`This should not exist: ${item}`);
 }
+const compileTimeError = shouldNotBe;
 
 function wrap(fn, ...args) {
   return (target) => fn(target, ...args);
@@ -416,6 +430,18 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -517,6 +543,7 @@ exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
 exports.Resolvable = Resolvable;
+exports.aliasify = aliasify;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
@@ -524,6 +551,7 @@ exports.assign = assign;
 exports.authorizedFetch = authorizedFetch;
 exports.chainified = chainified;
 exports.check = check;
+exports.compileTimeError = compileTimeError;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.download = download;
@@ -558,6 +586,7 @@ exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.map = map;
+exports.merge = merge;
 exports.paint = paint;
 exports.post = post;
 exports.postJson = postJson;
