@@ -19,8 +19,8 @@ function aliasify(object, aliasesDefinition) {
   return retypedObject;
 }
 
-function $do(fn, ...args) {
-  return (target) => fn(target, ...args);
+function $do(fnOrKey, ...args) {
+  return typeof fnOrKey === "string" ? (target) => target[fnOrKey](...args) : (target) => fnOrKey(target, ...args);
 }
 const wrap = $do;
 
