@@ -21,6 +21,10 @@ function aliasify(object, aliasesDefinition) {
   return retypedObject;
 }
 
+function $do(fn, restArgs) {
+  return (firstArg) => fn(firstArg, ...restArgs);
+}
+
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
@@ -687,6 +691,7 @@ function isTyped(type) {
 
 exports.$ = $;
 exports.$as = $as;
+exports.$do = $do;
 exports.$if = $if;
 exports.$throw = $throw;
 exports.$thrower = $thrower;

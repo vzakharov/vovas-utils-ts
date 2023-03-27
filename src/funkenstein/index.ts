@@ -1,3 +1,4 @@
+export * from './$do';
 export * from './$throw';
 export * from './$try';
 export * from './$with';
