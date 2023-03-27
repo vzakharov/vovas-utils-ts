@@ -104,6 +104,9 @@ declare function $if<Argument, TransformResult>(argument: Argument, predicate: N
 declare function lazily<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
 declare function lazily<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
 
+declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Arg>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
+declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
+
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     null: <T_1>(arg: T_1 | null) => arg is null;
@@ -266,6 +269,11 @@ declare const give: {
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
+    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
+        [key: string]: T_6;
+    }) => {
+        [key: string]: R_1;
+    };
     0: (...args: any[]) => 0;
     value: typeof $;
     literal: typeof $;
@@ -326,6 +334,11 @@ declare const to: {
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
+    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
+        [key: string]: T_6;
+    }) => {
+        [key: string]: R_1;
+    };
     0: (...args: any[]) => 0;
     value: typeof $;
     literal: typeof $;
@@ -386,6 +399,11 @@ declare const get: {
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
+    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
+        [key: string]: T_6;
+    }) => {
+        [key: string]: R_1;
+    };
     0: (...args: any[]) => 0;
     value: typeof $;
     literal: typeof $;
@@ -547,4 +565,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $, $as, $if, $throw, $thrower, $try, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aliasify, ansiColors, ansiPrefixes, assert, assign, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GoCallback, GoRecurse, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

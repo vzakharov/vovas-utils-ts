@@ -172,6 +172,10 @@ function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
+function both(...predicates) {
+  return (arg) => predicates.every((predicate) => predicate(arg));
+}
+
 function not(predicate) {
   return (arg) => !predicate(arg);
 }
@@ -295,7 +299,8 @@ const give = aliasify({
   compileTimeError,
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
   error: $thrower,
-  map: (transform) => (arg) => arg.map(transform)
+  map: (transform) => (arg) => arg.map(transform),
+  mapValues: (transform) => (arg) => _.mapValues(arg, transform)
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -685,6 +690,7 @@ exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
 exports.assign = assign;
+exports.both = both;
 exports.chainified = chainified;
 exports.check = check;
 exports.commonPredicates = commonPredicates;

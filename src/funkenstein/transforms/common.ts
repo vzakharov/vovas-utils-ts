@@ -54,6 +54,7 @@ export const give = aliasify({
   error: $thrower,
 
   map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
+  mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
 }, {
 

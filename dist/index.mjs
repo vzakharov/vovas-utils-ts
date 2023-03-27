@@ -170,6 +170,10 @@ function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
+function both(...predicates) {
+  return (arg) => predicates.every((predicate) => predicate(arg));
+}
+
 function not(predicate) {
   return (arg) => !predicate(arg);
 }
@@ -293,7 +297,8 @@ const give = aliasify({
   compileTimeError,
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
   error: $thrower,
-  map: (transform) => (arg) => arg.map(transform)
+  map: (transform) => (arg) => arg.map(transform),
+  mapValues: (transform) => (arg) => _.mapValues(arg, transform)
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -671,4 +676,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

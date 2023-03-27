@@ -3,6 +3,7 @@ export * from './$try';
 export * from './chainified';
 export * from './check';
 export * from './lazily';
+export * from './predicates/both';
 export * from './predicates/common';
 export * from './predicates/has';
 export * from './predicates/not';
