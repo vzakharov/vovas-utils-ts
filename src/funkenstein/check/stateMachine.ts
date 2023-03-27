@@ -1,5 +1,3 @@
-import _ from "lodash";
-import { shouldNotBe } from "../shouldNotBe";
 import { is } from "./common/checkers";
 import { give, to } from "./common/transforms";
 
@@ -53,13 +51,14 @@ export function parseSwitch<
   HasArgument extends boolean, 
   OriginalArgument,
   Argument, 
-  CombinedResult
+  CombinedResult,
+  Output = ParseSwitchOutput<Kind, HasArgument, OriginalArgument, Argument, CombinedResult>
 >(
   kind: Kind,
   hasArgument: HasArgument,
   argument: Argument | undefined,
   switchStack: [ Predicate, Transform ][]
-) {
+): Output {
   function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
     predicate: Predicate<Argument, IsTypeguard, Guarded>,
     transform?: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
@@ -104,7 +103,7 @@ export function parseSwitch<
   return {
     if: $if,
     ...( kind === 'last' ? { else: $else } : {} )
-  } as ParseSwitchOutput<Kind, HasArgument, OriginalArgument, Argument, CombinedResult>;
+  } as Output;
 
 };
 
