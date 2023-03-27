@@ -20,7 +20,9 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
 type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
-declare function $do<FirstArg, RestArgs extends any[], Result>(fn: (firstArg: FirstArg, ...restArgs: RestArgs) => Result, restArgs: RestArgs): (firstArg: FirstArg) => Result;
+declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare const wrap: typeof $do;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -272,7 +274,7 @@ declare const give: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -333,7 +335,7 @@ declare const to: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -394,7 +396,7 @@ declare const get: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
-    wrapped: typeof wrap;
+    wrapped: typeof $do;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -416,9 +418,6 @@ declare const get: Aliasified<{
 type CommonTransforms = typeof give;
 type CommonTransformKey = keyof CommonTransforms;
 declare function $<T>(arg: T): (...args: any[]) => T;
-
-declare function wrap<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
-declare function wrap<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
 
 interface CreateEnvResult<T> {
     env: T;

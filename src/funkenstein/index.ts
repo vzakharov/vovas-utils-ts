@@ -12,4 +12,3 @@ export * from './predicates/not';
 export * from './respectively';
 export * from './transforms/common';
 export * from './transforms/getProp';
-export * from './wrap';

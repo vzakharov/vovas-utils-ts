@@ -19,9 +19,10 @@ function aliasify(object, aliasesDefinition) {
   return retypedObject;
 }
 
-function $do(fn, restArgs) {
-  return (firstArg) => fn(firstArg, ...restArgs);
+function $do(fn, ...args) {
+  return (target) => fn(target, ...args);
 }
+const wrap = $do;
 
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
@@ -309,7 +310,7 @@ const give = aliasify({
   error: $thrower,
   mapped: (transform) => (arg) => arg.map(transform),
   valueMapped: (transform) => (arg) => _.mapValues(arg, transform),
-  wrapped: wrap
+  wrapped: $do
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -332,10 +333,6 @@ const to = give;
 const get = give;
 function $(arg) {
   return () => arg;
-}
-
-function wrap(fn, ...args) {
-  return (target) => fn(target, ...args);
 }
 
 function ensure(x, variableName) {
