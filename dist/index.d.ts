@@ -1,13 +1,5 @@
 import fs from 'fs';
 
-type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
-    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
-} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
-declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
-
 type AliasesDefinition<Key extends keyof any = keyof any> = {
     readonly [key in Key]?: readonly string[] | string;
 };
@@ -25,7 +17,7 @@ type ReverseKeysValues<T extends Record<string, string>> = {
 type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = {
     [key in AliasedKeys<Definition>]: MapToUnion<Definition> extends Record<string, string> ? key extends keyof ReverseKeysValues<MapToUnion<Definition>> ? ReverseKeysValues<MapToUnion<Definition>>[key] extends keyof Object ? Object[ReverseKeysValues<MapToUnion<Definition>>[key]] : never : never : never;
 };
-type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Merge<Object, AliasesFor<Object, Definition>>;
+type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
 type Dict<T = any> = {
@@ -234,28 +226,27 @@ declare function getProp<T extends object>(key: keyof T): (obj: T) => T[keyof T]
 
 declare function compileTimeError(item: never): never;
 
-declare const give: {
-    "": (...args: any[]) => "";
-    string: (arg: any) => string;
-    undefined: (...args: any[]) => undefined;
-    map: <T, R>(transform: (arg: T) => R) => (arg: T[]) => R[];
-    keys: (arg: object) => string[];
-    first: <T_1>(arg: T_1[]) => T_1;
-    last: <T_2>(arg: T_2[]) => T_2;
-    null: (...args: any[]) => null;
-    emptyString: (...args: any[]) => "";
-    zero: (...args: any[]) => 0;
-    false: (...args: any[]) => false;
-    true: (...args: any[]) => true;
-    array: <T_3>(arg: T_3) => T_3[];
-    exactly: typeof $;
-    itself: <T_4>(arg: T_4) => T_4;
-    themselves: <T_5 extends any[]>(arrayArg: T_5) => T_5;
+declare const give: Aliasified<{
+    itself: <T>(arg: T) => T;
+    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
     $: typeof $;
+    undefined: (...args: any[]) => undefined;
+    null: (...args: any[]) => null;
+    true: (...args: any[]) => true;
+    false: (...args: any[]) => false;
     NaN: (...args: any[]) => number;
     Infinity: (...args: any[]) => number;
+    zero: (...args: any[]) => 0;
+    emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
+    string: <T_2 extends {
+        toString(): string;
+    }>(arg: T_2) => string;
+    boolean: <T_3>(arg: T_3) => boolean;
+    number: <T_4>(arg: T_4) => number;
+    array: <T_5>(arg: T_5) => T_5[];
+    keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
     parsedJson: (arg: string) => Jsonable;
@@ -266,61 +257,56 @@ declare const give: {
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    first: <T_6>(arg: T_6[]) => T_6;
+    last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
-        [key: string]: T_6;
+    mapped: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
+    valueMapped: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R_1;
     };
-    0: (...args: any[]) => 0;
-    value: typeof $;
-    literal: typeof $;
-    nan: (...args: any[]) => number;
-    notANumber: (...args: any[]) => number;
-    infinity: (...args: any[]) => number;
-    JSON: (arg: Jsonable) => string;
-    YAML: (arg: Jsonable) => string;
-    unjson: (arg: string) => Jsonable;
-    unJSON: (arg: string) => Jsonable;
-    parsedJSON: (arg: string) => Jsonable;
-    unyaml: (arg: string) => Jsonable;
-    unYAML: (arg: string) => Jsonable;
-    parsedYAML: (arg: string) => Jsonable;
-    lowercase: (arg: string) => string;
-    UPPERCASE: (arg: string) => string;
-    ALLCAPS: (arg: string) => string;
-    snake_case: (arg: string) => string;
-    "kebab-case": (arg: string) => string;
-    "Start Case": (arg: string) => string;
-    firstItem: <T_1>(arg: T_1[]) => T_1;
-    head: <T_1>(arg: T_1[]) => T_1;
-    lastItem: <T_2>(arg: T_2[]) => T_2;
-    tail: <T_2>(arg: T_2[]) => T_2;
-};
-declare const to: {
-    "": (...args: any[]) => "";
-    string: (arg: any) => string;
-    undefined: (...args: any[]) => undefined;
-    map: <T, R>(transform: (arg: T) => R) => (arg: T[]) => R[];
-    keys: (arg: object) => string[];
-    first: <T_1>(arg: T_1[]) => T_1;
-    last: <T_2>(arg: T_2[]) => T_2;
-    null: (...args: any[]) => null;
-    emptyString: (...args: any[]) => "";
-    zero: (...args: any[]) => 0;
-    false: (...args: any[]) => false;
-    true: (...args: any[]) => true;
-    array: <T_3>(arg: T_3) => T_3[];
-    exactly: typeof $;
-    itself: <T_4>(arg: T_4) => T_4;
-    themselves: <T_5 extends any[]>(arrayArg: T_5) => T_5;
+}, {
+    readonly $: readonly ["exactly", "value", "literal"];
+    readonly NaN: readonly ["nan", "notANumber"];
+    readonly Infinity: "infinity";
+    readonly zero: "0";
+    readonly emptyString: "";
+    readonly json: "JSON";
+    readonly yaml: "YAML";
+    readonly parsedJson: readonly ["unjson", "unJSON", "parsedJSON"];
+    readonly parsedYaml: readonly ["unyaml", "unYAML", "parsedYAML"];
+    readonly lowerCase: "lowercase";
+    readonly upperCase: readonly ["UPPERCASE", "ALLCAPS"];
+    readonly snakeCase: "snake_case";
+    readonly kebabCase: "kebab-case";
+    readonly startCase: "Start Case";
+    readonly first: readonly ["firstItem", "head"];
+    readonly last: readonly ["lastItem", "tail"];
+}>;
+declare const to: Aliasified<{
+    itself: <T>(arg: T) => T;
+    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
     $: typeof $;
+    undefined: (...args: any[]) => undefined;
+    null: (...args: any[]) => null;
+    true: (...args: any[]) => true;
+    false: (...args: any[]) => false;
     NaN: (...args: any[]) => number;
     Infinity: (...args: any[]) => number;
+    zero: (...args: any[]) => 0;
+    emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
+    string: <T_2 extends {
+        toString(): string;
+    }>(arg: T_2) => string;
+    boolean: <T_3>(arg: T_3) => boolean;
+    number: <T_4>(arg: T_4) => number;
+    array: <T_5>(arg: T_5) => T_5[];
+    keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
     parsedJson: (arg: string) => Jsonable;
@@ -331,61 +317,56 @@ declare const to: {
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    first: <T_6>(arg: T_6[]) => T_6;
+    last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
-        [key: string]: T_6;
+    mapped: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
+    valueMapped: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R_1;
     };
-    0: (...args: any[]) => 0;
-    value: typeof $;
-    literal: typeof $;
-    nan: (...args: any[]) => number;
-    notANumber: (...args: any[]) => number;
-    infinity: (...args: any[]) => number;
-    JSON: (arg: Jsonable) => string;
-    YAML: (arg: Jsonable) => string;
-    unjson: (arg: string) => Jsonable;
-    unJSON: (arg: string) => Jsonable;
-    parsedJSON: (arg: string) => Jsonable;
-    unyaml: (arg: string) => Jsonable;
-    unYAML: (arg: string) => Jsonable;
-    parsedYAML: (arg: string) => Jsonable;
-    lowercase: (arg: string) => string;
-    UPPERCASE: (arg: string) => string;
-    ALLCAPS: (arg: string) => string;
-    snake_case: (arg: string) => string;
-    "kebab-case": (arg: string) => string;
-    "Start Case": (arg: string) => string;
-    firstItem: <T_1>(arg: T_1[]) => T_1;
-    head: <T_1>(arg: T_1[]) => T_1;
-    lastItem: <T_2>(arg: T_2[]) => T_2;
-    tail: <T_2>(arg: T_2[]) => T_2;
-};
-declare const get: {
-    "": (...args: any[]) => "";
-    string: (arg: any) => string;
-    undefined: (...args: any[]) => undefined;
-    map: <T, R>(transform: (arg: T) => R) => (arg: T[]) => R[];
-    keys: (arg: object) => string[];
-    first: <T_1>(arg: T_1[]) => T_1;
-    last: <T_2>(arg: T_2[]) => T_2;
-    null: (...args: any[]) => null;
-    emptyString: (...args: any[]) => "";
-    zero: (...args: any[]) => 0;
-    false: (...args: any[]) => false;
-    true: (...args: any[]) => true;
-    array: <T_3>(arg: T_3) => T_3[];
-    exactly: typeof $;
-    itself: <T_4>(arg: T_4) => T_4;
-    themselves: <T_5 extends any[]>(arrayArg: T_5) => T_5;
+}, {
+    readonly $: readonly ["exactly", "value", "literal"];
+    readonly NaN: readonly ["nan", "notANumber"];
+    readonly Infinity: "infinity";
+    readonly zero: "0";
+    readonly emptyString: "";
+    readonly json: "JSON";
+    readonly yaml: "YAML";
+    readonly parsedJson: readonly ["unjson", "unJSON", "parsedJSON"];
+    readonly parsedYaml: readonly ["unyaml", "unYAML", "parsedYAML"];
+    readonly lowerCase: "lowercase";
+    readonly upperCase: readonly ["UPPERCASE", "ALLCAPS"];
+    readonly snakeCase: "snake_case";
+    readonly kebabCase: "kebab-case";
+    readonly startCase: "Start Case";
+    readonly first: readonly ["firstItem", "head"];
+    readonly last: readonly ["lastItem", "tail"];
+}>;
+declare const get: Aliasified<{
+    itself: <T>(arg: T) => T;
+    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
     $: typeof $;
+    undefined: (...args: any[]) => undefined;
+    null: (...args: any[]) => null;
+    true: (...args: any[]) => true;
+    false: (...args: any[]) => false;
     NaN: (...args: any[]) => number;
     Infinity: (...args: any[]) => number;
+    zero: (...args: any[]) => 0;
+    emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
+    string: <T_2 extends {
+        toString(): string;
+    }>(arg: T_2) => string;
+    boolean: <T_3>(arg: T_3) => boolean;
+    number: <T_4>(arg: T_4) => number;
+    array: <T_5>(arg: T_5) => T_5[];
+    keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
     parsedJson: (arg: string) => Jsonable;
@@ -396,39 +377,35 @@ declare const get: {
     snakeCase: (arg: string) => string;
     kebabCase: (arg: string) => string;
     startCase: (arg: string) => string;
+    first: <T_6>(arg: T_6[]) => T_6;
+    last: <T_7>(arg: T_7[]) => T_7;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    mapValues: <T_6, R_1>(transform: (arg: T_6) => R_1) => (arg: {
-        [key: string]: T_6;
+    mapped: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
+    valueMapped: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R_1;
     };
-    0: (...args: any[]) => 0;
-    value: typeof $;
-    literal: typeof $;
-    nan: (...args: any[]) => number;
-    notANumber: (...args: any[]) => number;
-    infinity: (...args: any[]) => number;
-    JSON: (arg: Jsonable) => string;
-    YAML: (arg: Jsonable) => string;
-    unjson: (arg: string) => Jsonable;
-    unJSON: (arg: string) => Jsonable;
-    parsedJSON: (arg: string) => Jsonable;
-    unyaml: (arg: string) => Jsonable;
-    unYAML: (arg: string) => Jsonable;
-    parsedYAML: (arg: string) => Jsonable;
-    lowercase: (arg: string) => string;
-    UPPERCASE: (arg: string) => string;
-    ALLCAPS: (arg: string) => string;
-    snake_case: (arg: string) => string;
-    "kebab-case": (arg: string) => string;
-    "Start Case": (arg: string) => string;
-    firstItem: <T_1>(arg: T_1[]) => T_1;
-    head: <T_1>(arg: T_1[]) => T_1;
-    lastItem: <T_2>(arg: T_2[]) => T_2;
-    tail: <T_2>(arg: T_2[]) => T_2;
-};
+}, {
+    readonly $: readonly ["exactly", "value", "literal"];
+    readonly NaN: readonly ["nan", "notANumber"];
+    readonly Infinity: "infinity";
+    readonly zero: "0";
+    readonly emptyString: "";
+    readonly json: "JSON";
+    readonly yaml: "YAML";
+    readonly parsedJson: readonly ["unjson", "unJSON", "parsedJSON"];
+    readonly parsedYaml: readonly ["unyaml", "unYAML", "parsedYAML"];
+    readonly lowerCase: "lowercase";
+    readonly upperCase: readonly ["UPPERCASE", "ALLCAPS"];
+    readonly snakeCase: "snake_case";
+    readonly kebabCase: "kebab-case";
+    readonly startCase: "Start Case";
+    readonly first: readonly ["firstItem", "head"];
+    readonly last: readonly ["lastItem", "tail"];
+}>;
 type CommonTransforms = typeof give;
 type CommonTransformKey = keyof CommonTransforms;
 declare function $<T>(arg: T): (...args: any[]) => T;
@@ -520,6 +497,14 @@ declare function jsonClone<T>(obj: T): T & Jsonable;
 declare function jsonEqual<T>(a: T, b: T): boolean;
 declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
+
+type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
+    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
+} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
+declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
 
 interface INpmLsOutput {
     dependencies: Record<string, {

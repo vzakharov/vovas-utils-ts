@@ -37,10 +37,9 @@ export type AliasesFor<Object extends Record<string, any>, Definition extends Al
       : never
 };
 
-export type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Merge<
-  Object,
-  AliasesFor<Object, Definition>
->;
+export type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> =
+  Object &
+  AliasesFor<Object, Definition>;
 
 export function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(
   object: Object,

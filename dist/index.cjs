@@ -281,6 +281,8 @@ const give = aliasify({
   emptyArray: $([]),
   emptyObject: $({}),
   string: (arg) => arg.toString(),
+  boolean: (arg) => !!arg,
+  number: (arg) => Number(arg),
   array: (arg) => _.castArray(arg),
   keys: (arg) => _.keys(arg),
   json: (arg) => JSON.stringify(arg),
@@ -299,8 +301,8 @@ const give = aliasify({
   compileTimeError,
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
   error: $thrower,
-  map: (transform) => (arg) => arg.map(transform),
-  mapValues: (transform) => (arg) => _.mapValues(arg, transform)
+  mapped: (transform) => (arg) => arg.map(transform),
+  valueMapped: (transform) => (arg) => _.mapValues(arg, transform)
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],

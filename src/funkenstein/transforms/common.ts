@@ -25,7 +25,11 @@ export const give = aliasify({
   emptyArray: $([] as const), 
   emptyObject: $({} as const),
 
-  string: (arg: any): string => arg.toString(),
+  string: <
+    T extends { toString(): string}
+  >(arg: T): string => arg.toString(),
+  boolean: <T>(arg: T): boolean => !!arg,
+  number: <T>(arg: T): number => Number(arg),
   array: <T>(arg: T): T[] => _.castArray(arg),
   keys: (arg: object) => _.keys(arg),
   
@@ -53,8 +57,8 @@ export const give = aliasify({
 
   error: $thrower,
 
-  map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
-  mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
+  mapped: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
+  valueMapped: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
 }, {
 
