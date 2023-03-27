@@ -1,9 +1,9 @@
 import _ from 'lodash';
+import yaml from 'js-yaml';
 import fs from 'fs';
 import https from 'https';
 import path from 'path';
 import os from 'os';
-import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
 function aliasify(object, aliasesDefinition) {
@@ -50,11 +50,6 @@ function assign(target, source) {
   return Object.assign(target, source);
 }
 
-const fetchWith = chainified(fetch, 1, ["method", "headers", "body"]);
-const get = fetchWith.method("get");
-const post = fetchWith.method("post");
-const postJson = (body) => post.headers({ "Content-Type": "application/json" }).body(JSON.stringify(body));
-const authorizedFetch = (Authorization) => fetchWith.headers({ Authorization });
 function chainified($function, chainedParameterIndex, chainedKeys) {
   return chainedKeys.reduce(
     (output, key, index, keys) => {
@@ -82,86 +77,166 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
   );
 }
 
-function getItemNames(itemStringOrArrayOrObject) {
-  const itemNames = check(itemStringOrArrayOrObject).if(_.isString, _.castArray).if(_.isArray, (array) => array.map(_.toString)).if(_.isObject, _.keys).else($thrower("Expected string, array or object"));
-  return itemNames;
+function parseSwitch(kind, hasArgument, argument, switchStack) {
+  function $if2(predicate, transform2) {
+    return transform2 ? pushToStack(
+      kind,
+      hasArgument,
+      argument,
+      predicate,
+      transform2,
+      switchStack
+    ) : parseTransform(
+      kind,
+      hasArgument,
+      argument,
+      predicate,
+      switchStack
+    );
+  }
+  function $else(transform2) {
+    const alwaysTrue = () => true;
+    return pushToStack(
+      "last",
+      hasArgument,
+      argument,
+      alwaysTrue,
+      transform2,
+      switchStack
+    );
+  }
+  return {
+    if: $if2,
+    ...kind === "last" ? { else: $else } : {}
+  };
 }
-function warp(value) {
-  function recursion() {
-    return {
-      if: recursion,
-      else() {
-        return value;
+function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
+  return {
+    then: (transform2) => pushToStack(
+      kind,
+      hasArgument,
+      argument,
+      predicate,
+      transform2,
+      switchStack
+    )
+  };
+}
+function pushToStack(kind, hasArgument, argument, predicate, transform2, switchStack) {
+  switchStack.push([predicate, transform2]);
+  return kind === "last" ? evaluate(
+    hasArgument,
+    argument,
+    switchStack
+  ) : parseSwitch(
+    void 0,
+    hasArgument,
+    argument,
+    switchStack
+  );
+}
+function evaluate(hasArgument, argument, switchStack) {
+  function evaluateForArgument(argument2) {
+    for (const [predicate, transform2] of switchStack) {
+      if (predicate(argument2)) {
+        return transform2(argument2);
       }
-    };
-  }
-  return recursion();
-}
-function $if(argOrCondition, typeguardOrTypeOrTransform, transformOrNothing) {
-  if (_.isBoolean(argOrCondition))
-    return ifWithCondition(argOrCondition, typeguardOrTypeOrTransform);
-  const arg = argOrCondition;
-  const typeguardOrType = typeguardOrTypeOrTransform;
-  const typeguard = _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType);
-  const transform = transformOrNothing;
-  if (typeguard(arg)) {
-    return warp(transform(arg));
-  }
-  return check(arg);
-}
-function ifWithCondition(condition, transform) {
-  if (condition) {
-    return warp(transform());
-  }
-  return {
-    if(condition2, transform2) {
-      return ifWithCondition(condition2, transform2);
-    },
-    else(transform2) {
-      return transform2();
     }
-  };
+    throw new Error(`No matching predicate found for argument ${argument2} (this should never happen)`);
+  }
+  return hasArgument ? evaluateForArgument(argument) : evaluateForArgument;
 }
-function check(arg) {
-  return {
-    if: (typeguardOrType, transform) => $if(
-      arg,
-      _.isFunction(typeguardOrType) ? typeguardOrType : is(typeguardOrType),
-      transform
-    ),
-    else: (transform) => transform(arg)
-  };
+function check(argument) {
+  return parseSwitch(
+    "first",
+    !!argument,
+    argument,
+    []
+  );
 }
-function isDefined(value) {
-  return !_.isUndefined(value);
-}
-function $(value) {
-  return (...args) => value;
-}
-function itself(value) {
-  return value;
-}
-function themselves(values) {
-  return values;
-}
-function guard(checker) {
-  return checker;
-}
-function is(valueToCheck) {
-  return function isNarrowType(value) {
-    return value === valueToCheck;
-  };
-}
-function map(transform) {
-  return (items) => items.map(transform);
-}
-
-function has(source) {
-  return (target) => _.isMatch(target, source);
+const transform = check;
+function $if(argument, predicate, transform2) {
+  return pushToStack(
+    "first",
+    true,
+    argument,
+    predicate,
+    transform2,
+    []
+  );
 }
 
 function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
+}
+
+function not(predicate) {
+  return (arg) => !predicate(arg);
+}
+
+const commonPredicates = {
+  undefined: (arg) => _.isUndefined(arg),
+  null: (arg) => _.isNull(arg),
+  string: (arg) => _.isString(arg),
+  emptyString: (arg) => arg === "",
+  number: (arg) => _.isNumber(arg),
+  zero: (arg) => arg === 0,
+  boolean: (arg) => _.isBoolean(arg),
+  false: (arg) => arg === false,
+  true: (arg) => arg === true,
+  function: (arg) => _.isFunction(arg),
+  object: (arg) => _.isObject(arg),
+  array: (arg) => _.isArray(arg),
+  primitive: (arg) => isPrimitive(arg),
+  jsonable: (arg) => isJsonable(arg),
+  jsonableObject: (arg) => isJsonableObject(arg),
+  defined: (arg) => !_.isUndefined(arg),
+  empty: (arg) => arg.length === 0,
+  truthy: (arg) => !!arg,
+  falsy: (arg) => !arg,
+  exactly: (sample) => (arg) => _.isEqual(arg, sample),
+  above: (sample) => (arg) => arg > sample,
+  below: (sample) => (arg) => arg < sample,
+  atLeast: (sample) => (arg) => arg >= sample,
+  atMost: (sample) => (arg) => arg <= sample,
+  like: (sample) => (arg) => _.isMatch(arg, sample),
+  anything: (...args) => true
+};
+const is = {
+  ...commonPredicates,
+  not: {
+    undefined: not(commonPredicates.undefined),
+    null: not(commonPredicates.null),
+    string: not(commonPredicates.string),
+    emptyString: not(commonPredicates.emptyString),
+    number: not(commonPredicates.number),
+    zero: not(commonPredicates.zero),
+    boolean: not(commonPredicates.boolean),
+    false: not(commonPredicates.false),
+    true: not(commonPredicates.true),
+    function: not(commonPredicates.function),
+    object: not(commonPredicates.object),
+    array: not(commonPredicates.array),
+    primitive: not(commonPredicates.primitive),
+    jsonable: not(commonPredicates.jsonable),
+    jsonableObject: not(commonPredicates.jsonableObject),
+    defined: not(commonPredicates.defined),
+    empty: not(commonPredicates.empty),
+    truthy: not(commonPredicates.truthy),
+    falsy: not(commonPredicates.falsy),
+    exactly: (sample) => not(commonPredicates.exactly(sample)),
+    above: (sample) => not(commonPredicates.above(sample)),
+    below: (sample) => not(commonPredicates.below(sample)),
+    atLeast: (sample) => not(commonPredicates.atLeast(sample)),
+    atMost: (sample) => not(commonPredicates.atMost(sample)),
+    like: (sample) => not(commonPredicates.like(sample)),
+    anything: not(commonPredicates.anything)
+  }
+  // TODO: Find a way to make the above work in TS without having to manually type it out.
+};
+
+function has(source) {
+  return (target) => _.isMatch(target, source);
 }
 
 function respectively(...typeguards) {
@@ -176,10 +251,72 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function shouldNotBe(item) {
+function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
 }
-const compileTimeError = shouldNotBe;
+
+function getProp(key) {
+  return (obj) => obj[key];
+}
+
+const give = aliasify({
+  // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
+  itself: (arg) => arg,
+  themselves: (arrayArg) => arrayArg,
+  $,
+  undefined: $(void 0),
+  null: $(null),
+  true: $(true),
+  false: $(false),
+  NaN: $(NaN),
+  Infinity: $(Infinity),
+  zero: $(0),
+  emptyString: $(""),
+  emptyArray: $([]),
+  emptyObject: $({}),
+  string: (arg) => arg.toString(),
+  array: (arg) => _.castArray(arg),
+  keys: (arg) => _.keys(arg),
+  json: (arg) => JSON.stringify(arg),
+  yaml: (arg) => yaml.dump(arg),
+  parsedJson: (arg) => JSON.parse(arg),
+  parsedYaml: (arg) => yaml.load(arg),
+  lowerCase: (arg) => arg.toLowerCase(),
+  upperCase: (arg) => arg.toUpperCase(),
+  camelCase: (arg) => _.camelCase(arg),
+  snakeCase: (arg) => _.snakeCase(arg),
+  kebabCase: (arg) => _.kebabCase(arg),
+  startCase: (arg) => _.startCase(arg),
+  first: (arg) => arg[0],
+  last: (arg) => arg[arg.length - 1],
+  prop: getProp,
+  compileTimeError,
+  // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
+  error: $thrower,
+  map: (transform) => (arg) => arg.map(transform)
+}, {
+  $: ["exactly", "value", "literal"],
+  NaN: ["nan", "notANumber"],
+  Infinity: "infinity",
+  zero: "0",
+  emptyString: "",
+  json: "JSON",
+  yaml: "YAML",
+  parsedJson: ["unjson", "unJSON", "parsedJSON"],
+  parsedYaml: ["unyaml", "unYAML", "parsedYAML"],
+  lowerCase: "lowercase",
+  upperCase: ["UPPERCASE", "ALLCAPS"],
+  snakeCase: "snake_case",
+  kebabCase: "kebab-case",
+  startCase: "Start Case",
+  first: ["firstItem", "head"],
+  last: ["lastItem", "tail"]
+});
+const to = give;
+const get = give;
+function $(arg) {
+  return () => arg;
+}
 
 function wrap(fn, ...args) {
   return (target) => fn(target, ...args);
@@ -534,4 +671,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, authorizedFetch, chainified, check, compileTimeError, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, fetchWith, forceUpdateNpmLinks, functionThatReturns, get, getItemNames, getNpmLinks, go, goer, guard, has, humanize, is, isDefined, isJsonable, isJsonableObject, isPrimitive, isTyped, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, merge, paint, post, postJson, respectively, serializer, setLastLogIndex, shouldNotBe, themselves, toType, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

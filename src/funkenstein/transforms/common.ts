@@ -1,7 +1,9 @@
 import yaml from "js-yaml";
 import _ from "lodash";
-import { $thrower } from "../../$throw";
-import { aliasify, compileTimeError, Jsonable, merge } from "../../..";
+import { $thrower } from "../$throw";
+import { aliasify, Jsonable } from "../..";
+import { getProp } from "./getProp";
+import { compileTimeError } from "./compileTimeError";
 
 export const give = aliasify({
 
@@ -30,8 +32,8 @@ export const give = aliasify({
   json: (arg: Jsonable) => JSON.stringify(arg),
   yaml: (arg: Jsonable) => yaml.dump(arg),
 
-  parsedJson: (arg: string) => JSON.parse(arg),
-  parsedYaml: (arg: string) => yaml.load(arg),
+  parsedJson: (arg: string) => JSON.parse(arg) as Jsonable,
+  parsedYaml: (arg: string) => yaml.load(arg) as Jsonable,
 
   lowerCase: (arg: string) => arg.toLowerCase(),
   upperCase: (arg: string) => arg.toUpperCase(),
@@ -42,6 +44,8 @@ export const give = aliasify({
 
   first: <T>(arg: T[]): T => arg[0],
   last: <T>(arg: T[]): T => arg[arg.length - 1],
+
+  prop: getProp,
   
   compileTimeError,
 
@@ -75,6 +79,7 @@ export const give = aliasify({
 } as const );
 
 export const to = give;
+export const get = give;
 
 export type CommonTransforms = typeof give;
 

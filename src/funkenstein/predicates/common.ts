@@ -1,10 +1,8 @@
 import _ from 'lodash';
-import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, Primitive, respectively } from '../../..';
-import { objectWithKeys } from '../../../objectWithKeys';
-import { Not, not } from '../../not';
-import { Checker } from '../types/checkers';
+import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, Primitive } from '../..';
+import { not } from './not';
 
-export const commonCheckers = {
+export const commonPredicates = {
 
   undefined: <T>(arg: T | undefined): arg is undefined => _.isUndefined(arg),
   null: <T>(arg: T | null): arg is null => _.isNull(arg),
@@ -41,71 +39,71 @@ export const commonCheckers = {
 
 }
 
-export type CommonCheckers = typeof commonCheckers;
+export type CommonPredicates = typeof commonPredicates;
 
-export type CommonCheckerKey = keyof CommonCheckers;
+export type CommonPredicateName = keyof CommonPredicates;
 
-export type CommonCheckerMap = {
-  [K in CommonCheckerKey]: any
+export type CommonPredicateMap = {
+  [K in CommonPredicateName]: any
 };
 
 
 export const is = {
-  ...commonCheckers,
+  ...commonPredicates,
   not: {
-    undefined: not(commonCheckers.undefined),
-    null: not(commonCheckers.null),
-    string: not(commonCheckers.string),
-    emptyString: not(commonCheckers.emptyString),
-    number: not(commonCheckers.number),
-    zero: not(commonCheckers.zero),
-    boolean: not(commonCheckers.boolean),
-    false: not(commonCheckers.false),
-    true: not(commonCheckers.true),
-    function: not(commonCheckers.function),
-    object: not(commonCheckers.object),
-    array: not(commonCheckers.array),
+    undefined: not(commonPredicates.undefined),
+    null: not(commonPredicates.null),
+    string: not(commonPredicates.string),
+    emptyString: not(commonPredicates.emptyString),
+    number: not(commonPredicates.number),
+    zero: not(commonPredicates.zero),
+    boolean: not(commonPredicates.boolean),
+    false: not(commonPredicates.false),
+    true: not(commonPredicates.true),
+    function: not(commonPredicates.function),
+    object: not(commonPredicates.object),
+    array: not(commonPredicates.array),
 
-    primitive: not(commonCheckers.primitive),
-    jsonable: not(commonCheckers.jsonable),
-    jsonableObject: not(commonCheckers.jsonableObject),
+    primitive: not(commonPredicates.primitive),
+    jsonable: not(commonPredicates.jsonable),
+    jsonableObject: not(commonPredicates.jsonableObject),
 
-    defined: not(commonCheckers.defined),
-    empty: not(commonCheckers.empty),
-    truthy: not(commonCheckers.truthy),
-    falsy: not(commonCheckers.falsy),
+    defined: not(commonPredicates.defined),
+    empty: not(commonPredicates.empty),
+    truthy: not(commonPredicates.truthy),
+    falsy: not(commonPredicates.falsy),
 
-    exactly: <T>(sample: T) => not(commonCheckers.exactly(sample)),
-    above: (sample: number) => not(commonCheckers.above(sample)),
-    below: (sample: number) => not(commonCheckers.below(sample)),
-    atLeast: (sample: number) => not(commonCheckers.atLeast(sample)),
-    atMost: (sample: number) => not(commonCheckers.atMost(sample)),
+    exactly: <T>(sample: T) => not(commonPredicates.exactly(sample)),
+    above: (sample: number) => not(commonPredicates.above(sample)),
+    below: (sample: number) => not(commonPredicates.below(sample)),
+    atLeast: (sample: number) => not(commonPredicates.atLeast(sample)),
+    atMost: (sample: number) => not(commonPredicates.atMost(sample)),
 
-    like: <U extends object>(sample: U) => not(commonCheckers.like(sample)),
+    like: <U extends object>(sample: U) => not(commonPredicates.like(sample)),
 
-    anything: not(commonCheckers.anything),
+    anything: not(commonPredicates.anything),
 
-  } satisfies CommonCheckerMap
+  } satisfies CommonPredicateMap
   // TODO: Find a way to make the above work in TS without having to manually type it out.
 }
 
 // Tests:
-function test(x: number | null) {
+// function test(x: number | null) {
 
-  if ( is.null(x) ) {
-    x; // null
-  } else {
-    x; // number
-  }
+//   if ( is.null(x) ) {
+//     x; // null
+//   } else {
+//     x; // number
+//   }
 
-  if ( not(is.null)(x) ) {
-    x; // number
-  } else {
-    x; // null
-  }
+//   if ( not(is.null)(x) ) {
+//     x; // number
+//   } else {
+//     x; // null
+//   }
 
-  if ( is.not.null(x) ) {
-    x; // number
-  }
+//   if ( is.not.null(x) ) {
+//     x; // number
+//   }
 
-}
+// }
