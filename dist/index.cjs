@@ -311,15 +311,16 @@ const commonTransforms = aliasify({
   snakeCase: (arg) => _.snakeCase(arg),
   kebabCase: (arg) => _.kebabCase(arg),
   startCase: (arg) => _.startCase(arg),
-  formatted: (format) => (insert) => format.replace(/(?<!\\)%s/g, insert),
+  format: (format) => (insert) => format.replace(/(?<!\\)%s/g, insert),
+  replace: (template, replacement) => (arg) => arg.replace(template, replacement),
   first: (arg) => arg[0],
   last: (arg) => arg[arg.length - 1],
   prop: getProp,
   compileTimeError,
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
   error: $thrower,
-  mapped: (transform) => (arg) => arg.map(transform),
-  valueMapped: (transform) => (arg) => _.mapValues(arg, transform),
+  map: (transform) => (arg) => arg.map(transform),
+  mapValues: (transform) => (arg) => _.mapValues(arg, transform),
   wrapped: $do
 }, {
   $: ["exactly", "value", "literal"],
@@ -341,6 +342,7 @@ const commonTransforms = aliasify({
 });
 const give = commonTransforms;
 const to = commonTransforms;
+const go = commonTransforms;
 function give$(arg) {
   return () => arg;
 }
@@ -437,14 +439,6 @@ async function download(url, filename) {
 }
 function downloadAsStream(url) {
   return download(url).then(fs.createReadStream);
-}
-
-function go(callback, arg) {
-  const recurse = (arg2) => go(callback, arg2);
-  return callback(arg, recurse);
-}
-function goer(callback) {
-  return (arg) => go(callback, arg);
 }
 
 function humanize(str) {
@@ -729,7 +723,6 @@ exports.getProp = getProp;
 exports.give = give;
 exports.give$ = give$;
 exports.go = go;
-exports.goer = goer;
 exports.has = has;
 exports.humanize = humanize;
 exports.is = is;

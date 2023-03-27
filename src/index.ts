@@ -4,7 +4,6 @@ export * from './createEnv';
 export * from './doWith';
 export * from './download';
 export * from './ensure';
-export * from './go';
 export * from './humanize';
 export * from './jsObjectString';
 export * from './logger';

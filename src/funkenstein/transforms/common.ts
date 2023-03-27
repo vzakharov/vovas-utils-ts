@@ -46,7 +46,8 @@ export const commonTransforms = aliasify({
   kebabCase: (arg: string) => _.kebabCase(arg),
   startCase: (arg: string) => _.startCase(arg),
 
-  formatted: (format: string) => (insert: string) => format.replace(/(?<!\\)%s/g, insert),
+  format: (format: string) => (insert: string) => format.replace(/(?<!\\)%s/g, insert),
+  replace: (template: string | RegExp, replacement: string) => (arg: string) => arg.replace(template, replacement),
 
   first: <T>(arg: T[]): T => arg[0],
   last: <T>(arg: T[]): T => arg[arg.length - 1],
@@ -59,8 +60,8 @@ export const commonTransforms = aliasify({
 
   error: $thrower,
 
-  mapped: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
-  valueMapped: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
+  map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
+  mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
   wrapped: $do
 
@@ -89,6 +90,7 @@ export const commonTransforms = aliasify({
 
 export const give = commonTransforms;
 export const to = commonTransforms;
+export const go = commonTransforms;
 
 export type CommonTransforms = typeof commonTransforms;
 
