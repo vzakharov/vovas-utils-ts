@@ -1,7 +1,7 @@
 import yaml from "js-yaml";
 import _ from "lodash";
 import { $thrower } from "../$throw";
-import { aliasify, Jsonable } from "../..";
+import { aliasify, Jsonable, wrap } from "../..";
 import { getProp } from "./getProp";
 import { compileTimeError } from "./compileTimeError";
 
@@ -59,6 +59,7 @@ export const give = aliasify({
 
   mapped: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
   valueMapped: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
+  wrapped: wrap
 
 }, {
 

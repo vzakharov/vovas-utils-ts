@@ -306,7 +306,8 @@ const give = aliasify({
   // Function-ish transforms: e.g. `.else.throw("message")` throws an error with the given message
   error: $thrower,
   mapped: (transform) => (arg) => arg.map(transform),
-  valueMapped: (transform) => (arg) => _.mapValues(arg, transform)
+  valueMapped: (transform) => (arg) => _.mapValues(arg, transform),
+  wrapped: wrap
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],

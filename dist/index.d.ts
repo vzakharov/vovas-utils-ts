@@ -270,6 +270,7 @@ declare const give: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
+    wrapped: typeof wrap;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -330,6 +331,7 @@ declare const to: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
+    wrapped: typeof wrap;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -390,6 +392,7 @@ declare const get: Aliasified<{
     }) => {
         [key: string]: R_1;
     };
+    wrapped: typeof wrap;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
