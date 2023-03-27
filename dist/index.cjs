@@ -21,10 +21,24 @@ function aliasify(object, aliasesDefinition) {
   return retypedObject;
 }
 
-function $do(fnOrKey, ...args) {
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
+function wrap(fnOrKey, ...args) {
   return typeof fnOrKey === "string" ? (target) => target[fnOrKey](...args) : (target) => fnOrKey(target, ...args);
 }
-const wrap = $do;
+const $do = merge(wrap, ($do2) => ({
+  replace: (regex, replacement) => (string) => string.replace(regex, replacement)
+}));
 
 function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
@@ -320,7 +334,7 @@ const commonTransforms = aliasify({
   error: $thrower,
   mapped: (transform) => (arg) => arg.map(transform),
   valueMapped: (transform) => (arg) => _.mapValues(arg, transform),
-  wrapped: $do
+  wrapped: wrap
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -586,18 +600,6 @@ function isJsonable(obj) {
 }
 function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
-}
-
-function merge(target, ...sources) {
-  let result = target;
-  for (const source of sources) {
-    if (_.isFunction(source)) {
-      result = _.merge(result, source(result));
-    } else {
-      result = _.merge(result, source);
-    }
-  }
-  return result;
 }
 
 const log = logger(23, "yellow");
