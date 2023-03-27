@@ -104,7 +104,7 @@ declare function $if<Argument, TransformResult>(argument: Argument, predicate: N
 declare function lazily<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
 declare function lazily<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
 
-declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Arg>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
+declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
 declare const commonPredicates: {
