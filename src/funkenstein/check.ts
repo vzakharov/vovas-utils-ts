@@ -1,210 +1,295 @@
-// Implement code that would allow something like:
-import { $thrower } from './$throw';
+import { Predicate, PredicateOutput, NonTypeguard, Transform, Typeguard } from "./typings";
 
-export function getItemNames(itemStringOrArrayOrObject: string | string[] | Record<string, any>): string[] {
-  const itemNames = 
-    check(itemStringOrArrayOrObject)
-      .if(_.isString, _.castArray)
-      .if(_.isArray, array => array.map(_.toString))
-      .if(_.isObject, _.keys)
-      .else($thrower("Expected string, array or object"))
-    // (Once we see `default`, the expression is evaluated and the result is returned)
-  return itemNames;
+export type CheckState = {
+  isFirst: boolean;
+  isLast: boolean;
+  hasArgument: boolean;
+  argument?: any;
+  predicate?: Predicate;
+  transform?: Transform;
+  switchStack: [
+    Predicate,
+    Transform
+  ][];
 };
-
-// Every step should be type-safe, so that the compiler can infer the type for the next if.
-// It should also be lazy, so that the expression is evaluated right after the first matching if.
-
-// Implementation:
-
-import _ from 'lodash';
-
-export type Typeguard<BroadType, NarrowType extends BroadType> = 
-  ( (arg: BroadType) => arg is NarrowType )
-  |
-  ( (arg: any) => arg is NarrowType );
-
-export type TypeguardOrType<BroadType, NarrowType extends BroadType> = Typeguard<BroadType, NarrowType> | NarrowType;
-
-export type BroadType<TG extends TypeguardOrType<any, any>> = 
-  TG extends Typeguard<infer BroadType, any> ? BroadType : any;
-
-export type NarrowType<TG extends TypeguardOrType<any, any>> =
-  TG extends Typeguard<any, infer NarrowType> ? NarrowType : TG;
-
-export type Transform<Arg, Result> = (arg: Arg) => Result;
-
-export type SwitchWithArg<Arg, Result> = {
-
-  if<TypedArg extends Arg, IfResult>(
-    typeguard: ( (arg: Arg) => arg is TypedArg ),
-    transform: (arg: TypedArg) => IfResult
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-  if<TypedArg extends Arg, IfResult>(
-    typeguard: ( (arg: any) => arg is TypedArg ),
-    transform: (arg: TypedArg) => IfResult
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-  if<TypedArg extends Arg, IfResult>(
-    type: TypedArg,
-    transform: (arg: TypedArg) => IfResult
-  ): Switch<Exclude<Arg, TypedArg>, Result | IfResult, false>
-
-
-  else<ElseResult>(transform: (arg: Arg) => ElseResult): Result | ElseResult;
   
-};
 
-export type SwitchWithCondition<Result> = {
+export type CheckKind = 'first' | 'last' | undefined;
 
-  if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult>;
-  else<ElseResult>(transform: () => ElseResult): ElseResult | Result;
-  
-};
+export function parseSwitch<
+  Kind extends CheckKind, 
+  HasArgument extends boolean, 
+  OriginalArgument,
+  Argument, 
+  CombinedResult,
+  Output = ParseSwitchOutput<Kind, HasArgument, OriginalArgument, Argument, CombinedResult>
+>(
+  kind: Kind,
+  hasArgument: HasArgument,
+  argument: Argument | undefined,
+  switchStack: [ Predicate, Transform ][]
+): Output {
+  function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
+    predicate: Predicate<Argument, IsTypeguard, Guarded>,
+    transform?: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
+  ) {
 
-export type Switch<Arg, Result, ConditionBased extends boolean> = 
-  ConditionBased extends true
-    ? SwitchWithCondition<Result>
-    : SwitchWithArg<Arg, Result>;
+      return transform
+        ? pushToStack(
+            kind,
+            hasArgument,
+            argument as PredicateOutput<Argument, IsTypeguard, Guarded>,
+            predicate,
+            transform,
+            switchStack
+          )
+        : parseTransform(
+            kind,
+            hasArgument,
+            argument,
+            predicate,
+            switchStack
+          );
 
-function warp<T, ConditionBased extends boolean>(value: T) {
-  function recursion() {
-    return {
-      if: recursion,
-      else() {
-        return value;
-      },
-    };
-  };
-  return recursion() as Switch<any, T, ConditionBased>;
-}
-
-export function $if<Arg, TypedArg extends Arg, IfResult>(
-  arg: Arg,
-  typeguard: (arg: Arg) => arg is TypedArg, 
-  transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult, false>
-
-export function $if<Arg, TypedArg extends Arg, IfResult>(
-  arg: Arg,
-  typeguard: (arg: any) => arg is TypedArg,
-  transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult, false>
-
-
-export function $if<Arg, TypedArg extends Arg, IfResult>(
-  arg: Arg,
-  typeguard: (arg: any) => arg is TypedArg,
-  transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult, false>
-
-export function $if<Arg, TypedArg extends Arg, IfResult>(
-  arg: Arg,
-  type: TypedArg,
-  transform: Transform<TypedArg, IfResult>
-): Switch<Exclude<Arg, TypedArg>, IfResult, false>
-
-
-export function $if<Result>(
-  condition: boolean,
-  transform: () => Result
-) : Switch<never, Result, true>
-
-export function $if<Arg, TypedArg extends Arg, Result>(
-  argOrCondition: Arg | boolean,
-  typeguardOrTypeOrTransform: TypeguardOrType<Arg, TypedArg> | (() => Result),
-  transformOrNothing?: Transform<TypedArg, Result>
-): Switch<Exclude<Arg, TypedArg>, Result, boolean> {
-
-  if ( _.isBoolean(argOrCondition) )
-    return ifWithCondition(argOrCondition, typeguardOrTypeOrTransform as () => Result);
-  
-  const arg = argOrCondition;
-  const typeguardOrType = typeguardOrTypeOrTransform as TypeguardOrType<Arg, TypedArg>;
-  const typeguard = _.isFunction(typeguardOrType) ? typeguardOrType : is<Arg, TypedArg>(typeguardOrType);
-  const transform = transformOrNothing as Transform<TypedArg, Result>;
-
-  if ( typeguard(arg) ) {
-    return warp(transform(arg));
-  }
-
-  return check<Exclude<Arg, TypedArg>, Result>(arg as Exclude<Arg, TypedArg>);
-};
-
-function ifWithCondition<Result>(
-  condition: boolean,
-  transform: () => Result
-): SwitchWithCondition<Result> {
-
-  if ( condition ) {
-    return warp<Result, true>(transform());
-  }
-
-  return {
-    if<IfResult>(condition: boolean, transform: () => IfResult): SwitchWithCondition<Result | IfResult> {
-      return ifWithCondition(condition, transform);
-    },
-    else<ElseResult>(transform: () => ElseResult): Result | ElseResult {
-      return transform();
-    },
   };
 
-};
+  // function $else<T extends MatchingTransform<typeof alwaysTrue>>(transform: T) {
+  function $else<TransformResult>(
+    transform: Transform<Argument, TransformResult>
+  ) {
 
-export function check<Arg, Result = never>(arg: Arg): Switch<Arg, Result, false> {
+    const alwaysTrue: (arg: Argument) => true = () => true;
+    return pushToStack(
+      'last',
+      hasArgument,
+      argument,
+      alwaysTrue,
+      transform,
+      switchStack
+    );
+
+  };
 
   return {
+    if: $if,
+    ...( kind === 'last' ? { else: $else } : {} )
+  } as Output;
 
-    if: <TypedArg extends Arg, IfResult>(
-      typeguardOrType: TypeguardOrType<Arg, TypedArg>,
-      transform: Transform<TypedArg, IfResult>
-    ) => $if(arg,
-      _.isFunction(typeguardOrType)
-        ? typeguardOrType
-        : is<Arg, TypedArg>(typeguardOrType), transform
+};
+
+export type ParseSwitchOutput<Kind extends CheckKind, HasArgument extends boolean, OriginalArgument, Argument, CombinedResult> = {
+
+  if<Guarded extends Argument>(typeguard: Typeguard<Argument, Guarded>): 
+    ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Exclude<Argument, Guarded>, CombinedResult>;
+
+  if(predicate: NonTypeguard<Argument>): 
+    ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Argument, CombinedResult>;
+
+  if<Guarded extends Argument, TransformResult>(
+    typeguard: Typeguard<Argument, Guarded>,
+    transform: Transform<Guarded, TransformResult>
+  ):
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Exclude<Argument, Guarded>, TransformResult, CombinedResult>;
+  
+  if<TransformResult>(
+    predicate: NonTypeguard<Argument>,
+    transform: Transform<Argument, TransformResult>
+  ):
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
+
+} & ( Kind extends 'first' ? {} : {
+
+  else<TransformResult>(
+    transform: Transform<Argument, TransformResult>
+  ):
+    PushToStackOutput<'last', HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
+
+} );
+
+export function parseTransform<
+  Kind extends CheckKind,
+  HasArgument extends boolean,
+  OriginalArgument,
+  Argument,
+  Narrowed extends Argument,
+  CombinedResult
+>(
+  kind: Kind,
+  hasArgument: HasArgument,
+  argument: Argument,
+  predicate: Predicate,
+  switchStack: [ Predicate, Transform ][]
+) {
+  return {
+
+    then: <TransformResult>(transform: Transform<Argument, TransformResult>) => pushToStack(
+      kind,
+      hasArgument,
+      argument,
+      predicate,
+      transform,
+      switchStack
     ),
 
-    else: <ElseResult>(transform: (arg: Arg) => ElseResult) =>
-      transform(arg)
+  } as ParseTransformOutput<Kind, HasArgument, OriginalArgument, Argument, Narrowed, CombinedResult>;
+}
+export type ParseTransformOutput<Kind extends CheckKind, HasArgument extends boolean, OriginalArgument, Argument, Narrowed extends Argument, CombinedResult> = {
+  then<TransformResult>(
+    transform: Transform<Argument, TransformResult>
+  ):
+    // PushToStackOutput<Kind, HasArgument, Argument, TransformResult, CombinedResult>;
+    PushToStackOutput<Kind, HasArgument, OriginalArgument, Narrowed, TransformResult, CombinedResult>;
+
+};
+
+
+export function pushToStack<
+  Kind extends CheckKind,
+  HasArgument extends boolean,
+  OriginalArgument, 
+  Argument,
+  TransformResult,
+  CombinedResult
+>(
+  kind: Kind,
+  hasArgument: HasArgument,
+  argument: Argument | undefined,
+  predicate: Predicate,
+  transform: Transform<Argument, TransformResult>,
+  switchStack: [ Predicate, Transform ][]
+) {
+
+  switchStack.push([predicate, transform]);
+
+  return (
+    kind === 'last'
+      ? evaluate(
+        hasArgument, argument, switchStack
+      )
+      : parseSwitch(
+        undefined, hasArgument, argument, switchStack
+      )
+  ) as PushToStackOutput<Kind, HasArgument, OriginalArgument, Argument, TransformResult, CombinedResult>;
+
+};
+
+export type PushToStackOutput<Kind extends CheckKind, HasArgument extends boolean, OriginalArgument, Argument, TransformResult, CombinedResult> = (
+
+  Kind extends 'last'
+    ? Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult | TransformResult>
+    : ParseSwitchOutput<undefined, HasArgument, OriginalArgument, Argument, CombinedResult | TransformResult>
+
+);
+
+export function evaluate<
+  HasArgument extends boolean,
+  OriginalArgument,
+  Argument,
+  CombinedResult
+>(
+  hasArgument: HasArgument,
+  argument: Argument,
+  switchStack: [ Predicate, Transform ][]
+) {
+
+  function evaluateForArgument(argument: Argument): CombinedResult {
+
+    for ( const [predicate, transform] of switchStack ) {
+      if ( predicate(argument) ) {
+        return transform(argument);
+      }
+    }
+
+    throw new Error(`No matching predicate found for argument ${argument} (this should never happen)`);
 
   };
 
+  return (
+    hasArgument
+      ? evaluateForArgument(argument)
+      : evaluateForArgument
+  ) as Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult>;
+
 };
 
-export function isDefined<T>(value: T | undefined): value is T {
-  return !_.isUndefined(value);
-}
+export type Evaluate<HasArgument extends boolean, OriginalArgument, Argument, CombinedResult> = (
 
-export function $<T>(value: T): (...args: any[]) => T {
-  return (...args: any[]) => value;
-}
+  HasArgument extends true
+    ? CombinedResult
+    : (arg: OriginalArgument) => CombinedResult
 
-export function itself<T>(value: T): T {
-  return value;
-}
+);
 
-export function themselves<T extends any[]>(values: T): T {
-  return values;
-}
+export function check<Argument>(): ParseSwitchOutput<'first', false, Argument, Argument, never>;
 
-export function guard<BroadType, NarrowType extends BroadType>(
-  checker: (value: BroadType) => boolean
-): (value: BroadType) => value is NarrowType {
-  // return checker as Typeguard<T, U>;
-  return checker as Typeguard<BroadType, NarrowType>;
-}
+export function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
 
-export function is<BroadType, NarrowType extends BroadType>(
-  valueToCheck: BroadType
-): Typeguard<BroadType, NarrowType> {
-  return function isNarrowType(value: BroadType): value is NarrowType {
-    return value === valueToCheck;
-  }
-}
-
-export function map<Item, Result>(
-  transform: Transform<Item, Result>
-): (items: Item[]) => Result[] {
-  return (items: Item[]) => items.map(transform);
+export function check<Argument>(argument?: Argument) {
+  return parseSwitch(
+    'first',
+    !!argument,
+    argument,
+    []
+  );
 };
+
+export const transform = check;
+
+export function $if<Argument, Guarded extends Argument, TransformResult>(
+  argument: Argument,
+  typeguard: Typeguard<Argument, Guarded>,
+  transform: Transform<Guarded, TransformResult>
+): PushToStackOutput<'first', true, Argument, Exclude<Argument, Guarded>, TransformResult, never>;
+
+export function $if<Argument, TransformResult>(
+  argument: Argument,
+  predicate: NonTypeguard<Argument>,
+  transform: Transform<Argument, TransformResult>
+): PushToStackOutput<'first', true, Argument, Argument, TransformResult, never>;
+
+export function $if<Argument, IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
+  argument: Argument,
+  predicate: Predicate<Argument, IsTypeguard, Guarded>,
+  transform: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
+) {
+  return pushToStack(
+    'first' as const, true, argument as PredicateOutput<Argument, IsTypeguard, Guarded>, predicate, transform, []
+  )
+};
+
+// // Tests:
+
+// import { is } from "./common/checkers";
+// import { give, to } from "./common/transforms";
+
+// const switchCase =
+//   transform<string>()
+//     .if( string => !!string.match(/^[A-Z]*$/), to.lowerCase )
+//     .if( string => !!string.match(/^[a-z]*$/), to.upperCase )
+//     .else( give.error("Only fully uppercase or lowercase strings are allowed") );
+
+// const castArray =
+//   $if('something' as string | string[], is.array, give.map(to.string))
+//   .else(give.array);
+
+// const absoluteValue = 
+//   $if(-5, x => x < 0, x => -x)
+//   .else(x => x);
+
+// const keyNames = 
+//   check('something' as string | string[] | object)
+//     .if(is.array, give.map(to.string))
+//     .if(is.string, give.array)
+//     .if(is.object, give.keys)
+//     .else(give.compileTimeError);
+
+// const getKeyNames =
+//   check<string | string[] | object>()
+//     .if(is.array, give.map(to.string))
+//     .if(is.string, give.array)
+//     .if(is.object, give.keys)
+//     .else(give.compileTimeError);
+
+// const keyNames2 = getKeyNames({ this: 'is', an: 'object' }); // ['this', 'an']
+
+// console.log(keyNames);

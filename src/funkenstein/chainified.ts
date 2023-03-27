@@ -1,21 +1,5 @@
 import { assign, Jsonable } from "../types";
 
-// Make a `chainified` function for something like
-export const fetchWith = chainified(fetch, 1, ['method', 'headers', 'body']);
-
-export const get = fetchWith.method('get');
-// await get('https://example.com');
-
-export const post = fetchWith.method('post');
-// await post('https://example.com', { body: 'Hello World' });
-
-export const postJson = ( body: Jsonable ) =>
-  post.headers({ 'Content-Type': 'application/json' }).body(JSON.stringify(body));
-// await postJson({ hello: 'world' })( 'https://example.com' );
-
-export const authorizedFetch = ( Authorization: string ) => fetchWith.headers({ Authorization });
-// await authorizedFetch('Bearer 12345')('https://example.com');
-
 export type ChainableKeys<
   Function extends (...args: any[]) => any,
   ChainedParameterIndex extends number,
@@ -88,3 +72,19 @@ export function chainified<
     {} as any,
   )
 };
+
+// Tests:
+// export const fetchWith = chainified(fetch, 1, ['method', 'headers', 'body']);
+
+// export const get = fetchWith.method('get');
+// // await get('https://example.com');
+
+// export const post = fetchWith.method('post');
+// // await post('https://example.com', { body: 'Hello World' });
+
+// export const postJson = ( body: Jsonable ) =>
+//   post.headers({ 'Content-Type': 'application/json' }).body(JSON.stringify(body));
+// // await postJson({ hello: 'world' })( 'https://example.com' );
+
+// export const authorizedFetch = ( Authorization: string ) => fetchWith.headers({ Authorization });
+// // await authorizedFetch('Bearer 12345')('https://example.com');
