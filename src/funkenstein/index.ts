@@ -1,5 +1,6 @@
 export * from './$throw';
 export * from './$try';
+export * from './$with';
 export * from './chainified';
 export * from './check';
 export * from './lazily';

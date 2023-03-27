@@ -36,6 +36,10 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function $with(arg, fn) {
+  return fn(arg);
+}
+
 function isPrimitive(v) {
   const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
   return result;
@@ -678,4 +682,4 @@ function isTyped(type) {
   };
 }
 
-export { $, $as, $if, $throw, $thrower, $try, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $, $as, $if, $throw, $thrower, $try, $with, Resolvable, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, createEnv, doWith, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, get, getNpmLinks, getProp, give, go, goer, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

@@ -38,6 +38,10 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function $with(arg, fn) {
+  return fn(arg);
+}
+
 function isPrimitive(v) {
   const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
   return result;
@@ -686,6 +690,7 @@ exports.$if = $if;
 exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
+exports.$with = $with;
 exports.Resolvable = Resolvable;
 exports.aliasify = aliasify;
 exports.ansiColors = ansiColors;
