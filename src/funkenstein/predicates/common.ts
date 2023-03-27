@@ -35,8 +35,8 @@ export const commonPredicates = {
   like: <T extends object, U extends object>(sample: U) =>
     ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
 
-  matching: (regex: RegExp) => (string: string) => regex.test(string),
-  describing: (string: string) => (regex: RegExp) => regex.test(string),
+  // matching: (regex: RegExp) => (string: string) => regex.test(string),
+  // describing: (string: string) => (regex: RegExp) => regex.test(string),
   
   anything: (...args: any[]): true => true,
 
@@ -83,8 +83,8 @@ export const is = merge(commonPredicates, is => ({
 
     like: <U extends object>(sample: U) => not(is.like(sample)),
 
-    matching: (regex: RegExp) => not(is.matching(regex)),
-    describing: (string: string) => not(is.describing(string)),
+    // matching: (regex: RegExp) => not(is.matching(regex)),
+    // describing: (string: string) => not(is.describing(string)),
 
     anything: not(is.anything),
 
@@ -92,8 +92,15 @@ export const is = merge(commonPredicates, is => ({
   // TODO: Find a way to make the above work in TS without having to manually type it out.
 })) satisfies CommonPredicates & { not: CommonPredicateMap };
 
+export const does = is;
+
 export const isnt = is.not;
 export const aint = is.not; // Alias
+export const doesnt = does.not;
+
+export const matches = (regex: RegExp) => (string: string) => regex.test(string);
+export const describes = (string: string) => (regex: RegExp) => regex.test(string);
+export const equals = is.exactly;
 
 // Tests:
 // function test(x: number | null) {

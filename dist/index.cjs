@@ -43,9 +43,9 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
-function $with(arg, fn) {
-  return typeof fn !== "undefined" ? fn(arg) : {
-    do: (fn2) => fn2(arg)
+function $with(...args) {
+  return {
+    do: (fn) => fn(...args)
   };
 }
 
@@ -217,8 +217,8 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: (sample) => (arg) => _.isMatch(arg, sample),
-  matching: (regex) => (string) => regex.test(string),
-  describing: (string) => (regex) => regex.test(string),
+  // matching: (regex: RegExp) => (string: string) => regex.test(string),
+  // describing: (string: string) => (regex: RegExp) => regex.test(string),
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -248,14 +248,19 @@ const is = merge(commonPredicates, (is2) => ({
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
     like: (sample) => not(is2.like(sample)),
-    matching: (regex) => not(is2.matching(regex)),
-    describing: (string) => not(is2.describing(string)),
+    // matching: (regex: RegExp) => not(is.matching(regex)),
+    // describing: (string: string) => not(is.describing(string)),
     anything: not(is2.anything)
   }
   // TODO: Find a way to make the above work in TS without having to manually type it out.
 }));
+const does = is;
 const isnt = is.not;
 const aint = is.not;
+const doesnt = does.not;
+const matches = (regex) => (string) => regex.test(string);
+const describes = (string) => (regex) => regex.test(string);
+const equals = is.exactly;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -708,13 +713,17 @@ exports.check = check;
 exports.commonPredicates = commonPredicates;
 exports.commonTransforms = commonTransforms;
 exports.createEnv = createEnv;
+exports.describes = describes;
 exports.doWith = doWith;
+exports.does = does;
+exports.doesnt = doesnt;
 exports.download = download;
 exports.downloadAsStream = downloadAsStream;
 exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
+exports.equals = equals;
 exports.evaluate = evaluate;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
@@ -738,6 +747,7 @@ exports.labelize = labelize;
 exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
+exports.matches = matches;
 exports.merge = merge;
 exports.not = not;
 exports.paint = paint;
