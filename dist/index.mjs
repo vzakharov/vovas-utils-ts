@@ -60,6 +60,9 @@ function $as(what) {
 function assign(target, source) {
   return Object.assign(target, source);
 }
+function tuple(...args) {
+  return args;
+}
 
 function chainified($function, chainedParameterIndex, chainedKeys) {
   return chainedKeys.reduce(
@@ -202,6 +205,7 @@ const commonPredicates = {
   function: (arg) => _.isFunction(arg),
   object: (arg) => _.isObject(arg),
   array: (arg) => _.isArray(arg),
+  regexp: (arg) => _.isRegExp(arg),
   primitive: (arg) => isPrimitive(arg),
   jsonable: (arg) => isJsonable(arg),
   jsonableObject: (arg) => isJsonableObject(arg),
@@ -215,8 +219,6 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: (sample) => (arg) => _.isMatch(arg, sample),
-  // matching: (regex: RegExp) => (string: string) => regex.test(string),
-  // describing: (string: string) => (regex: RegExp) => regex.test(string),
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -233,6 +235,7 @@ const is = merge(commonPredicates, (is2) => ({
     function: not(is2.function),
     object: not(is2.object),
     array: not(is2.array),
+    regexp: not(is2.regexp),
     primitive: not(is2.primitive),
     jsonable: not(is2.jsonable),
     jsonableObject: not(is2.jsonableObject),
@@ -256,9 +259,6 @@ const does = is;
 const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
-const matches = (regex) => (string) => regex.test(string);
-const describes = (string) => (regex) => regex.test(string);
-const equals = is.exactly;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -691,4 +691,4 @@ function isTyped(type) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, describes, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, equals, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, matches, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

@@ -62,6 +62,9 @@ function $as(what) {
 function assign(target, source) {
   return Object.assign(target, source);
 }
+function tuple(...args) {
+  return args;
+}
 
 function chainified($function, chainedParameterIndex, chainedKeys) {
   return chainedKeys.reduce(
@@ -204,6 +207,7 @@ const commonPredicates = {
   function: (arg) => _.isFunction(arg),
   object: (arg) => _.isObject(arg),
   array: (arg) => _.isArray(arg),
+  regexp: (arg) => _.isRegExp(arg),
   primitive: (arg) => isPrimitive(arg),
   jsonable: (arg) => isJsonable(arg),
   jsonableObject: (arg) => isJsonableObject(arg),
@@ -217,8 +221,6 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: (sample) => (arg) => _.isMatch(arg, sample),
-  // matching: (regex: RegExp) => (string: string) => regex.test(string),
-  // describing: (string: string) => (regex: RegExp) => regex.test(string),
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -235,6 +237,7 @@ const is = merge(commonPredicates, (is2) => ({
     function: not(is2.function),
     object: not(is2.object),
     array: not(is2.array),
+    regexp: not(is2.regexp),
     primitive: not(is2.primitive),
     jsonable: not(is2.jsonable),
     jsonableObject: not(is2.jsonableObject),
@@ -258,9 +261,6 @@ const does = is;
 const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
-const matches = (regex) => (string) => regex.test(string);
-const describes = (string) => (regex) => regex.test(string);
-const equals = is.exactly;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -713,7 +713,6 @@ exports.check = check;
 exports.commonPredicates = commonPredicates;
 exports.commonTransforms = commonTransforms;
 exports.createEnv = createEnv;
-exports.describes = describes;
 exports.doWith = doWith;
 exports.does = does;
 exports.doesnt = doesnt;
@@ -723,7 +722,6 @@ exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
-exports.equals = equals;
 exports.evaluate = evaluate;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
@@ -747,7 +745,6 @@ exports.labelize = labelize;
 exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
-exports.matches = matches;
 exports.merge = merge;
 exports.not = not;
 exports.paint = paint;
@@ -760,6 +757,7 @@ exports.setLastLogIndex = setLastLogIndex;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;
+exports.tuple = tuple;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;

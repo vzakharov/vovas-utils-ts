@@ -16,6 +16,7 @@ export const commonPredicates = {
   function: <T>(arg: T | ((...args: any[]) => any)): arg is (...args: any[]) => any => _.isFunction(arg),
   object: <T>(arg: T | object): arg is object => _.isObject(arg),
   array: <T>(arg: T | any[]): arg is any[] => _.isArray(arg),
+  regexp: <T>(arg: T | RegExp): arg is RegExp => _.isRegExp(arg),
 
   primitive: <T>(arg: T | Primitive): arg is Primitive => isPrimitive(arg),
   jsonable: <T>(arg: T | Jsonable): arg is Jsonable => isJsonable(arg),
@@ -35,9 +36,6 @@ export const commonPredicates = {
   like: <T extends object, U extends object>(sample: U) =>
     ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
 
-  // matching: (regex: RegExp) => (string: string) => regex.test(string),
-  // describing: (string: string) => (regex: RegExp) => regex.test(string),
-  
   anything: (...args: any[]): true => true,
 
 }
@@ -65,6 +63,7 @@ export const is = merge(commonPredicates, is => ({
     function: not(is.function),
     object: not(is.object),
     array: not(is.array),
+    regexp: not(is.regexp),
 
     primitive: not(is.primitive),
     jsonable: not(is.jsonable),
@@ -97,10 +96,6 @@ export const does = is;
 export const isnt = is.not;
 export const aint = is.not; // Alias
 export const doesnt = does.not;
-
-export const matches = (regex: RegExp) => (string: string) => regex.test(string);
-export const describes = (string: string) => (regex: RegExp) => regex.test(string);
-export const equals = is.exactly;
 
 // Tests:
 // function test(x: number | null) {
