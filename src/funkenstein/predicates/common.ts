@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { isJsonable, isJsonableObject, isPrimitive, Jsonable, JsonableObject, merge, Primitive } from '../..';
+import { isLike } from './isLike';
 import { not } from './not';
 
 export const commonPredicates = {
@@ -33,8 +34,7 @@ export const commonPredicates = {
   atLeast: (sample: number) => (arg: number) => arg >= sample,
   atMost: (sample: number) => (arg: number) => arg <= sample,
 
-  like: <T extends object, U extends object>(sample: U) =>
-    ( (arg: T) => _.isMatch(arg, sample) ) as (arg: T) => arg is T & U,
+  like: isLike,
 
   anything: (...args: any[]): true => true,
 

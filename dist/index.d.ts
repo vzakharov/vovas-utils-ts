@@ -114,6 +114,9 @@ declare function lazily<Function extends (...args: any[]) => any>(func: Function
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
+declare function isLike<T extends object, U extends object>(sample: U): (arg: T) => arg is T & U;
+declare function isLike(sample: RegExp): (arg: string) => boolean;
+
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     null: <T_1>(arg: T_1 | null) => arg is null;
@@ -144,7 +147,7 @@ declare const commonPredicates: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <T_21 extends object, U extends object>(sample: U) => (arg: T_21) => arg is T_21 & U;
+    like: typeof isLike;
     anything: (...args: any[]) => true;
 };
 type CommonPredicates = typeof commonPredicates;
@@ -160,11 +163,12 @@ declare const is: {
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
     null: <T_1>(arg: T_1 | null) => arg is null;
-    emptyString: <T_3>(arg: "" | T_3) => arg is "";
-    zero: <T_5>(arg: 0 | T_5) => arg is 0;
-    false: <T_7>(arg: false | T_7) => arg is false;
     true: <T_8>(arg: true | T_8) => arg is true;
+    false: <T_7>(arg: false | T_7) => arg is false;
+    zero: <T_5>(arg: 0 | T_5) => arg is 0;
+    emptyString: <T_3>(arg: "" | T_3) => arg is "";
     array: <T_11>(arg: any[] | T_11) => arg is any[];
+    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
     primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
     jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
@@ -177,12 +181,11 @@ declare const is: {
     };
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <T_21 extends object, U extends object>(sample: U) => (arg: T_21) => arg is T_21 & U;
+    like: typeof isLike;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
@@ -226,11 +229,12 @@ declare const does: {
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
     null: <T_1>(arg: T_1 | null) => arg is null;
-    emptyString: <T_3>(arg: "" | T_3) => arg is "";
-    zero: <T_5>(arg: 0 | T_5) => arg is 0;
-    false: <T_7>(arg: false | T_7) => arg is false;
     true: <T_8>(arg: true | T_8) => arg is true;
+    false: <T_7>(arg: false | T_7) => arg is false;
+    zero: <T_5>(arg: 0 | T_5) => arg is 0;
+    emptyString: <T_3>(arg: "" | T_3) => arg is "";
     array: <T_11>(arg: any[] | T_11) => arg is any[];
+    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
     primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
     jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
@@ -243,12 +247,11 @@ declare const does: {
     };
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <T_21 extends object, U extends object>(sample: U) => (arg: T_21) => arg is T_21 & U;
+    like: typeof isLike;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
