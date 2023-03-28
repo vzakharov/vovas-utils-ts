@@ -14,9 +14,11 @@ export function isLike<T extends object, U extends object>(sample: U): (arg: T) 
 export function isLike(sample: RegExp): (arg: string) => boolean;
 
 export function isLike(sample: RegExp | object) {
-  return ( arg: string | object ) =>
-    check( tuple(arg, sample) )
-      .if( respectively(is.string, is.regexp), ( [ arg, sample ] ) => sample.test(arg) )
-      .if( respectively(is.object, is.object), ( [ arg, sample ] ) => _.isMatch(arg, sample) )
-      .else( give.error("Expected a string and a regexp, or an object and an object") )
+  return ( arg: string | object ) => {
+    const result = check( arg, sample )
+      .if ( respectively(is.string, is.regexp), ( [ arg, sample ] ) => sample.test(arg) )
+      .if ( respectively(is.object, is.object), ( [ arg, sample ] ) => _.isMatch(arg, sample) )
+      .else ( give.error("Expected a string and a regexp, or an object and an object") );
+    return result;
+  };
 };

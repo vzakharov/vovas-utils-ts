@@ -1,4 +1,4 @@
-import { Predicate, PredicateOutput, NonTypeguard, Transform, Typeguard } from "./typings";
+import { NonTypeguard, Predicate, PredicateOutput, Transform, Typeguard } from "./typings";
 
 export type CheckState = {
   isFirst: boolean;
@@ -222,15 +222,40 @@ export type Evaluate<HasArgument extends boolean, OriginalArgument, Argument, Co
 
 export function check<Argument>(): ParseSwitchOutput<'first', false, Argument, Argument, never>;
 
-export function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
+export function check<Argument>(arg: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
 
-export function check<Argument>(argument?: Argument) {
-  return parseSwitch(
+export function check<Arguments extends any[]>(...args: Arguments): ParseSwitchOutput<'first', true, Arguments, Arguments, never>;
+
+export function check<Arguments extends any[]>(...args: Arguments) {
+  
+  const arg =
+    args.length === 0
+      ? undefined
+      : args.length === 1
+        ? args[0]
+        : args;
+
+  type HasArgument = Arguments extends [] ? false : true;
+  
+  type Argument =
+    HasArgument extends false ? undefined :
+      Arguments extends [any, ...infer Rest] ?
+        Rest extends [] ? Arguments[0] : Arguments
+      : never;
+  
+  return parseSwitch<
     'first',
-    !!argument,
-    argument,
+    HasArgument,
+    Argument,
+    Argument,
+    never
+  >(
+    'first',
+    args.length > 0 as HasArgument,
+    arg,
     []
   );
+
 };
 
 export const transform = check;

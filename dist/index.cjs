@@ -162,11 +162,12 @@ function evaluate(hasArgument, argument, switchStack) {
   }
   return hasArgument ? evaluateForArgument(argument) : evaluateForArgument;
 }
-function check(argument) {
+function check(...args) {
+  const arg = args.length === 0 ? void 0 : args.length === 1 ? args[0] : args;
   return parseSwitch(
     "first",
-    !!argument,
-    argument,
+    args.length > 0,
+    arg,
     []
   );
 }

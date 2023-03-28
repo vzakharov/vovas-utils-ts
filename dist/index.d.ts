@@ -102,7 +102,8 @@ type PushToStackOutput<Kind extends CheckKind, HasArgument extends boolean, Orig
 declare function evaluate<HasArgument extends boolean, OriginalArgument, Argument, CombinedResult>(hasArgument: HasArgument, argument: Argument, switchStack: [Predicate, Transform][]): Evaluate<HasArgument, OriginalArgument, Argument, CombinedResult>;
 type Evaluate<HasArgument extends boolean, OriginalArgument, Argument, CombinedResult> = (HasArgument extends true ? CombinedResult : (arg: OriginalArgument) => CombinedResult);
 declare function check<Argument>(): ParseSwitchOutput<'first', false, Argument, Argument, never>;
-declare function check<Argument>(argument: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
+declare function check<Argument>(arg: Argument): ParseSwitchOutput<'first', true, Argument, Argument, never>;
+declare function check<Arguments extends any[]>(...args: Arguments): ParseSwitchOutput<'first', true, Arguments, Arguments, never>;
 declare const transform: typeof check;
 declare function $if<Argument, Guarded extends Argument, TransformResult>(argument: Argument, typeguard: Typeguard<Argument, Guarded>, transform: Transform<Guarded, TransformResult>): PushToStackOutput<'first', true, Argument, Exclude<Argument, Guarded>, TransformResult, never>;
 declare function $if<Argument, TransformResult>(argument: Argument, predicate: NonTypeguard<Argument>, transform: Transform<Argument, TransformResult>): PushToStackOutput<'first', true, Argument, Argument, TransformResult, never>;
