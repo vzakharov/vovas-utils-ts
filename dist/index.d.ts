@@ -70,6 +70,12 @@ type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded extend
 type Typeguard<Base = any, Guarded extends Base = Base> = ((arg: Base) => arg is Guarded);
 type NonTypeguard<Base = any> = ((arg: Base) => boolean);
 type Transform<Arg = any, Result = any> = (arg: Arg) => Result;
+type TypeguardMap<Keys extends string = string> = {
+    [Key in Keys]: Typeguard;
+};
+type GuardedWithMap<Map extends TypeguardMap> = {
+    [Key in keyof Map]: Map[Key] extends Typeguard<any, infer Guarded> ? Guarded : never;
+};
 
 type CheckState = {
     isFirst: boolean;
@@ -114,8 +120,9 @@ declare function lazily<Function extends (...args: any[]) => any>(func: Function
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function isLike<T extends object, U extends object>(sample: U): (arg: T) => arg is T & U;
+declare function isLike<Object extends object, Map extends TypeguardMap>(sample: Map): (arg: Object) => arg is Object & GuardedWithMap<Map>;
 declare function isLike(sample: RegExp): (arg: string) => boolean;
+declare function isLike(sample: RegExp | TypeguardMap): (arg: string | object) => boolean;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -217,7 +224,7 @@ declare const is: {
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+        like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -283,7 +290,7 @@ declare const does: {
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+        like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -317,7 +324,7 @@ declare const isnt: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -350,7 +357,7 @@ declare const aint: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -383,7 +390,7 @@ declare const doesnt: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: <U extends object>(sample: U) => (arg: object) => arg is Exclude<object, object & U>;
+    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
     anything: (arg: any) => false;
 };
 

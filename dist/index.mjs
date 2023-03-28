@@ -279,9 +279,18 @@ function give$(arg) {
   return () => arg;
 }
 
+function isTypeguardMap(arg) {
+  return _.isObject(arg) && _.every(arg, _.isFunction);
+}
+function conformsToTypeguardMap(typeguardMap) {
+  return (object) => {
+    return _.every(typeguardMap, (typeguard, key) => typeguard(object[key]));
+  };
+}
+
 function isLike(sample) {
   return (arg) => {
-    const result = check(arg, sample).if(respectively(is.string, is.regexp), ([arg2, sample2]) => sample2.test(arg2)).if(respectively(is.object, is.object), ([arg2, sample2]) => _.isMatch(arg2, sample2)).else(give.error("Expected a string and a regexp, or an object and an object"));
+    const result = check(arg, sample).if(respectively(is.string, is.regexp), ([arg2, sample2]) => sample2.test(arg2)).if(respectively(is.object, isTypeguardMap), ([arg2, sample2]) => conformsToTypeguardMap(sample2)(arg2)).else(give.error("Expected a string and a regexp, or an object and an object"));
     return result;
   };
 }
@@ -346,7 +355,7 @@ const is = merge(commonPredicates, (is2) => ({
     below: (sample) => not(is2.below(sample)),
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
-    like: (sample) => not(is2.like(sample)),
+    like: (sample) => not(isLike(sample)),
     // matching: (regex: RegExp) => not(is.matching(regex)),
     // describing: (string: string) => not(is.describing(string)),
     anything: not(is2.anything)
