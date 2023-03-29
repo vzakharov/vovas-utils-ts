@@ -201,12 +201,12 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function has(source) {
-  return (target) => _.isMatch(target, source);
-}
-
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
+}
+
+function has(source) {
+  return (target) => _.isMatch(target, source);
 }
 
 function getProp(key) {
@@ -253,7 +253,8 @@ const commonTransforms = aliasify({
   error: $thrower,
   map: (transform) => (arg) => arg.map(transform),
   mapValues: (transform) => (arg) => _.mapValues(arg, transform),
-  wrapped: $do
+  wrapped: $do,
+  chain
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -366,6 +367,16 @@ const does = is;
 const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
+
+function chain(...fns) {
+  return (from) => {
+    let result = from;
+    for (const fn of fns) {
+      result = fn(result);
+    }
+    return result;
+  };
+}
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
@@ -708,4 +719,4 @@ function isTyped(type) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

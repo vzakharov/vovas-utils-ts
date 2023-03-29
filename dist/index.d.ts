@@ -415,9 +415,11 @@ declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, 
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4): (arg: [BT1, BT2, BT3, BT4]) => [NT1, NT2, NT3, NT4];
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4, BT5, NT5 extends BT5>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4, tf5: (arg: BT5) => NT5): (arg: [BT1, BT2, BT3, BT4, BT5]) => [NT1, NT2, NT3, NT4, NT5];
 
-declare function getProp<T extends object>(key: keyof T): (obj: T) => T[keyof T];
+declare function chain<From, Via extends any[], To>(...fns: Via extends [infer Via1] ? [(from: From) => Via1, (via1: Via1) => To] : Via extends [infer Via1, infer Via2] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => To] : Via extends [infer Via1, infer Via2, infer Via3] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5, infer Via6] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => Via6, (via6: Via6) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5, infer Via6, infer Via7] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => Via6, (via6: Via6) => Via7, (via7: Via7) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5, infer Via6, infer Via7, infer Via8] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => Via6, (via6: Via6) => Via7, (via7: Via7) => Via8, (via8: Via8) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5, infer Via6, infer Via7, infer Via8, infer Via9] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => Via6, (via6: Via6) => Via7, (via7: Via7) => Via8, (via8: Via8) => Via9, (via9: Via9) => To] : Via extends [infer Via1, infer Via2, infer Via3, infer Via4, infer Via5, infer Via6, infer Via7, infer Via8, infer Via9, infer Via10] ? [(from: From) => Via1, (via1: Via1) => Via2, (via2: Via2) => Via3, (via3: Via3) => Via4, (via4: Via4) => Via5, (via5: Via5) => Via6, (via6: Via6) => Via7, (via7: Via7) => Via8, (via8: Via8) => Via9, (via9: Via9) => Via10, (via10: Via10) => To] : never): (from: From) => To;
 
 declare function compileTimeError(item: never): never;
+
+declare function getProp<T extends object>(key: keyof T): (obj: T) => T[keyof T];
 
 declare const commonTransforms: Aliasified<{
     itself: <T>(arg: T) => T;
@@ -464,6 +466,7 @@ declare const commonTransforms: Aliasified<{
         [key: string]: R_1;
     };
     wrapped: typeof $do;
+    chain: typeof chain;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -527,6 +530,7 @@ declare const give: Aliasified<{
         [key: string]: R_1;
     };
     wrapped: typeof $do;
+    chain: typeof chain;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -590,6 +594,7 @@ declare const to: Aliasified<{
         [key: string]: R_1;
     };
     wrapped: typeof $do;
+    chain: typeof chain;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -653,6 +658,7 @@ declare const go: Aliasified<{
         [key: string]: R_1;
     };
     wrapped: typeof $do;
+    chain: typeof chain;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -807,4 +813,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

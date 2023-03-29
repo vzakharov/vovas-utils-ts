@@ -203,12 +203,12 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function has(source) {
-  return (target) => _.isMatch(target, source);
-}
-
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
+}
+
+function has(source) {
+  return (target) => _.isMatch(target, source);
 }
 
 function getProp(key) {
@@ -255,7 +255,8 @@ const commonTransforms = aliasify({
   error: $thrower,
   map: (transform) => (arg) => arg.map(transform),
   mapValues: (transform) => (arg) => _.mapValues(arg, transform),
-  wrapped: $do
+  wrapped: $do,
+  chain
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -368,6 +369,16 @@ const does = is;
 const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
+
+function chain(...fns) {
+  return (from) => {
+    let result = from;
+    for (const fn of fns) {
+      result = fn(result);
+    }
+    return result;
+  };
+}
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
@@ -725,6 +736,7 @@ exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
 exports.assign = assign;
 exports.both = both;
+exports.chain = chain;
 exports.chainified = chainified;
 exports.check = check;
 exports.commonPredicates = commonPredicates;

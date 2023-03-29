@@ -10,5 +10,6 @@ export * from './predicates/common';
 export * from './predicates/has';
 export * from './predicates/not';
 export * from './respectively';
+export * from './transforms/chain';
 export * from './transforms/common';
 export * from './transforms/getProp';

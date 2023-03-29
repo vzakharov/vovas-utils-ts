@@ -1,9 +1,9 @@
-import yaml from "js-yaml";
 import _ from "lodash";
+import yaml from "js-yaml";
 import { $thrower } from "../$throw";
-import { aliasify, Jsonable, $do, merge } from "../..";
-import { getProp } from "./getProp";
+import { $do, aliasify, chain, Jsonable } from "../..";
 import { compileTimeError } from "./compileTimeError";
+import { getProp } from "./getProp";
 
 export const commonTransforms = aliasify({
 
@@ -63,7 +63,8 @@ export const commonTransforms = aliasify({
   map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
   mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
-  wrapped: $do
+  wrapped: $do,
+  chain
 
 }, {
 
