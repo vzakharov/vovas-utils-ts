@@ -25,9 +25,7 @@ export const commonTransforms = aliasify({
   emptyArray: give$([] as const), 
   emptyObject: give$({} as const),
 
-  string: <
-    T extends { toString(): string}
-  >(arg: T): string => arg.toString(),
+  string: <T>(arg: T): string => `${arg}`,
   boolean: <T>(arg: T): boolean => !!arg,
   number: <T>(arg: T): number => Number(arg),
   array: <T>(arg: T): T[] => _.castArray(arg),

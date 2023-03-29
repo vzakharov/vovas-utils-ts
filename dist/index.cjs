@@ -230,7 +230,7 @@ const commonTransforms = aliasify({
   emptyString: give$(""),
   emptyArray: give$([]),
   emptyObject: give$({}),
-  string: (arg) => arg.toString(),
+  string: (arg) => `${arg}`,
   boolean: (arg) => !!arg,
   number: (arg) => Number(arg),
   array: (arg) => _.castArray(arg),

@@ -448,9 +448,7 @@ declare const commonTransforms: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2 extends {
-        toString(): string;
-    }>(arg: T_2) => string;
+    string: <T_2>(arg: T_2) => string;
     boolean: <T_3>(arg: T_3) => boolean;
     number: <T_4>(arg: T_4) => number;
     array: <T_5>(arg: T_5) => T_5[];
@@ -512,9 +510,7 @@ declare const give: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2 extends {
-        toString(): string;
-    }>(arg: T_2) => string;
+    string: <T_2>(arg: T_2) => string;
     boolean: <T_3>(arg: T_3) => boolean;
     number: <T_4>(arg: T_4) => number;
     array: <T_5>(arg: T_5) => T_5[];
@@ -576,9 +572,7 @@ declare const to: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2 extends {
-        toString(): string;
-    }>(arg: T_2) => string;
+    string: <T_2>(arg: T_2) => string;
     boolean: <T_3>(arg: T_3) => boolean;
     number: <T_4>(arg: T_4) => number;
     array: <T_5>(arg: T_5) => T_5[];
@@ -640,9 +634,7 @@ declare const go: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2 extends {
-        toString(): string;
-    }>(arg: T_2) => string;
+    string: <T_2>(arg: T_2) => string;
     boolean: <T_3>(arg: T_3) => boolean;
     number: <T_4>(arg: T_4) => number;
     array: <T_5>(arg: T_5) => T_5[];
