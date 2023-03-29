@@ -1,8 +1,8 @@
 'use strict';
 
 const _ = require('lodash');
-const yaml = require('js-yaml');
 const fs = require('fs');
+const yaml = require('js-yaml');
 const https = require('https');
 const path = require('path');
 const os = require('os');
@@ -93,7 +93,81 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
   );
 }
 
+const ansiPrefixes = {
+  gray: "\x1B[90m",
+  red: "\x1B[31m",
+  green: "\x1B[32m",
+  yellow: "\x1B[33m",
+  blue: "\x1B[34m",
+  magenta: "\x1B[35m",
+  cyan: "\x1B[36m"
+};
+const ansiColors = _.keys(ansiPrefixes);
+const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
+Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
+function loadOrSaveLoggerInfo(save) {
+  return $try(
+    () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
+    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
+  );
+}
+const loggerInfo = loadOrSaveLoggerInfo();
+function setLastLogIndex(index) {
+  loggerInfo.lastLogIndex = index;
+  loadOrSaveLoggerInfo(loggerInfo);
+}
+const serializer = {
+  json: (arg) => JSON.stringify(arg, null, 2),
+  yaml: (arg) => yaml.dump(arg),
+  none: (arg) => arg
+};
+function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
+  const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
+    color: defaultColorOrOptions ?? "gray",
+    serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
+  };
+  const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
+  if (typeof index === "undefined") {
+    logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
+  }
+  if (index && index !== "always" && index > loggerInfo.lastLogIndex) {
+    setLastLogIndex(index);
+  }
+  function _log(options, ...args) {
+    const { color, serializeAs } = _.defaults(options, defaultOptions);
+    if (loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex) {
+      args.forEach((arg) => {
+        try {
+          console.log(
+            String(
+              isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](arg)
+            ).split("\n").map(paint[color]).join("\n")
+          );
+        } catch (error) {
+          console.log(arg);
+        }
+      });
+    }
+  }
+  const log = (...args) => _log(defaultOptions, ...args);
+  for (const color of [void 0, ...Object.keys(paint)]) {
+    for (const serializeAs of [void 0, "json", "yaml"]) {
+      if (color || serializeAs)
+        _.set(
+          log,
+          _.compact([color, serializeAs]),
+          (...args) => _log({ color, serializeAs }, ...args)
+        );
+    }
+  }
+  if (addAlways)
+    log.always = logger("always", defaultOptions, false);
+  return log;
+}
+
+const log$1 = logger(28, "yellow");
 function parseSwitch(kind, hasArgument, argument, switchStack) {
+  log$1("parseSwitch", { kind, hasArgument, argument, switchStack });
   function $if2(predicate, transform2) {
     return transform2 ? pushToStack(
       kind,
@@ -123,10 +197,11 @@ function parseSwitch(kind, hasArgument, argument, switchStack) {
   }
   return {
     if: $if2,
-    ...kind === "last" ? { else: $else } : {}
+    ...kind !== "first" ? { else: $else } : {}
   };
 }
 function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
+  log$1("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
   return {
     then: (transform2) => pushToStack(
       kind,
@@ -139,6 +214,7 @@ function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
   };
 }
 function pushToStack(kind, hasArgument, argument, predicate, transform2, switchStack) {
+  log$1("pushToStack", { kind, hasArgument, argument, predicate, transform: transform2, switchStack });
   switchStack.push([predicate, transform2]);
   return kind === "last" ? evaluate(
     hasArgument,
@@ -152,10 +228,13 @@ function pushToStack(kind, hasArgument, argument, predicate, transform2, switchS
   );
 }
 function evaluate(hasArgument, argument, switchStack) {
+  log$1("evaluate", { hasArgument, argument, switchStack });
   function evaluateForArgument(argument2) {
     for (const [predicate, transform2] of switchStack) {
       if (predicate(argument2)) {
-        return transform2(argument2);
+        const result = transform2(argument2);
+        log$1.green("Found matching predicate", { predicate, transform: transform2, result });
+        return result;
       }
     }
     throw new Error(`No matching predicate found for argument ${argument2} (this should never happen)`);
@@ -543,72 +622,6 @@ ${getIndent(indentCount - 1)}}`;
   return `const shared = ${stringify(shared, true)};
 
 export default ${stringify(obj)};`;
-}
-
-const ansiPrefixes = {
-  gray: "\x1B[90m",
-  red: "\x1B[31m",
-  green: "\x1B[32m",
-  yellow: "\x1B[33m",
-  blue: "\x1B[34m",
-  magenta: "\x1B[35m",
-  cyan: "\x1B[36m"
-};
-const ansiColors = _.keys(ansiPrefixes);
-const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
-Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
-function loadOrSaveLoggerInfo(save) {
-  return $try(
-    () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
-    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
-  );
-}
-const loggerInfo = loadOrSaveLoggerInfo();
-function setLastLogIndex(index) {
-  loggerInfo.lastLogIndex = index;
-  loadOrSaveLoggerInfo(loggerInfo);
-}
-const serializer = {
-  json: (arg) => JSON.stringify(arg, null, 2),
-  yaml: (arg) => yaml.dump(arg),
-  none: (arg) => arg
-};
-function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
-  const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
-    color: defaultColorOrOptions ?? "gray",
-    serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
-  };
-  const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
-  if (typeof index === "undefined") {
-    logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
-  }
-  if (index && index !== "always" && index > loggerInfo.lastLogIndex) {
-    setLastLogIndex(index);
-  }
-  function _log(options, ...args) {
-    const { color, serializeAs } = _.defaults(options, defaultOptions);
-    if (loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex) {
-      console.log(...args.map(
-        (arg) => String(
-          isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : $try(() => serializer[serializeAs](arg), arg)
-        ).split("\n").map(paint[color]).join("\n")
-      ));
-    }
-  }
-  const log = (...args) => _log(defaultOptions, ...args);
-  for (const color of [void 0, ...Object.keys(paint)]) {
-    for (const serializeAs of [void 0, "json", "yaml"]) {
-      if (color || serializeAs)
-        _.set(
-          log,
-          _.compact([color, serializeAs]),
-          (...args) => _log({ color, serializeAs }, ...args)
-        );
-    }
-  }
-  if (addAlways)
-    log.always = logger("always", defaultOptions, false);
-  return log;
 }
 
 function jsonClone(obj) {

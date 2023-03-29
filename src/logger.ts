@@ -143,15 +143,22 @@ export function logger(index?: number | 'always',
     const { color, serializeAs } = _.defaults(options, defaultOptions);
   
     if ( loggerInfo.logAll || index === 'always' || index === loggerInfo.lastLogIndex ) {
-      console.log(...args.map( arg =>
-        String(
-          isPrimitive(arg)
-            ? arg
-            : _.isFunction(arg)
-              ? arg.toString()  
-              : $try(() => serializer[serializeAs](arg), arg)
-        ).split('\n').map( paint[color] ).join('\n')
-      ));
+      // console.log(...args.map( arg =>
+      args.forEach( arg => {
+        try {
+          console.log(
+            String(
+              isPrimitive(arg)
+                ? arg
+                : _.isFunction(arg)
+                  ? arg.toString()  
+                  : serializer[serializeAs](arg)
+            ).split('\n').map( paint[color] ).join('\n')
+          )
+        } catch (error) {
+          console.log(arg);
+        }
+      });
     }
   }
 

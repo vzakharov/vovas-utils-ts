@@ -1,4 +1,9 @@
+import yaml from 'js-yaml';
+import { logger } from "../logger";
 import { NonTypeguard, Predicate, PredicateOutput, Transform, Typeguard } from "./typings";
+
+
+const log = logger(28, 'yellow');
 
 export type CheckState = {
   isFirst: boolean;
@@ -29,6 +34,9 @@ export function parseSwitch<
   argument: Argument | undefined,
   switchStack: [ Predicate, Transform ][]
 ): Output {
+
+  log("parseSwitch", { kind, hasArgument, argument, switchStack });
+
   function $if<IsTypeguard extends boolean, Guarded extends Argument, TransformResult>(
     predicate: Predicate<Argument, IsTypeguard, Guarded>,
     transform?: Transform<PredicateOutput<Argument, IsTypeguard, Guarded>, TransformResult>
@@ -72,7 +80,7 @@ export function parseSwitch<
 
   return {
     if: $if,
-    ...( kind === 'last' ? { else: $else } : {} )
+    ...( kind !== 'first' ? { else: $else } : {} )
   } as Output;
 
 };
@@ -120,6 +128,9 @@ export function parseTransform<
   predicate: Predicate,
   switchStack: [ Predicate, Transform ][]
 ) {
+
+  log("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
+
   return {
 
     then: <TransformResult>(transform: Transform<Argument, TransformResult>) => pushToStack(
@@ -159,6 +170,8 @@ export function pushToStack<
   switchStack: [ Predicate, Transform ][]
 ) {
 
+  log("pushToStack", { kind, hasArgument, argument, predicate, transform, switchStack });
+
   switchStack.push([predicate, transform]);
 
   return (
@@ -192,11 +205,15 @@ export function evaluate<
   switchStack: [ Predicate, Transform ][]
 ) {
 
+  log("evaluate", { hasArgument, argument, switchStack });
+
   function evaluateForArgument(argument: Argument): CombinedResult {
 
     for ( const [predicate, transform] of switchStack ) {
       if ( predicate(argument) ) {
-        return transform(argument);
+        const result = transform(argument);
+        log.green("Found matching predicate", { predicate, transform, result });
+        return result;
       }
     }
 
@@ -227,6 +244,8 @@ export function check<Argument>(arg: Argument): ParseSwitchOutput<'first', true,
 export function check<Arguments extends any[]>(...args: Arguments): ParseSwitchOutput<'first', true, Arguments, Arguments, never>;
 
 export function check<Arguments extends any[]>(...args: Arguments) {
+
+  // log('check', args);
   
   const arg =
     args.length === 0
