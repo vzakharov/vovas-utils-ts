@@ -694,14 +694,6 @@ type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
 declare function give$<T>(arg: T): (...args: any[]) => T;
 
-type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
-    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
-} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
-declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
-
 type ShiftDirection = 'left' | 'right';
 type AllowedShiftArgs<Direction extends ShiftDirection, OutArgs extends any[]> = Direction extends 'left' ? [undefined, ...OutArgs] : [...OutArgs, undefined];
 type ShiftFunction<Direction extends ShiftDirection> = <OutArgs extends any[]>(direction: Direction) => (...args: AllowedShiftArgs<Direction, OutArgs>) => OutArgs;
@@ -710,10 +702,7 @@ type Shift = {
 } & {
     [Direction in ShiftDirection]: ShiftFunction<Direction>;
 };
-declare const shift: Merge<(<Direction extends ShiftDirection, OutArgs extends any[]>(direction: Direction) => (...args: AllowedShiftArgs<Direction, OutArgs>) => (OutArgs[number] | undefined)[]), {
-    left: (args_0: undefined, ...args_1: any[]) => any[];
-    right: (...args: [...any[], undefined]) => any[];
-}>;
+declare const shift: Shift;
 
 interface CreateEnvResult<T> {
     env: T;
@@ -794,6 +783,14 @@ declare function jsonClone<T>(obj: T): T & Jsonable;
 declare function jsonEqual<T>(a: T, b: T): boolean;
 declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
+
+type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
+    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
+} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
+declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
 
 interface INpmLsOutput {
     dependencies: Record<string, {

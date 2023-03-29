@@ -33,7 +33,7 @@ export const shift = merge(
 
   })
 
-);
+) as unknown as Shift;
 
 // shift('left')(undefined, 2, 3); // [2, 3]
 // shift.right(1, 2, undefined); // [1, 2]
