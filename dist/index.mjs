@@ -382,7 +382,7 @@ function chain(...fns) {
 }
 
 function shiftTo(direction) {
-  return function(...args) {
+  return function(args) {
     return direction === "left" ? [...args.slice(1), void 0] : [void 0, ...args.slice(0, -1)];
   };
 }

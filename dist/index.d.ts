@@ -695,10 +695,10 @@ type CommonTransformKey = keyof CommonTransforms;
 declare function give$<T>(arg: T): (...args: any[]) => T;
 
 type ShiftDirection = 'left' | 'right';
-declare function shiftTo<Direction extends ShiftDirection>(direction: Direction): <Args extends any[]>(...args: Args) => Direction extends "left" ? Args extends [any, ...infer Rest] ? [...Rest, undefined] : never : Args extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
+declare function shiftTo<Direction extends ShiftDirection>(direction: Direction): <Args extends any[]>(args: Args) => Direction extends "left" ? Args extends [any, ...infer Rest] ? [...Rest, undefined] : never : Args extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
 declare const shift: {
-    left: <Args extends any[]>(...args: Args) => Args extends [any, ...infer Rest] ? [...Rest, undefined] : never;
-    right: <Args_1 extends any[]>(...args: Args_1) => Args_1 extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
+    left: <Args extends any[]>(args: Args) => Args extends [any, ...infer Rest] ? [...Rest, undefined] : never;
+    right: <Args_1 extends any[]>(args: Args_1) => Args_1 extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
 };
 
 interface CreateEnvResult<T> {

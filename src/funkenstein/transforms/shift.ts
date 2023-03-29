@@ -1,7 +1,7 @@
 export type ShiftDirection = 'left' | 'right';
 
 export function shiftTo<Direction extends ShiftDirection>(direction: Direction) {
-  return function <Args extends any[]>(...args: Args) {
+  return function <Args extends any[]>(args: Args) {
     return (
       direction === 'left'
         ? [ ...args.slice(1), undefined ]
