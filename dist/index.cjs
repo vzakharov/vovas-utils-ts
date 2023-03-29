@@ -383,29 +383,15 @@ function chain(...fns) {
   };
 }
 
-function merge(target, ...sources) {
-  let result = target;
-  for (const source of sources) {
-    if (_.isFunction(source)) {
-      result = _.merge(result, source(result));
-    } else {
-      result = _.merge(result, source);
-    }
-  }
-  return result;
+function shiftTo(direction) {
+  return function(...args) {
+    return direction === "left" ? [...args.slice(1), void 0] : [void 0, ...args.slice(0, -1)];
+  };
 }
-
-const shift = merge(
-  function(direction) {
-    return function(...args) {
-      return direction === "left" ? args.slice(1) : args.slice(0, -1);
-    };
-  },
-  (shift2) => ({
-    left: shift2("left"),
-    right: shift2("right")
-  })
-);
+const shift = {
+  left: shiftTo("left"),
+  right: shiftTo("right")
+};
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
@@ -642,6 +628,18 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -801,6 +799,7 @@ exports.respectively = respectively;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.shift = shift;
+exports.shiftTo = shiftTo;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;

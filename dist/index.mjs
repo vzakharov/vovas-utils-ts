@@ -381,29 +381,15 @@ function chain(...fns) {
   };
 }
 
-function merge(target, ...sources) {
-  let result = target;
-  for (const source of sources) {
-    if (_.isFunction(source)) {
-      result = _.merge(result, source(result));
-    } else {
-      result = _.merge(result, source);
-    }
-  }
-  return result;
+function shiftTo(direction) {
+  return function(...args) {
+    return direction === "left" ? [...args.slice(1), void 0] : [void 0, ...args.slice(0, -1)];
+  };
 }
-
-const shift = merge(
-  function(direction) {
-    return function(...args) {
-      return direction === "left" ? args.slice(1) : args.slice(0, -1);
-    };
-  },
-  (shift2) => ({
-    left: shift2("left"),
-    right: shift2("right")
-  })
-);
+const shift = {
+  left: shiftTo("left"),
+  right: shiftTo("right")
+};
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
@@ -640,6 +626,18 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -734,4 +732,4 @@ function isTyped(type) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
