@@ -297,6 +297,9 @@ function isLike(sample) {
     return result;
   };
 }
+function its(key, typeguard) {
+  return (arg) => typeguard(arg[key]);
+}
 
 function not(predicate) {
   return (arg) => !predicate(arg);
@@ -379,6 +382,30 @@ function chain(...fns) {
     return result;
   };
 }
+
+function merge(target, ...sources) {
+  let result = target;
+  for (const source of sources) {
+    if (_.isFunction(source)) {
+      result = _.merge(result, source(result));
+    } else {
+      result = _.merge(result, source);
+    }
+  }
+  return result;
+}
+
+const shift = merge(
+  function(direction) {
+    return function(...args) {
+      return direction === "left" ? args.slice(1) : args.slice(0, -1);
+    };
+  },
+  (shift2) => ({
+    left: shift2("left"),
+    right: shift2("right")
+  })
+);
 
 function ensure(x, variableName) {
   if (typeof x === "undefined" || x === null) {
@@ -615,18 +642,6 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
-function merge(target, ...sources) {
-  let result = target;
-  for (const source of sources) {
-    if (_.isFunction(source)) {
-      result = _.merge(result, source(result));
-    } else {
-      result = _.merge(result, source);
-    }
-  }
-  return result;
-}
-
 const log = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -764,9 +779,11 @@ exports.humanize = humanize;
 exports.is = is;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;
+exports.isLike = isLike;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
 exports.isnt = isnt;
+exports.its = its;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
@@ -783,6 +800,7 @@ exports.pushToStack = pushToStack;
 exports.respectively = respectively;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
+exports.shift = shift;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;

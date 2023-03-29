@@ -123,6 +123,9 @@ declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypegua
 declare function isLike<Object extends object, Map extends TypeguardMap>(sample: Map): (arg: Object) => arg is Object & GuardedWithMap<Map>;
 declare function isLike(sample: RegExp): (arg: string) => boolean;
 declare function isLike(sample: RegExp | TypeguardMap): (arg: string | object) => boolean;
+declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
+    [K in Key]: Guarded;
+}>;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -691,6 +694,27 @@ type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
 declare function give$<T>(arg: T): (...args: any[]) => T;
 
+type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
+    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
+} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
+declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
+declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
+
+type ShiftDirection = 'left' | 'right';
+type AllowedShiftArgs<Direction extends ShiftDirection, OutArgs extends any[]> = Direction extends 'left' ? [undefined, ...OutArgs] : [...OutArgs, undefined];
+type ShiftFunction<Direction extends ShiftDirection> = <OutArgs extends any[]>(direction: Direction) => (...args: AllowedShiftArgs<Direction, OutArgs>) => OutArgs;
+type Shift = {
+    <Direction extends ShiftDirection>(direction: Direction): ShiftFunction<Direction>;
+} & {
+    [Direction in ShiftDirection]: ShiftFunction<Direction>;
+};
+declare const shift: Merge<(<Direction extends ShiftDirection, OutArgs extends any[]>(direction: Direction) => (...args: AllowedShiftArgs<Direction, OutArgs>) => (OutArgs[number] | undefined)[]), {
+    left: (args_0: undefined, ...args_1: any[]) => any[];
+    right: (...args: [...any[], undefined]) => any[];
+}>;
+
 interface CreateEnvResult<T> {
     env: T;
     missingEnvs: Partial<T>;
@@ -771,14 +795,6 @@ declare function jsonEqual<T>(a: T, b: T): boolean;
 declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
 
-type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
-    [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
-} & (Target extends ((...args: infer Args) => infer Returns) ? (...args: Args) => Returns : {});
-declare function merge<Target extends object, Source extends object>(target: Target, getSource: (target: Target) => Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
-declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
-
 interface INpmLsOutput {
     dependencies: Record<string, {
         resolved?: string;
@@ -823,4 +839,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, ChainedFunctions, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isPrimitive, isTyped, isnt, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, AllowedShiftArgs, ChainableKeys, ChainableTypes, ChainedFunctions, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, Shift, ShiftDirection, ShiftFunction, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

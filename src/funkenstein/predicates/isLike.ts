@@ -21,3 +21,12 @@ export function isLike(sample: RegExp | TypeguardMap) {
     return result;
   };
 };
+
+export function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(
+  key: Key, 
+  typeguard: Typeguard<Obj[Key], Guarded>
+): Typeguard<Obj, Obj & { [K in Key]: Guarded }> {
+  return (
+    (arg: Obj) => typeguard(arg[key])
+  ) as Typeguard<Obj, Obj & { [K in Key]: Guarded }>;
+}
