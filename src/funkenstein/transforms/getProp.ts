@@ -2,7 +2,8 @@ import { check } from "../check";
 import { has } from "../predicates/has";
 import { shouldNotBe } from "./compileTimeError";
 
-export function getProp<T extends object>(key: keyof T): (obj: T) => T[keyof T] {
+// export function getProp<Object extends object>(key: keyof Object): (obj: Object) => Object[keyof Object] {
+export function getProp<Object extends object, Key extends keyof Object>(key: Key): (obj: Object) => Object[Key] {
   return (obj) => obj[key];
 }
 
