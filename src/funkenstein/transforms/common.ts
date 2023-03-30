@@ -58,7 +58,10 @@ export const commonTransforms = aliasify({
 
   error: $thrower,
 
-  map: <T, R>(transform: (arg: T) => R) => (arg: T[]): R[] => arg.map(transform),
+  map: <Array extends any[], TransformResult>(
+    transform: (arg: Array extends (infer Item)[] ? Item : never) => TransformResult
+  ) => (arg: Array): TransformResult[] => arg.map(transform),
+
   mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
   wrapped: $do,

@@ -3,7 +3,7 @@ import { tuple } from '../../types';
 import { check } from '../check';
 import { respectively } from '../respectively';
 import { give } from '../transforms/common';
-import { conformsToTypeguardMap, GuardedWithMap, isTypeguardMap, Typeguard, TypeguardMap } from '../typings';
+import { conformsToTypeguardMap, GuardedWithMap, isTypeguardMap, NonTypeguard, Predicate, Typeguard, TypeguardMap } from '../typings';
 import { is } from './common';
 
 export function isLike<Object extends object, Map extends TypeguardMap>(sample: Map): (arg: Object) => arg is Object & GuardedWithMap<Map>;
@@ -22,11 +22,25 @@ export function isLike(sample: RegExp | TypeguardMap) {
   };
 };
 
+// with typeguard
 export function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(
   key: Key, 
   typeguard: Typeguard<Obj[Key], Guarded>
-): Typeguard<Obj, Obj & { [K in Key]: Guarded }> {
+): Typeguard<Obj, Obj & { [K in Key]: Guarded }>;
+
+// with non-typeguard predicate
+export function its<Key extends keyof Obj, Obj extends object>(
+  key: Key,
+  predicate: NonTypeguard<Obj[Key]>
+): NonTypeguard<Obj>;
+
+export function its(
+  key: any,
+  predicate: Predicate
+) {
   return (
-    (arg: Obj) => typeguard(arg[key])
-  ) as Typeguard<Obj, Obj & { [K in Key]: Guarded }>;
-}
+    (arg: any) => predicate(arg[key])
+  );
+};
+
+export const their = its;

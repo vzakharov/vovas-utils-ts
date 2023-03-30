@@ -126,6 +126,8 @@ declare function isLike(sample: RegExp | TypeguardMap): (arg: string | object) =
 declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
     [K in Key]: Guarded;
 }>;
+declare function its<Key extends keyof Obj, Obj extends object>(key: Key, predicate: NonTypeguard<Obj[Key]>): NonTypeguard<Obj>;
+declare const their: typeof its;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -470,11 +472,11 @@ declare const commonTransforms: Aliasified<{
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    map: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
-    mapValues: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
-        [key: string]: T_9;
+    map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
+    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
+        [key: string]: T_8;
     }) => {
-        [key: string]: R_1;
+        [key: string]: R;
     };
     wrapped: typeof $do;
     chain: typeof chain;
@@ -532,11 +534,11 @@ declare const give: Aliasified<{
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    map: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
-    mapValues: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
-        [key: string]: T_9;
+    map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
+    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
+        [key: string]: T_8;
     }) => {
-        [key: string]: R_1;
+        [key: string]: R;
     };
     wrapped: typeof $do;
     chain: typeof chain;
@@ -594,11 +596,11 @@ declare const to: Aliasified<{
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    map: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
-    mapValues: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
-        [key: string]: T_9;
+    map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
+    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
+        [key: string]: T_8;
     }) => {
-        [key: string]: R_1;
+        [key: string]: R;
     };
     wrapped: typeof $do;
     chain: typeof chain;
@@ -656,11 +658,11 @@ declare const go: Aliasified<{
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
-    map: <T_8, R>(transform: (arg: T_8) => R) => (arg: T_8[]) => R[];
-    mapValues: <T_9, R_1>(transform: (arg: T_9) => R_1) => (arg: {
-        [key: string]: T_9;
+    map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
+    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
+        [key: string]: T_8;
     }) => {
-        [key: string]: R_1;
+        [key: string]: R;
     };
     wrapped: typeof $do;
     chain: typeof chain;
@@ -825,4 +827,4 @@ type Typed<O extends object, T extends string | number> = O & HasType<T>;
 declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
 declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, ChainedFunctions, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, ChainedFunctions, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, their, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

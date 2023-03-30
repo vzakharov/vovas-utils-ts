@@ -1,7 +1,7 @@
-export function $with<Args extends any[], Result>(...args: Args) {
+export function $with<Args extends any[]>(...args: Args) {
 
   return {
-    do: (fn: (...args: Args) => Result) => fn(...args),
+    do: <Result>(fn: (...args: Args) => Result) => fn(...args),
   };
 
 };

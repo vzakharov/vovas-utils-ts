@@ -376,9 +376,10 @@ function isLike(sample) {
     return result;
   };
 }
-function its(key, typeguard) {
-  return (arg) => typeguard(arg[key]);
+function its(key, predicate) {
+  return (arg) => predicate(arg[key]);
 }
+const their = its;
 
 function not(predicate) {
   return (arg) => !predicate(arg);
@@ -813,6 +814,7 @@ exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.shift = shift;
 exports.shiftTo = shiftTo;
+exports.their = their;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;
