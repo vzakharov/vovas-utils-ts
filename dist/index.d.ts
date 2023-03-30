@@ -55,8 +55,8 @@ declare function $thrower<T extends Error>(errorOrMessage: T | string): Function
 declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
 declare function $try<T>(fn: () => T, fallback: (error?: Error) => T, finallyCallback?: () => void): T;
 
-declare function $with<Args extends any[], Result>(...args: Args): {
-    do: (fn: (...args: Args) => Result) => Result;
+declare function $with<Args extends any[]>(...args: Args): {
+    do: <Result>(fn: (...args: Args) => Result) => Result;
 };
 
 type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
