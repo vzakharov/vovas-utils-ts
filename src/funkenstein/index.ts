@@ -18,3 +18,4 @@ export * from './transforms/common';
 export * from './transforms/compileTimeError';
 export * from './transforms/getProp';
 export * from './transforms/shift';
+export * from './typings';
