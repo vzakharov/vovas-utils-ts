@@ -807,7 +807,7 @@ interface Client<Event extends string, HandlerArg> {
     on: Listener<this, Event, HandlerArg>;
     removeListener: Listener<this, Event, HandlerArg>;
 }
-declare class Listeners<Event extends string, RawHandlerArg, GuardedArg extends RawHandlerArg, GatekeeperParams extends any[], HandlerParams extends any[]> {
+declare class Listeners<Event extends string, RawHandlerArg, GuardedArg extends RawHandlerArg, GatekeeperParams extends Record<string, any>, HandlerParams extends Record<string, any>> {
     private client;
     private event;
     private gatekeeper;

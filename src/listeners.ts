@@ -18,7 +18,12 @@ export interface Client<Event extends string, HandlerArg> {
 };
 
 export class Listeners<
-Event extends string, RawHandlerArg, GuardedArg extends RawHandlerArg, GatekeeperParams extends any[], HandlerParams extends any[]> {
+  Event extends string,
+  RawHandlerArg,
+  GuardedArg extends RawHandlerArg,
+  GatekeeperParams extends Record<string, any>,
+  HandlerParams extends Record<string, any>
+> {
 
   private listeners: [Event, RawHandler<RawHandlerArg>][] = [];
 
