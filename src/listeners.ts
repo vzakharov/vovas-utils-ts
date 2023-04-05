@@ -1,33 +1,38 @@
-export type Handler<HandlerArg> = (arg: HandlerArg) => void;
-export type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => void;
+export type RawHandler<RawHandlerArg> = (arg: RawHandlerArg) => void;
+
+export type ParametricHandler<
+  GuardedArg, 
+  Params extends Record<string, any>
+> = (arg: GuardedArg, params: Params) => void;
 
 export type Gatekeeper<
-  HandlerArg, 
-  Params extends any[]
-> = (arg: HandlerArg, ...params: Params) => boolean;
+  RawHandlerArg, 
+  Params extends Record<string, any>
+> = (arg: RawHandlerArg, params: Params) => boolean;
 
-export type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
+export type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: RawHandler<HandlerArg>) => Client;
 
 export interface Client<Event extends string, HandlerArg> {
   on: Listener<this, Event, HandlerArg>;
   removeListener: Listener<this, Event, HandlerArg>;
 };
 
-export class Listeners<Event extends string, HandlerArg, GuardedArg extends HandlerArg, Params extends any[]> {
+export class Listeners<
+Event extends string, RawHandlerArg, GuardedArg extends RawHandlerArg, GatekeeperParams extends any[], HandlerParams extends any[]> {
 
-  private listeners: [Event, Handler<HandlerArg>][] = [];
+  private listeners: [Event, RawHandler<RawHandlerArg>][] = [];
 
   constructor(
-    private client: Client<Event, HandlerArg>,
+    private client: Client<Event, RawHandlerArg>,
     private event: Event,
-    private gatekeeper: Gatekeeper<HandlerArg, Params>,
-    private handler: ParametricHandler<GuardedArg, Params>
+    private gatekeeper: Gatekeeper<RawHandlerArg, GatekeeperParams>,
+    private handler: ParametricHandler<GuardedArg, HandlerParams>
   ) { };
 
-  add(...params: Params) {
-    const listener = (arg: HandlerArg) => {
-      if ( this.gatekeeper(arg, ...params) ) {
-        this.handler.call(this, arg as GuardedArg, ...params);
+  add(params: GatekeeperParams & HandlerParams) {
+    const listener = (arg: RawHandlerArg) => {
+      if ( this.gatekeeper(arg, params) ) {
+        this.handler(arg as GuardedArg, params);
       };
     };
     this.listeners.push([this.event, listener]);

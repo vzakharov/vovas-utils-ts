@@ -660,10 +660,10 @@ class Listeners {
     this.handler = handler;
     this.listeners = [];
   }
-  add(...params) {
+  add(params) {
     const listener = (arg) => {
-      if (this.gatekeeper(arg, ...params)) {
-        this.handler.call(this, arg, ...params);
+      if (this.gatekeeper(arg, params)) {
+        this.handler(arg, params);
       }
     };
     this.listeners.push([this.event, listener]);
