@@ -595,7 +595,7 @@ class GroupListener {
   removeAll() {
     this.listeners.forEach((listener) => this.client.removeListener(...listener));
   }
-  static createOrAdd(slug, client, event, handler) {
+  static add(slug, client, event, handler) {
     return groupListeners[slug] ?? (groupListeners[slug] = new GroupListener(client, event, handler));
   }
   static removeAll(slug) {

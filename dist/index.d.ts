@@ -765,7 +765,7 @@ declare class GroupListener<Event extends string, HandlerArg, Params extends any
     constructor(client: Client<Event, HandlerArg>, event: Event, handler: ParametricHandler<HandlerArg, Params>);
     add(...params: Params): void;
     removeAll(): void;
-    static createOrAdd<Event extends string, HandlerArg, Params extends any[]>(slug: string, client: Client<Event, HandlerArg>, event: Event, handler: ParametricHandler<HandlerArg, Params>): GroupListener<Event, HandlerArg, Params>;
+    static add<Event extends string, HandlerArg, Params extends any[]>(slug: string, client: Client<Event, HandlerArg>, event: Event, handler: ParametricHandler<HandlerArg, Params>): GroupListener<Event, HandlerArg, Params>;
     static removeAll(slug: string): void;
 }
 

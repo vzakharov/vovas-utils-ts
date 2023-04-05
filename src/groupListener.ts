@@ -38,7 +38,7 @@ export class GroupListener<
     this.listeners.forEach(listener => this.client.removeListener(...listener));
   };
 
-  static createOrAdd<
+  static add<
     Event extends string,
     HandlerArg,
     Params extends any[],
