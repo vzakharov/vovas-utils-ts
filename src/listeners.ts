@@ -3,9 +3,8 @@ export type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerA
 
 export type Gatekeeper<
   HandlerArg, 
-  GuardedArg extends HandlerArg, 
   Params extends any[]
-> = (arg: HandlerArg, ...params: Params) => arg is GuardedArg;
+> = (arg: HandlerArg, ...params: Params) => boolean;
 
 export type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
 
@@ -21,14 +20,14 @@ export class Listeners<Event extends string, HandlerArg, GuardedArg extends Hand
   constructor(
     private client: Client<Event, HandlerArg>,
     private event: Event,
-    private gatekeeper: Gatekeeper<HandlerArg, GuardedArg, Params>,
+    private gatekeeper: Gatekeeper<HandlerArg, Params>,
     private handler: ParametricHandler<GuardedArg, Params>
   ) { };
 
   add(...params: Params) {
     const listener = (arg: HandlerArg) => {
       if ( this.gatekeeper(arg, ...params) ) {
-        this.handler.call(this, arg, ...params);
+        this.handler.call(this, arg as GuardedArg, ...params);
       };
     };
     this.listeners.push([this.event, listener]);
