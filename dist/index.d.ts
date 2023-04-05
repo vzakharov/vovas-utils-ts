@@ -800,20 +800,20 @@ declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
 
 type Handler<HandlerArg> = (arg: HandlerArg) => void;
-type ParametricHandler<Event extends string, HandlerArg, Params extends any[]> = (this: Listeners<Event, HandlerArg, Params>, arg: HandlerArg, ...params: Params) => void;
-type Gatekeeper<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => boolean;
+type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => void;
+type Gatekeeper<HandlerArg, GuardedArg extends HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => arg is GuardedArg;
 type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
 interface Client<Event extends string, HandlerArg> {
     on: Listener<this, Event, HandlerArg>;
     removeListener: Listener<this, Event, HandlerArg>;
 }
-declare class Listeners<Event extends string, HandlerArg, Params extends any[]> {
+declare class Listeners<Event extends string, HandlerArg, GuardedArg extends HandlerArg, Params extends any[]> {
     private client;
     private event;
     private gatekeeper;
     private handler;
     private listeners;
-    constructor(client: Client<Event, HandlerArg>, event: Event, gatekeeper: Gatekeeper<HandlerArg, Params>, handler: ParametricHandler<Event, HandlerArg, Params>);
+    constructor(client: Client<Event, HandlerArg>, event: Event, gatekeeper: Gatekeeper<HandlerArg, GuardedArg, Params>, handler: ParametricHandler<GuardedArg, Params>);
     add(...params: Params): void;
     removeAll(): void;
 }
