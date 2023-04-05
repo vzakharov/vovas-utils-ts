@@ -661,8 +661,8 @@ class Listeners {
     this.handler = handler;
     this.listeners = [];
   }
-  add(params) {
-    const listener = (arg) => this.handler(arg, params);
+  add(...params) {
+    const listener = (arg) => this.handler(arg, ...params);
     this.listeners.push([this.event, listener]);
     this.client.on(this.event, listener);
   }

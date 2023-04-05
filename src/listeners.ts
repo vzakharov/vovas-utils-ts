@@ -3,7 +3,7 @@ export type Handler<HandlerArg> = (arg: HandlerArg) => void;
 export type ParametricHandler<
   HandlerArg, 
   Params extends any[]
-> = (arg: HandlerArg, params: Params) => void;
+> = (arg: HandlerArg, ...params: Params) => void;
 
 export type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
 
@@ -26,8 +26,8 @@ export class Listeners<
     private handler: ParametricHandler<HandlerArg, Params>,
   ) { };
 
-  add(params: Params) {
-    const listener = (arg: HandlerArg) => this.handler(arg, params);
+  add(...params: Params) {
+    const listener = (arg: HandlerArg) => this.handler(arg, ...params);
     this.listeners.push([this.event, listener]);
     this.client.on(this.event, listener);
   };

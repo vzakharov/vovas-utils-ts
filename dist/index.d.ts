@@ -800,7 +800,7 @@ declare function isJsonable(obj: any): obj is Jsonable;
 declare function isJsonableObject(obj: any): obj is JsonableObject;
 
 type Handler<HandlerArg> = (arg: HandlerArg) => void;
-type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, params: Params) => void;
+type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => void;
 type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
 interface Client<Event extends string, HandlerArg> {
     on: Listener<this, Event, HandlerArg>;
@@ -812,7 +812,7 @@ declare class Listeners<Event extends string, HandlerArg, Params extends any[]> 
     private handler;
     private listeners;
     constructor(client: Client<Event, HandlerArg>, event: Event, handler: ParametricHandler<HandlerArg, Params>);
-    add(params: Params): void;
+    add(...params: Params): void;
     removeAll(): void;
 }
 
