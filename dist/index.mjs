@@ -28,7 +28,7 @@ function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
 function $thrower(errorOrMessage) {
-  return () => $throw(errorOrMessage);
+  return (...args) => $throw(errorOrMessage);
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -264,6 +264,14 @@ function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
+function meta(fn) {
+  const wrapper = (...args) => {
+    const innerFn = fn(wrapper);
+    return innerFn(...args);
+  };
+  return wrapper;
+}
+
 function both(...predicates) {
   return (arg) => predicates.every((predicate) => predicate(arg));
 }
@@ -283,6 +291,7 @@ respectively.return = respectivelyReturn;
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
 }
+const shouldNotBe = compileTimeError;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -333,7 +342,7 @@ const commonTransforms = aliasify({
   map: (transform) => (arg) => arg.map(transform),
   mapValues: (transform) => (arg) => _.mapValues(arg, transform),
   wrapped: $do,
-  chain
+  pipe
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -350,7 +359,8 @@ const commonTransforms = aliasify({
   kebabCase: "kebab-case",
   startCase: "Start Case",
   first: ["firstItem", "head"],
-  last: ["lastItem", "tail"]
+  last: ["lastItem", "tail"],
+  prop: ["property", "its"]
 });
 const give = commonTransforms;
 const to = commonTransforms;
@@ -374,10 +384,6 @@ function isLike(sample) {
     return result;
   };
 }
-function its(key, predicate) {
-  return (arg) => predicate(arg[key]);
-}
-const their = its;
 
 function not(predicate) {
   return (arg) => !predicate(arg);
@@ -410,6 +416,7 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: isLike,
+  typed: isTyped,
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -440,6 +447,7 @@ const is = merge(commonPredicates, (is2) => ({
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
     like: (sample) => not(isLike(sample)),
+    typed: (type) => not(isTyped(type)),
     // matching: (regex: RegExp) => not(is.matching(regex)),
     // describing: (string: string) => not(is.describing(string)),
     anything: not(is2.anything)
@@ -451,7 +459,11 @@ const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
 
-function chain(...fns) {
+function its(key, predicateOrValue) {
+  return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
+}
+
+function pipe(...fns) {
   return (from) => {
     let result = from;
     for (const fn of fns) {
@@ -745,5 +757,10 @@ function isTyped(type) {
     return object.type === type;
   };
 }
+function isKindOf(kind) {
+  return function(object) {
+    return object.kind === kind;
+  };
+}
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, their, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

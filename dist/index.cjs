@@ -30,7 +30,7 @@ function $throw(errorOrMessage) {
   throw typeof errorOrMessage === "string" ? new Error(errorOrMessage) : errorOrMessage;
 }
 function $thrower(errorOrMessage) {
-  return () => $throw(errorOrMessage);
+  return (...args) => $throw(errorOrMessage);
 }
 
 function $try(fn, fallback = $throw, finallyCallback) {
@@ -266,6 +266,14 @@ function lazily(func, ...args) {
   return args.length ? () => func(...args) : (...args2) => () => func(...args2);
 }
 
+function meta(fn) {
+  const wrapper = (...args) => {
+    const innerFn = fn(wrapper);
+    return innerFn(...args);
+  };
+  return wrapper;
+}
+
 function both(...predicates) {
   return (arg) => predicates.every((predicate) => predicate(arg));
 }
@@ -285,6 +293,7 @@ respectively.return = respectivelyReturn;
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
 }
+const shouldNotBe = compileTimeError;
 
 function has(source) {
   return (target) => _.isMatch(target, source);
@@ -335,7 +344,7 @@ const commonTransforms = aliasify({
   map: (transform) => (arg) => arg.map(transform),
   mapValues: (transform) => (arg) => _.mapValues(arg, transform),
   wrapped: $do,
-  chain
+  pipe
 }, {
   $: ["exactly", "value", "literal"],
   NaN: ["nan", "notANumber"],
@@ -352,7 +361,8 @@ const commonTransforms = aliasify({
   kebabCase: "kebab-case",
   startCase: "Start Case",
   first: ["firstItem", "head"],
-  last: ["lastItem", "tail"]
+  last: ["lastItem", "tail"],
+  prop: ["property", "its"]
 });
 const give = commonTransforms;
 const to = commonTransforms;
@@ -376,10 +386,6 @@ function isLike(sample) {
     return result;
   };
 }
-function its(key, predicate) {
-  return (arg) => predicate(arg[key]);
-}
-const their = its;
 
 function not(predicate) {
   return (arg) => !predicate(arg);
@@ -412,6 +418,7 @@ const commonPredicates = {
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
   like: isLike,
+  typed: isTyped,
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -442,6 +449,7 @@ const is = merge(commonPredicates, (is2) => ({
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
     like: (sample) => not(isLike(sample)),
+    typed: (type) => not(isTyped(type)),
     // matching: (regex: RegExp) => not(is.matching(regex)),
     // describing: (string: string) => not(is.describing(string)),
     anything: not(is2.anything)
@@ -453,7 +461,11 @@ const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
 
-function chain(...fns) {
+function its(key, predicateOrValue) {
+  return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
+}
+
+function pipe(...fns) {
   return (from) => {
     let result = from;
     for (const fn of fns) {
@@ -747,6 +759,11 @@ function isTyped(type) {
     return object.type === type;
   };
 }
+function isKindOf(kind) {
+  return function(object) {
+    return object.kind === kind;
+  };
+}
 
 exports.$as = $as;
 exports.$do = $do;
@@ -763,11 +780,11 @@ exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
 exports.assign = assign;
 exports.both = both;
-exports.chain = chain;
 exports.chainified = chainified;
 exports.check = check;
 exports.commonPredicates = commonPredicates;
 exports.commonTransforms = commonTransforms;
+exports.compileTimeError = compileTimeError;
 exports.createEnv = createEnv;
 exports.doWith = doWith;
 exports.does = does;
@@ -791,6 +808,7 @@ exports.humanize = humanize;
 exports.is = is;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;
+exports.isKindOf = isKindOf;
 exports.isLike = isLike;
 exports.isPrimitive = isPrimitive;
 exports.isTyped = isTyped;
@@ -804,17 +822,19 @@ exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
 exports.merge = merge;
+exports.meta = meta;
 exports.not = not;
 exports.paint = paint;
 exports.parseSwitch = parseSwitch;
 exports.parseTransform = parseTransform;
+exports.pipe = pipe;
 exports.pushToStack = pushToStack;
 exports.respectively = respectively;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.shift = shift;
 exports.shiftTo = shiftTo;
-exports.their = their;
+exports.shouldNotBe = shouldNotBe;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;

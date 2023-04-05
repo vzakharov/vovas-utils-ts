@@ -117,17 +117,14 @@ declare function $if<Argument, TransformResult>(argument: Argument, predicate: N
 declare function lazily<Function extends (...args: any[]) => any>(func: Function, ...args: Parameters<Function>): () => ReturnType<Function>;
 declare function lazily<Function extends (...args: any[]) => any>(func: Function): (...args: Parameters<Function>) => () => ReturnType<Function>;
 
+declare function meta<Args extends any[], Return>(fn: (wrapper: (...args: Args) => Return) => (...args: Args) => Return): (...args: Args) => Return;
+
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
 declare function isLike<Object extends object, Map extends TypeguardMap>(sample: Map): (arg: Object) => arg is Object & GuardedWithMap<Map>;
 declare function isLike(sample: RegExp): (arg: string) => boolean;
 declare function isLike(sample: RegExp | TypeguardMap): (arg: string | object) => boolean;
-declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
-    [K in Key]: Guarded;
-}>;
-declare function its<Key extends keyof Obj, Obj extends object>(key: Key, predicate: NonTypeguard<Obj[Key]>): NonTypeguard<Obj>;
-declare const their: typeof its;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -160,6 +157,7 @@ declare const commonPredicates: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: typeof isLike;
+    typed: typeof isTyped;
     anything: (...args: any[]) => true;
 };
 type CommonPredicates = typeof commonPredicates;
@@ -198,6 +196,7 @@ declare const is: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: typeof isLike;
+    typed: typeof isTyped;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
@@ -230,6 +229,7 @@ declare const is: {
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+        typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
         anything: (arg: any) => false;
     };
 };
@@ -264,6 +264,7 @@ declare const does: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: typeof isLike;
+    typed: typeof isTyped;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
@@ -296,6 +297,7 @@ declare const does: {
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+        typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
         anything: (arg: any) => false;
     };
 };
@@ -330,6 +332,7 @@ declare const isnt: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -363,6 +366,7 @@ declare const aint: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -396,8 +400,18 @@ declare const doesnt: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
+
+declare function its<Key extends keyof Obj, Obj extends object>(key: Key): Transform<Obj, Obj[Key]>;
+declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
+    [K in Key]: Guarded;
+}>;
+declare function its<Key extends keyof Obj, Obj extends object>(key: Key, predicate: NonTypeguard<Obj[Key]>): NonTypeguard<Obj>;
+declare function its<Key extends keyof Obj, Value extends Obj[Key], Obj extends object>(key: Key, value: Value): Typeguard<Obj, Obj & {
+    [K in Key]: Value;
+}>;
 
 declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
 
@@ -420,19 +434,20 @@ declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, 
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4): (arg: [BT1, BT2, BT3, BT4]) => [NT1, NT2, NT3, NT4];
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4, BT5, NT5 extends BT5>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4, tf5: (arg: BT5) => NT5): (arg: [BT1, BT2, BT3, BT4, BT5]) => [NT1, NT2, NT3, NT4, NT5];
 
-type ChainedFunctions<From, Via, To> = Via extends [infer Via1] ? [(from: From) => Via1, (via1: Via1) => To] : Via extends [infer Via1, ...infer ViaRest] ? [(from: From) => Via1, ...ChainedFunctions<Via1, ViaRest, To>] : never;
-declare function chain<From, Via, To>(...fns: ChainedFunctions<From, [Via], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, To>(...fns: ChainedFunctions<From, [Via1, Via2], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, Via6, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9], To>): (from: From) => To;
-declare function chain<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, Via10, To>(...fns: ChainedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, Via10], To>): (from: From) => To;
+type PipedFunctions<From, Via, To> = Via extends [infer Via1] ? [(from: From) => Via1, (via1: Via1) => To] : Via extends [infer Via1, ...infer ViaRest] ? [(from: From) => Via1, ...PipedFunctions<Via1, ViaRest, To>] : never;
+declare function pipe<From, Via, To>(...fns: PipedFunctions<From, [Via], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, To>(...fns: PipedFunctions<From, [Via1, Via2], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, Via6, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9], To>): (from: From) => To;
+declare function pipe<From, Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, Via10, To>(...fns: PipedFunctions<From, [Via1, Via2, Via3, Via4, Via5, Via6, Via7, Via8, Via9, Via10], To>): (from: From) => To;
 
 declare function compileTimeError(item: never): never;
+declare const shouldNotBe: typeof compileTimeError;
 
 declare function getProp<Object extends object, Key extends keyof Object>(key: Key): (obj: Object) => Object[Key];
 
@@ -479,7 +494,7 @@ declare const commonTransforms: Aliasified<{
         [key: string]: R;
     };
     wrapped: typeof $do;
-    chain: typeof chain;
+    pipe: typeof pipe;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -497,6 +512,7 @@ declare const commonTransforms: Aliasified<{
     readonly startCase: "Start Case";
     readonly first: readonly ["firstItem", "head"];
     readonly last: readonly ["lastItem", "tail"];
+    readonly prop: readonly ["property", "its"];
 }>;
 declare const give: Aliasified<{
     itself: <T>(arg: T) => T;
@@ -541,7 +557,7 @@ declare const give: Aliasified<{
         [key: string]: R;
     };
     wrapped: typeof $do;
-    chain: typeof chain;
+    pipe: typeof pipe;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -559,6 +575,7 @@ declare const give: Aliasified<{
     readonly startCase: "Start Case";
     readonly first: readonly ["firstItem", "head"];
     readonly last: readonly ["lastItem", "tail"];
+    readonly prop: readonly ["property", "its"];
 }>;
 declare const to: Aliasified<{
     itself: <T>(arg: T) => T;
@@ -603,7 +620,7 @@ declare const to: Aliasified<{
         [key: string]: R;
     };
     wrapped: typeof $do;
-    chain: typeof chain;
+    pipe: typeof pipe;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -621,6 +638,7 @@ declare const to: Aliasified<{
     readonly startCase: "Start Case";
     readonly first: readonly ["firstItem", "head"];
     readonly last: readonly ["lastItem", "tail"];
+    readonly prop: readonly ["property", "its"];
 }>;
 declare const go: Aliasified<{
     itself: <T>(arg: T) => T;
@@ -665,7 +683,7 @@ declare const go: Aliasified<{
         [key: string]: R;
     };
     wrapped: typeof $do;
-    chain: typeof chain;
+    pipe: typeof pipe;
 }, {
     readonly $: readonly ["exactly", "value", "literal"];
     readonly NaN: readonly ["nan", "notANumber"];
@@ -683,6 +701,7 @@ declare const go: Aliasified<{
     readonly startCase: "Start Case";
     readonly first: readonly ["firstItem", "head"];
     readonly last: readonly ["lastItem", "tail"];
+    readonly prop: readonly ["property", "its"];
 }>;
 type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
@@ -820,11 +839,16 @@ declare class Resolvable<T = void> {
     reset(value?: T | PromiseLike<T>): void;
 }
 
-type HasType<T extends string | number> = {
+type Typed<T extends string | number> = {
     type: T;
 };
-type Typed<O extends object, T extends string | number> = O & HasType<T>;
-declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => Typed<O, T>;
-declare function isTyped<T extends string | number>(type: T): <O extends object>(object: O) => object is Typed<O, T>;
+type KindOf<T extends string | number> = {
+    kind: T;
+};
+declare function toType<T extends string | number>(type: T): <O extends object>(object: O) => O & Typed<T>;
+declare function isTyped<T extends string | number>(type: T): <O extends Typed<string | number>>(object: O) => object is O & Typed<T>;
+declare function isKindOf<T extends string | number>(kind: T): <O extends {
+    kind: string;
+}>(object: O) => object is O & KindOf<T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, ChainedFunctions, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, HasType, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chain, chainified, check, commonPredicates, commonTransforms, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, not, paint, parseSwitch, parseTransform, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, their, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, NewResolvableArgs, Not, NpmLink, Paint, Painter, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Typed, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

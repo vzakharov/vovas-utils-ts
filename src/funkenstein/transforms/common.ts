@@ -1,7 +1,7 @@
 import _ from "lodash";
 import yaml from "js-yaml";
 import { $thrower } from "../$throw";
-import { $do, aliasify, chain, Jsonable } from "../..";
+import { $do, aliasify, pipe, Jsonable } from "../..";
 import { compileTimeError } from "./compileTimeError";
 import { getProp } from "./getProp";
 
@@ -65,7 +65,7 @@ export const commonTransforms = aliasify({
   mapValues: <T, R>(transform: (arg: T) => R) => (arg: { [key: string]: T }): { [key: string]: R } => _.mapValues(arg, transform),
 
   wrapped: $do,
-  chain
+  pipe
 
 }, {
 
@@ -87,6 +87,8 @@ export const commonTransforms = aliasify({
 
   first: [ "firstItem", "head" ],
   last: [ "lastItem", "tail" ],
+
+  prop: [ "property", "its" ],
 
 } as const );
 

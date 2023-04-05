@@ -8,5 +8,5 @@ export function $throw<T extends Error>(errorOrMessage: T | string): never {
 }
 
 export function $thrower<T extends Error>(errorOrMessage: T | string): FunctionThatReturns<never> {
-  return () => $throw(errorOrMessage);
+  return <T extends any[]>(...args: T) => $throw(errorOrMessage);
 }

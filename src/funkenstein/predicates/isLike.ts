@@ -21,26 +21,3 @@ export function isLike(sample: RegExp | TypeguardMap) {
     return result;
   };
 };
-
-// with typeguard
-export function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(
-  key: Key, 
-  typeguard: Typeguard<Obj[Key], Guarded>
-): Typeguard<Obj, Obj & { [K in Key]: Guarded }>;
-
-// with non-typeguard predicate
-export function its<Key extends keyof Obj, Obj extends object>(
-  key: Key,
-  predicate: NonTypeguard<Obj[Key]>
-): NonTypeguard<Obj>;
-
-export function its(
-  key: any,
-  predicate: Predicate
-) {
-  return (
-    (arg: any) => predicate(arg[key])
-  );
-};
-
-export const their = its;

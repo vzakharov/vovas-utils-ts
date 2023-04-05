@@ -1,14 +1,16 @@
 import _ from 'lodash';
 
-export type HasType<T extends string | number> = {
+export type Typed<T extends string | number> = {
   type: T;
 };
 
-export type Typed<O extends object, T extends string | number> = O & HasType<T>;
+export type KindOf<T extends string | number> = {
+  kind: T;
+};
 
 export function toType<T extends string | number>(
   type: T
-): <O extends object>(object: O) => Typed<O, T> {
+): <O extends object>(object: O) => O & Typed<T> {
   return object => Object.assign(object, { type });
 }
 
@@ -17,8 +19,8 @@ export function toType<T extends string | number>(
 
 export function isTyped<T extends string | number>(
   type: T
-): <O extends object>(object: O) => object is Typed<O, T> {
-  return function(object: any): object is Typed<any, T> {
+) {
+  return function<O extends Typed<string | number>>(object: O): object is O & Typed<T> {
     return object.type === type;
   }
 }
@@ -29,3 +31,10 @@ export function isTyped<T extends string | number>(
 // else
 //   apple; // should compile to "never"
 
+export function isKindOf<T extends string | number>(
+  kind: T
+) {
+  return function<O extends { kind: string }>(object: O): object is O & KindOf<T> {
+    return object.kind === kind;
+  }
+}
