@@ -12,7 +12,9 @@ export interface Client<Event extends string, HandlerArg> {
   removeListener: Listener<this, Event, HandlerArg>;
 };
 
-export class Listeners<
+export const groupListeners: Record<string, GroupListener<any, any, any>> = {};
+
+export class GroupListener<
   Event extends string,
   HandlerArg,
   Params extends any[],
@@ -27,13 +29,31 @@ export class Listeners<
   ) { };
 
   add(...params: Params) {
-    const listener = (arg: HandlerArg) => this.handler(arg, ...params);
-    this.listeners.push([this.event, listener]);
-    this.client.on(this.event, listener);
+    const handler = (arg: HandlerArg) => this.handler(arg, ...params);
+    this.listeners.push([this.event, handler]);
+    this.client.on(this.event, handler);
   };
 
   removeAll() {
     this.listeners.forEach(listener => this.client.removeListener(...listener));
+  };
+
+  static createOrAdd<
+    Event extends string,
+    HandlerArg,
+    Params extends any[],
+  >(
+    slug: string,
+    client: Client<Event, HandlerArg>,
+    event: Event,
+    handler: ParametricHandler<HandlerArg, Params>,
+  ): GroupListener<Event, HandlerArg, Params> {
+    return groupListeners[slug] ??= new GroupListener(client, event, handler);
+  }
+
+  static removeAll(slug: string) {
+    groupListeners[slug]?.removeAll();
+    delete groupListeners[slug];
   };
 
 };

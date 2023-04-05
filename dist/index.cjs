@@ -579,6 +579,31 @@ function downloadAsStream(url) {
   return download(url).then(fs.createReadStream);
 }
 
+const groupListeners = {};
+class GroupListener {
+  constructor(client, event, handler) {
+    this.client = client;
+    this.event = event;
+    this.handler = handler;
+    this.listeners = [];
+  }
+  add(...params) {
+    const handler = (arg) => this.handler(arg, ...params);
+    this.listeners.push([this.event, handler]);
+    this.client.on(this.event, handler);
+  }
+  removeAll() {
+    this.listeners.forEach((listener) => this.client.removeListener(...listener));
+  }
+  static createOrAdd(slug, client, event, handler) {
+    return groupListeners[slug] ?? (groupListeners[slug] = new GroupListener(client, event, handler));
+  }
+  static removeAll(slug) {
+    groupListeners[slug]?.removeAll();
+    delete groupListeners[slug];
+  }
+}
+
 function humanize(str) {
   return _.capitalize(_.startCase(str));
 }
@@ -652,23 +677,6 @@ function isJsonable(obj) {
 }
 function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
-}
-
-class Listeners {
-  constructor(client, event, handler) {
-    this.client = client;
-    this.event = event;
-    this.handler = handler;
-    this.listeners = [];
-  }
-  add(...params) {
-    const listener = (arg) => this.handler(arg, ...params);
-    this.listeners.push([this.event, listener]);
-    this.client.on(this.event, listener);
-  }
-  removeAll() {
-    this.listeners.forEach((listener) => this.client.removeListener(...listener));
-  }
 }
 
 function merge(target, ...sources) {
@@ -789,7 +797,7 @@ exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
 exports.$with = $with;
-exports.Listeners = Listeners;
+exports.GroupListener = GroupListener;
 exports.Resolvable = Resolvable;
 exports.aint = aint;
 exports.aliasify = aliasify;
@@ -822,6 +830,7 @@ exports.getProp = getProp;
 exports.give = give;
 exports.give$ = give$;
 exports.go = go;
+exports.groupListeners = groupListeners;
 exports.has = has;
 exports.humanize = humanize;
 exports.is = is;

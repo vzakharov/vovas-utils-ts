@@ -577,6 +577,31 @@ function downloadAsStream(url) {
   return download(url).then(fs.createReadStream);
 }
 
+const groupListeners = {};
+class GroupListener {
+  constructor(client, event, handler) {
+    this.client = client;
+    this.event = event;
+    this.handler = handler;
+    this.listeners = [];
+  }
+  add(...params) {
+    const handler = (arg) => this.handler(arg, ...params);
+    this.listeners.push([this.event, handler]);
+    this.client.on(this.event, handler);
+  }
+  removeAll() {
+    this.listeners.forEach((listener) => this.client.removeListener(...listener));
+  }
+  static createOrAdd(slug, client, event, handler) {
+    return groupListeners[slug] ?? (groupListeners[slug] = new GroupListener(client, event, handler));
+  }
+  static removeAll(slug) {
+    groupListeners[slug]?.removeAll();
+    delete groupListeners[slug];
+  }
+}
+
 function humanize(str) {
   return _.capitalize(_.startCase(str));
 }
@@ -650,23 +675,6 @@ function isJsonable(obj) {
 }
 function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
-}
-
-class Listeners {
-  constructor(client, event, handler) {
-    this.client = client;
-    this.event = event;
-    this.handler = handler;
-    this.listeners = [];
-  }
-  add(...params) {
-    const listener = (arg) => this.handler(arg, ...params);
-    this.listeners.push([this.event, listener]);
-    this.client.on(this.event, listener);
-  }
-  removeAll() {
-    this.listeners.forEach((listener) => this.client.removeListener(...listener));
-  }
 }
 
 function merge(target, ...sources) {
@@ -780,4 +788,4 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Listeners, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
