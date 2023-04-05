@@ -79,6 +79,9 @@ type TypeguardMap<Keys extends string = string> = {
 type GuardedWithMap<Map extends TypeguardMap> = {
     [Key in keyof Map]: Map[Key] extends Typeguard<any, infer Guarded> ? Guarded : never;
 };
+type MapForType<T> = {
+    [Key in keyof T]: Typeguard<any, T[Key]>;
+};
 declare function isTypeguardMap(arg: any): arg is TypeguardMap;
 declare function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(typeguardMap: TG): (object: Record<Keys, any>) => object is GuardedWithMap<TG>;
 
@@ -127,9 +130,7 @@ declare function meta<Args extends any[], Return>(fn: (wrapper: (...args: Args) 
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function isLike<Object extends object, Map extends TypeguardMap>(sample: Map): (arg: Object) => arg is Object & GuardedWithMap<Map>;
-declare function isLike(sample: RegExp): (arg: string) => boolean;
-declare function isLike(sample: RegExp | TypeguardMap): (arg: string | object) => boolean;
+declare function isLike<Map extends TypeguardMap>(sample: Map): <Object extends object>(arg: Object) => arg is Object & GuardedWithMap<Map>;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -156,7 +157,7 @@ declare const commonPredicates: {
     };
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -178,12 +179,11 @@ declare const is: {
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
     null: <T_1>(arg: T_1 | null) => arg is null;
-    true: <T_8>(arg: true | T_8) => arg is true;
-    false: <T_7>(arg: false | T_7) => arg is false;
-    zero: <T_5>(arg: 0 | T_5) => arg is 0;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
+    zero: <T_5>(arg: 0 | T_5) => arg is 0;
+    false: <T_7>(arg: false | T_7) => arg is false;
+    true: <T_8>(arg: true | T_8) => arg is true;
     array: <T_11>(arg: any[] | T_11) => arg is any[];
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
     primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
     jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
@@ -196,6 +196,7 @@ declare const is: {
     };
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -228,12 +229,12 @@ declare const is: {
         }>;
         truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
         falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-        exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+        exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+        like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
         anything: (arg: any) => false;
     };
@@ -246,12 +247,11 @@ declare const does: {
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
     null: <T_1>(arg: T_1 | null) => arg is null;
-    true: <T_8>(arg: true | T_8) => arg is true;
-    false: <T_7>(arg: false | T_7) => arg is false;
-    zero: <T_5>(arg: 0 | T_5) => arg is 0;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
+    zero: <T_5>(arg: 0 | T_5) => arg is 0;
+    false: <T_7>(arg: false | T_7) => arg is false;
+    true: <T_8>(arg: true | T_8) => arg is true;
     array: <T_11>(arg: any[] | T_11) => arg is any[];
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
     primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
     jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
@@ -264,6 +264,7 @@ declare const does: {
     };
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -296,12 +297,12 @@ declare const does: {
         }>;
         truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
         falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-        exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+        exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+        like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
         anything: (arg: any) => false;
     };
@@ -331,12 +332,12 @@ declare const isnt: {
     }>;
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
@@ -365,12 +366,12 @@ declare const aint: {
     }>;
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
@@ -399,12 +400,12 @@ declare const doesnt: {
     }>;
     truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
     falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => (arg: T_20) => boolean;
+    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: RegExp | TypeguardMap) => (arg: string | object) => boolean;
+    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
     anything: (arg: any) => false;
 };
@@ -876,4 +877,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
     kind: string;
 }>(object: O) => object is O & KindOf<T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

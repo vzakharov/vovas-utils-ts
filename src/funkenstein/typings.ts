@@ -40,6 +40,9 @@ export type GuardedWithMap<Map extends TypeguardMap> = { // converts every typeg
       : never;
 };
 
+export type MapForType<T> = { // creates a typeguard map for a given type
+  [Key in keyof T]: Typeguard<any, T[Key]>;
+};
 
 export function isTypeguardMap(arg: any): arg is TypeguardMap {
   return _.isObject(arg) && _.every(arg, _.isFunction);

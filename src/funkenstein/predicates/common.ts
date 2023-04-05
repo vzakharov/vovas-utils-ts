@@ -9,6 +9,7 @@ export const commonPredicates = {
   undefined: <T>(arg: T | undefined): arg is undefined => _.isUndefined(arg),
   null: <T>(arg: T | null): arg is null => _.isNull(arg),
   string: <T>(arg: T | string): arg is string => _.isString(arg),
+  // string: <T>(arg: T): arg is T & string => _.isString(arg),
   emptyString: <T>(arg: T | ''): arg is '' => arg === '',
   number: <T>(arg: T | number): arg is number => _.isNumber(arg),
   zero: <T>(arg: T | 0): arg is 0 => arg === 0,
@@ -17,8 +18,10 @@ export const commonPredicates = {
   true: <T>(arg: T | true): arg is true => arg === true,
   function: <T>(arg: T | ((...args: any[]) => any)): arg is (...args: any[]) => any => _.isFunction(arg),
   object: <T>(arg: T | object): arg is object => _.isObject(arg),
+  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
   array: <T>(arg: T | any[]): arg is any[] => _.isArray(arg),
   regexp: <T>(arg: T | RegExp): arg is RegExp => _.isRegExp(arg),
+  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
 
   primitive: <T>(arg: T | Primitive): arg is Primitive => isPrimitive(arg),
   jsonable: <T>(arg: T | Jsonable): arg is Jsonable => isJsonable(arg),
@@ -29,7 +32,10 @@ export const commonPredicates = {
   truthy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is T => !!arg,
   falsy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is undefined | null | false | 0 | '' => !arg,
 
-  exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
+  // exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
+  exactly: <T>(sample: T) => (
+    (arg: any) => _.isEqual(arg, sample)
+  ) as <U>(arg: U) => arg is T & U,
   above: (sample: number) => (arg: number) => arg > sample,
   below: (sample: number) => (arg: number) => arg < sample,
   atLeast: (sample: number) => (arg: number) => arg >= sample,
@@ -82,7 +88,7 @@ export const is = merge(commonPredicates, is => ({
     atLeast: (sample: number) => not(is.atLeast(sample)),
     atMost: (sample: number) => not(is.atMost(sample)),
 
-    like: (sample: RegExp | TypeguardMap) => not(isLike(sample)),
+    like: (sample: TypeguardMap) => not(isLike(sample)),
     typed: <T extends string | number>(type: T) => not(isTyped(type)),
 
     // matching: (regex: RegExp) => not(is.matching(regex)),
