@@ -652,6 +652,28 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+class Listeners {
+  constructor(client, event, gatekeeper, handler) {
+    this.client = client;
+    this.event = event;
+    this.gatekeeper = gatekeeper;
+    this.handler = handler;
+    this.listeners = [];
+  }
+  add(...params) {
+    const listener = (arg) => {
+      if (this.gatekeeper(arg, ...params)) {
+        this.handler.call(this, arg, ...params);
+      }
+    };
+    this.listeners.push([this.event, listener]);
+    this.client.on(this.event, listener);
+  }
+  removeAll() {
+    this.listeners.forEach((listener) => this.client.removeListener(...listener));
+  }
+}
+
 function merge(target, ...sources) {
   let result = target;
   for (const source of sources) {
@@ -763,4 +785,4 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, Listeners, Resolvable, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

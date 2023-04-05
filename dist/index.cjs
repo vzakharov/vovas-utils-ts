@@ -654,6 +654,28 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+class Listeners {
+  constructor(client, event, gatekeeper, handler) {
+    this.client = client;
+    this.event = event;
+    this.gatekeeper = gatekeeper;
+    this.handler = handler;
+    this.listeners = [];
+  }
+  add(...params) {
+    const listener = (arg) => {
+      if (this.gatekeeper(arg, ...params)) {
+        this.handler.call(this, arg, ...params);
+      }
+    };
+    this.listeners.push([this.event, listener]);
+    this.client.on(this.event, listener);
+  }
+  removeAll() {
+    this.listeners.forEach((listener) => this.client.removeListener(...listener));
+  }
+}
+
 function merge(target, ...sources) {
   let result = target;
   for (const source of sources) {
@@ -772,6 +794,7 @@ exports.$throw = $throw;
 exports.$thrower = $thrower;
 exports.$try = $try;
 exports.$with = $with;
+exports.Listeners = Listeners;
 exports.Resolvable = Resolvable;
 exports.aint = aint;
 exports.aliasify = aliasify;

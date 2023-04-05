@@ -8,6 +8,7 @@ export * from './humanize';
 export * from './jsObjectString';
 export * from './logger';
 export * from './json';
+export * from './listeners';
 export * from './merge';
 export * from './npmLinks';
 export * from './resolvable';
