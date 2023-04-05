@@ -655,19 +655,14 @@ function isJsonableObject(obj) {
 }
 
 class Listeners {
-  constructor(client, event, gatekeeper, handler) {
+  constructor(client, event, handler) {
     this.client = client;
     this.event = event;
-    this.gatekeeper = gatekeeper;
     this.handler = handler;
     this.listeners = [];
   }
   add(params) {
-    const listener = (arg) => {
-      if (this.gatekeeper(arg, params)) {
-        this.handler(arg, params);
-      }
-    };
+    const listener = (arg) => this.handler(arg, params);
     this.listeners.push([this.event, listener]);
     this.client.on(this.event, listener);
   }
