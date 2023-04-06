@@ -8,7 +8,7 @@ export * from './lazily';
 export * from './meta';
 export * from './predicates/both';
 export * from './predicates/common';
-export * from './predicates/inherently';
+// export * from './predicates/inherently';
 export * from './predicates/isLike';
 export * from './predicates/its';
 export * from './predicates/has';
