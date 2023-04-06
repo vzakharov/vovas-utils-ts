@@ -288,7 +288,7 @@ function conformsToTypeguardMap(typeguardMap) {
 }
 
 function isLike(sample) {
-  return conformsToTypeguardMap(sample);
+  return _.isObject(sample) ? conformsToTypeguardMap(sample) : () => false;
 }
 
 function not(predicate) {
@@ -312,6 +312,7 @@ const commonPredicates = {
   array: (arg) => _.isArray(arg),
   regexp: (arg) => _.isRegExp(arg),
   // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
+  itself: (arg) => true,
   primitive: (arg) => isPrimitive(arg),
   jsonable: (arg) => isJsonable(arg),
   jsonableObject: (arg) => isJsonableObject(arg),
@@ -345,6 +346,8 @@ const is = merge(commonPredicates, (is2) => ({
     object: not(is2.object),
     array: not(is2.array),
     regexp: not(is2.regexp),
+    itself: not(is2.itself),
+    // funny ain't it?
     primitive: not(is2.primitive),
     jsonable: not(is2.jsonable),
     jsonableObject: not(is2.jsonableObject),
@@ -370,6 +373,16 @@ const does = is;
 const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
+
+function inherently(typeguardName) {
+  return (obj) => {
+    const typeguard = obj[typeguardName];
+    if (!typeguard || !_.isFunction(typeguard)) {
+      throw new Error(`Object does not have inherent typeguard '${String(typeguardName)}'.`);
+    }
+    return typeguard.call(obj);
+  };
+}
 
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
@@ -836,6 +849,7 @@ exports.go = go;
 exports.groupListeners = groupListeners;
 exports.has = has;
 exports.humanize = humanize;
+exports.inherently = inherently;
 exports.is = is;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;

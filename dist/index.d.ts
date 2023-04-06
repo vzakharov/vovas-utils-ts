@@ -68,6 +68,9 @@ declare function chainified<Function extends (...args: any[]) => any, ChainedPar
 
 type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded extends Base = Base> = IsTypeguard extends true ? ((arg: Base) => arg is Guarded) : ((arg: Base) => boolean);
 type Typeguard<Base = any, Guarded extends Base = Base> = ((arg: Base) => arg is Guarded);
+type TypeguardKeys<T, U extends T> = {
+    [K in keyof T]: T[K] extends Typeguard<T, U> ? K : never;
+}[keyof T];
 type NonTypeguard<Base = any> = ((arg: Base) => boolean);
 type Transform<Arg = any, Result = any> = (arg: Arg) => Result;
 type TransformResult<Trfm extends Transform> = Trfm extends Transform<any, infer Result> ? Result : never;
@@ -130,7 +133,7 @@ declare function meta<Args extends any[], Return>(fn: (wrapper: (...args: Args) 
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded1 & Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function isLike<Map extends TypeguardMap>(sample: Map): <Object extends object>(arg: Object) => arg is Object & GuardedWithMap<Map>;
+declare function isLike<Map extends TypeguardMap>(sample: Map): <T>(arg: T) => arg is T & GuardedWithMap<Map>;
 
 declare const commonPredicates: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
@@ -146,23 +149,24 @@ declare const commonPredicates: {
     object: <T_10>(arg: object | T_10) => arg is object;
     array: <T_11>(arg: any[] | T_11) => arg is any[];
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is JsonableObject;
-    defined: <T_16>(arg: T_16 | undefined) => arg is T_16;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is T_13;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Primitive;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Jsonable;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is JsonableObject;
+    defined: <T_17>(arg: T_17 | undefined) => arg is T_17;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is T_17 & {
+    }>(arg: T_18) => arg is T_18 & {
         length: 0;
     };
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is T_19;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is T_21 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
     anything: (...args: any[]) => true;
@@ -179,7 +183,7 @@ declare const is: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
-    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
     zero: <T_5>(arg: 0 | T_5) => arg is 0;
@@ -187,18 +191,19 @@ declare const is: {
     true: <T_8>(arg: true | T_8) => arg is true;
     array: <T_11>(arg: any[] | T_11) => arg is any[];
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is JsonableObject;
-    defined: <T_16>(arg: T_16 | undefined) => arg is T_16;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is T_13;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Primitive;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Jsonable;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is JsonableObject;
+    defined: <T_17>(arg: T_17 | undefined) => arg is T_17;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is T_17 & {
+    }>(arg: T_18) => arg is T_18 & {
         length: 0;
     };
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is T_19;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is T_21 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -220,25 +225,26 @@ declare const is: {
         object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
         array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
         regexp: <T_12>(arg: RegExp | T_12) => arg is Exclude<T_12, RegExp>;
-        primitive: <T_13>(arg: Primitive | T_13) => arg is Exclude<T_13, Primitive>;
-        jsonable: <T_14>(arg: Jsonable | T_14) => arg is Exclude<T_14, Jsonable>;
-        jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is Exclude<T_15, JsonableObject>;
-        defined: <T_16>(arg: T_16 | undefined) => arg is Exclude<undefined, T_16> | Exclude<T_16, T_16>;
-        empty: <T_17 extends {
+        itself: <T_13>(arg: T_13) => arg is Exclude<T_13, T_13>;
+        primitive: <T_14>(arg: Primitive | T_14) => arg is Exclude<T_14, Primitive>;
+        jsonable: <T_15>(arg: Jsonable | T_15) => arg is Exclude<T_15, Jsonable>;
+        jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is Exclude<T_16, JsonableObject>;
+        defined: <T_17>(arg: T_17 | undefined) => arg is Exclude<undefined, T_17> | Exclude<T_17, T_17>;
+        empty: <T_18 extends {
             length: number;
-        }>(arg: T_17) => arg is Exclude<T_17, T_17 & {
+        }>(arg: T_18) => arg is Exclude<T_18, T_18 & {
             length: 0;
         }>;
-        truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
-        falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-        exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
+        truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<undefined, T_19> | Exclude<null, T_19> | Exclude<false, T_19> | Exclude<"", T_19> | Exclude<0, T_19> | Exclude<T_19, T_19>;
+        falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<T_20, false | "" | 0 | null | undefined>;
+        exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is Exclude<U, T_21 & U>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
-        typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
-        match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
+        like: (sample: TypeguardMap) => <T_22>(arg: T_22) => arg is Exclude<T_22, T_22 & GuardedWithMap<TypeguardMap<string>>>;
+        typed: <T_23 extends string | number>(type: T_23) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_23>>;
+        match: <T_24 extends object>(sample: T_24) => <U_1 extends T_24>(arg: U_1) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -249,7 +255,7 @@ declare const does: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
-    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
     zero: <T_5>(arg: 0 | T_5) => arg is 0;
@@ -257,18 +263,19 @@ declare const does: {
     true: <T_8>(arg: true | T_8) => arg is true;
     array: <T_11>(arg: any[] | T_11) => arg is any[];
     regexp: <T_12>(arg: RegExp | T_12) => arg is RegExp;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Primitive;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Jsonable;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is JsonableObject;
-    defined: <T_16>(arg: T_16 | undefined) => arg is T_16;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is T_13;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Primitive;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Jsonable;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is JsonableObject;
+    defined: <T_17>(arg: T_17 | undefined) => arg is T_17;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is T_17 & {
+    }>(arg: T_18) => arg is T_18 & {
         length: 0;
     };
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is T_18;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is T_20 & U;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is T_19;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is T_21 & U;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -290,25 +297,26 @@ declare const does: {
         object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
         array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
         regexp: <T_12>(arg: RegExp | T_12) => arg is Exclude<T_12, RegExp>;
-        primitive: <T_13>(arg: Primitive | T_13) => arg is Exclude<T_13, Primitive>;
-        jsonable: <T_14>(arg: Jsonable | T_14) => arg is Exclude<T_14, Jsonable>;
-        jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is Exclude<T_15, JsonableObject>;
-        defined: <T_16>(arg: T_16 | undefined) => arg is Exclude<undefined, T_16> | Exclude<T_16, T_16>;
-        empty: <T_17 extends {
+        itself: <T_13>(arg: T_13) => arg is Exclude<T_13, T_13>;
+        primitive: <T_14>(arg: Primitive | T_14) => arg is Exclude<T_14, Primitive>;
+        jsonable: <T_15>(arg: Jsonable | T_15) => arg is Exclude<T_15, Jsonable>;
+        jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is Exclude<T_16, JsonableObject>;
+        defined: <T_17>(arg: T_17 | undefined) => arg is Exclude<undefined, T_17> | Exclude<T_17, T_17>;
+        empty: <T_18 extends {
             length: number;
-        }>(arg: T_17) => arg is Exclude<T_17, T_17 & {
+        }>(arg: T_18) => arg is Exclude<T_18, T_18 & {
             length: 0;
         }>;
-        truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
-        falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-        exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
+        truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<undefined, T_19> | Exclude<null, T_19> | Exclude<false, T_19> | Exclude<"", T_19> | Exclude<0, T_19> | Exclude<T_19, T_19>;
+        falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<T_20, false | "" | 0 | null | undefined>;
+        exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is Exclude<U, T_21 & U>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
-        typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
-        match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
+        like: (sample: TypeguardMap) => <T_22>(arg: T_22) => arg is Exclude<T_22, T_22 & GuardedWithMap<TypeguardMap<string>>>;
+        typed: <T_23 extends string | number>(type: T_23) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_23>>;
+        match: <T_24 extends object>(sample: T_24) => <U_1 extends T_24>(arg: U_1) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -326,25 +334,26 @@ declare const isnt: {
     object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
     array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
     regexp: <T_12>(arg: RegExp | T_12) => arg is Exclude<T_12, RegExp>;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Exclude<T_13, Primitive>;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Exclude<T_14, Jsonable>;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is Exclude<T_15, JsonableObject>;
-    defined: <T_16>(arg: T_16 | undefined) => arg is Exclude<undefined, T_16> | Exclude<T_16, T_16>;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is Exclude<T_13, T_13>;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Exclude<T_14, Primitive>;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Exclude<T_15, Jsonable>;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is Exclude<T_16, JsonableObject>;
+    defined: <T_17>(arg: T_17 | undefined) => arg is Exclude<undefined, T_17> | Exclude<T_17, T_17>;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is Exclude<T_17, T_17 & {
+    }>(arg: T_18) => arg is Exclude<T_18, T_18 & {
         length: 0;
     }>;
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<undefined, T_19> | Exclude<null, T_19> | Exclude<false, T_19> | Exclude<"", T_19> | Exclude<0, T_19> | Exclude<T_19, T_19>;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<T_20, false | "" | 0 | null | undefined>;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is Exclude<U, T_21 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
-    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
+    like: (sample: TypeguardMap) => <T_22>(arg: T_22) => arg is Exclude<T_22, T_22 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_23 extends string | number>(type: T_23) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_23>>;
+    match: <T_24 extends object>(sample: T_24) => <U_1 extends T_24>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -361,25 +370,26 @@ declare const aint: {
     object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
     array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
     regexp: <T_12>(arg: RegExp | T_12) => arg is Exclude<T_12, RegExp>;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Exclude<T_13, Primitive>;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Exclude<T_14, Jsonable>;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is Exclude<T_15, JsonableObject>;
-    defined: <T_16>(arg: T_16 | undefined) => arg is Exclude<undefined, T_16> | Exclude<T_16, T_16>;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is Exclude<T_13, T_13>;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Exclude<T_14, Primitive>;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Exclude<T_15, Jsonable>;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is Exclude<T_16, JsonableObject>;
+    defined: <T_17>(arg: T_17 | undefined) => arg is Exclude<undefined, T_17> | Exclude<T_17, T_17>;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is Exclude<T_17, T_17 & {
+    }>(arg: T_18) => arg is Exclude<T_18, T_18 & {
         length: 0;
     }>;
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<undefined, T_19> | Exclude<null, T_19> | Exclude<false, T_19> | Exclude<"", T_19> | Exclude<0, T_19> | Exclude<T_19, T_19>;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<T_20, false | "" | 0 | null | undefined>;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is Exclude<U, T_21 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
-    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
+    like: (sample: TypeguardMap) => <T_22>(arg: T_22) => arg is Exclude<T_22, T_22 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_23 extends string | number>(type: T_23) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_23>>;
+    match: <T_24 extends object>(sample: T_24) => <U_1 extends T_24>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -396,27 +406,30 @@ declare const doesnt: {
     object: <T_10>(arg: object | T_10) => arg is Exclude<T_10, object>;
     array: <T_11>(arg: any[] | T_11) => arg is Exclude<T_11, any[]>;
     regexp: <T_12>(arg: RegExp | T_12) => arg is Exclude<T_12, RegExp>;
-    primitive: <T_13>(arg: Primitive | T_13) => arg is Exclude<T_13, Primitive>;
-    jsonable: <T_14>(arg: Jsonable | T_14) => arg is Exclude<T_14, Jsonable>;
-    jsonableObject: <T_15>(arg: JsonableObject | T_15) => arg is Exclude<T_15, JsonableObject>;
-    defined: <T_16>(arg: T_16 | undefined) => arg is Exclude<undefined, T_16> | Exclude<T_16, T_16>;
-    empty: <T_17 extends {
+    itself: <T_13>(arg: T_13) => arg is Exclude<T_13, T_13>;
+    primitive: <T_14>(arg: Primitive | T_14) => arg is Exclude<T_14, Primitive>;
+    jsonable: <T_15>(arg: Jsonable | T_15) => arg is Exclude<T_15, Jsonable>;
+    jsonableObject: <T_16>(arg: JsonableObject | T_16) => arg is Exclude<T_16, JsonableObject>;
+    defined: <T_17>(arg: T_17 | undefined) => arg is Exclude<undefined, T_17> | Exclude<T_17, T_17>;
+    empty: <T_18 extends {
         length: number;
-    }>(arg: T_17) => arg is Exclude<T_17, T_17 & {
+    }>(arg: T_18) => arg is Exclude<T_18, T_18 & {
         length: 0;
     }>;
-    truthy: <T_18>(arg: false | "" | 0 | T_18 | null | undefined) => arg is Exclude<undefined, T_18> | Exclude<null, T_18> | Exclude<false, T_18> | Exclude<"", T_18> | Exclude<0, T_18> | Exclude<T_18, T_18>;
-    falsy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<T_19, false | "" | 0 | null | undefined>;
-    exactly: <T_20>(sample: T_20) => <U>(arg: U) => arg is Exclude<U, T_20 & U>;
+    truthy: <T_19>(arg: false | "" | 0 | T_19 | null | undefined) => arg is Exclude<undefined, T_19> | Exclude<null, T_19> | Exclude<false, T_19> | Exclude<"", T_19> | Exclude<0, T_19> | Exclude<T_19, T_19>;
+    falsy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<T_20, false | "" | 0 | null | undefined>;
+    exactly: <T_21>(sample: T_21) => <U>(arg: U) => arg is Exclude<U, T_21 & U>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
-    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
+    like: (sample: TypeguardMap) => <T_22>(arg: T_22) => arg is Exclude<T_22, T_22 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_23 extends string | number>(type: T_23) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_23>>;
+    match: <T_24 extends object>(sample: T_24) => <U_1 extends T_24>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
+
+declare function inherently<T, U extends T>(typeguardName: TypeguardKeys<T, U>): (obj: T) => obj is U;
 
 declare function its<Key extends keyof Obj, Obj extends object>(key: Key): Transform<Obj, Obj[Key]>;
 declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
@@ -885,4 +898,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
     kind: string;
 }>(object: O) => object is O & KindOf<T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardKeys, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, inherently, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

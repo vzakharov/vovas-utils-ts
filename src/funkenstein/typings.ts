@@ -8,6 +8,10 @@ export type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded
 export type Typeguard<Base = any, Guarded extends Base = Base> =
   ( (arg: Base) => arg is Guarded );
 
+export type TypeguardKeys<T, U extends T> = {
+  [K in keyof T]: T[K] extends Typeguard<T, U> ? K : never;
+}[keyof T];
+
 export type NonTypeguard<Base = any> =
   ( (arg: Base) => boolean );
 

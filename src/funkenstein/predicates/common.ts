@@ -23,6 +23,8 @@ export const commonPredicates = {
   regexp: <T>(arg: T | RegExp): arg is RegExp => _.isRegExp(arg),
   // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
 
+  itself: <T>(arg: T): arg is T => true,
+
   primitive: <T>(arg: T | Primitive): arg is Primitive => isPrimitive(arg),
   jsonable: <T>(arg: T | Jsonable): arg is Jsonable => isJsonable(arg),
   jsonableObject: <T>(arg: T | JsonableObject): arg is JsonableObject => isJsonableObject(arg),
@@ -73,6 +75,8 @@ export const is = merge(commonPredicates, is => ({
     object: not(is.object),
     array: not(is.array),
     regexp: not(is.regexp),
+
+    itself: not(is.itself), // funny ain't it?
 
     primitive: not(is.primitive),
     jsonable: not(is.jsonable),
