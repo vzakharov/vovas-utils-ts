@@ -162,6 +162,7 @@ declare const commonPredicates: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
+    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
     anything: (...args: any[]) => true;
@@ -178,6 +179,7 @@ declare const is: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
+    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
     zero: <T_5>(arg: 0 | T_5) => arg is 0;
@@ -236,6 +238,7 @@ declare const is: {
         atMost: (sample: number) => (arg: number) => boolean;
         like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
+        match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -246,6 +249,7 @@ declare const does: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_10>(arg: object | T_10) => arg is object;
     function: <T_9>(arg: T_9 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
+    match: <T_21 extends object>(sample: T_21) => <U_1 extends T_21>(arg: U_1) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     emptyString: <T_3>(arg: "" | T_3) => arg is "";
     zero: <T_5>(arg: 0 | T_5) => arg is 0;
@@ -304,6 +308,7 @@ declare const does: {
         atMost: (sample: number) => (arg: number) => boolean;
         like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
+        match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
         anything: (arg: any) => false;
     };
 };
@@ -339,6 +344,7 @@ declare const isnt: {
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -373,6 +379,7 @@ declare const aint: {
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -407,6 +414,7 @@ declare const doesnt: {
     atMost: (sample: number) => (arg: number) => boolean;
     like: (sample: TypeguardMap) => <Object_1 extends object>(arg: Object_1) => arg is Exclude<Object_1, Object_1 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_21 extends string | number>(type: T_21) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_21>>;
+    match: <T_22 extends object>(sample: T_22) => <U_1 extends T_22>(arg: U_1) => boolean;
     anything: (arg: any) => false;
 };
 

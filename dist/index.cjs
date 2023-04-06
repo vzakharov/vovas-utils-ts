@@ -325,6 +325,7 @@ const commonPredicates = {
   below: (sample) => (arg) => arg < sample,
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
+  match: (sample) => (arg) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
   anything: (...args) => true
@@ -358,6 +359,7 @@ const is = merge(commonPredicates, (is2) => ({
     atMost: (sample) => not(is2.atMost(sample)),
     like: (sample) => not(isLike(sample)),
     typed: (type) => not(isTyped(type)),
+    match: (sample) => not(is2.match(sample)),
     // matching: (regex: RegExp) => not(is.matching(regex)),
     // describing: (string: string) => not(is.describing(string)),
     anything: not(is2.anything)

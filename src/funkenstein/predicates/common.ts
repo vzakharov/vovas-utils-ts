@@ -41,6 +41,7 @@ export const commonPredicates = {
   atLeast: (sample: number) => (arg: number) => arg >= sample,
   atMost: (sample: number) => (arg: number) => arg <= sample,
 
+  match: <T extends object>(sample: T) => <U extends T>(arg: U) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
 
@@ -90,6 +91,7 @@ export const is = merge(commonPredicates, is => ({
 
     like: (sample: TypeguardMap) => not(isLike(sample)),
     typed: <T extends string | number>(type: T) => not(isTyped(type)),
+    match: <T extends object>(sample: T) => not(is.match(sample)),
 
     // matching: (regex: RegExp) => not(is.matching(regex)),
     // describing: (string: string) => not(is.describing(string)),
