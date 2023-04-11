@@ -374,6 +374,10 @@ const isnt = is.not;
 const aint = is.not;
 const doesnt = does.not;
 
+function either(...predicates) {
+  return (arg) => predicates.some((predicate) => predicate(arg));
+}
+
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
 }
@@ -824,6 +828,7 @@ exports.does = does;
 exports.doesnt = doesnt;
 exports.download = download;
 exports.downloadAsStream = downloadAsStream;
+exports.either = either;
 exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;

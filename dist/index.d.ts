@@ -426,6 +426,9 @@ declare const doesnt: {
     anything: (arg: any) => false;
 };
 
+declare function either<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 | Guarded2>;
+declare function either<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
+
 declare function its<Key extends keyof Obj, Obj extends object>(key: Key): Transform<Obj, Obj[Key]>;
 declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
     [K in Key]: Guarded;
@@ -758,7 +761,8 @@ declare function download(url: string, filename?: string): Promise<string>;
 declare function downloadAsStream(url: string): Promise<fs.ReadStream>;
 
 declare function ensure<T>(x: T | undefined | null, variableName?: string): T;
-declare function assert<T>(x: T | undefined | null, variableName?: string): asserts x is T;
+type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
+declare function assert<T>(x: CouldBeNullOrUndefined<T>, variableName?: string): asserts x is T;
 interface EnsurePropertyOptions {
     requiredType?: string;
     validate?: (value: any) => boolean;
@@ -893,4 +897,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
     kind: string;
 }>(object: O) => object is O & KindOf<T>;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NewResolvableArgs, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PushToStackOutput, Resolvable, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, ansiColors, ansiPrefixes, assert, assign, both, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
