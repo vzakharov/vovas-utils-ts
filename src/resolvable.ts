@@ -12,8 +12,8 @@ export class Resolvable<T = void> {
   
   inProgress: boolean = true;
   // _resolve: () => void = () => {};
-  _resolve: (value?: T | PromiseLike<T>) => void = () => {};
-  _reject: (reason?: any) => void = () => {};
+  private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
+  private _reject: (reason?: any) => void = () => {};
   // promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   previousResolved: UnixTimestamp | undefined;

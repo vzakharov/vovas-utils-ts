@@ -875,8 +875,8 @@ interface NewResolvableArgs<T> {
 }
 declare class Resolvable<T = void> {
     inProgress: boolean;
-    _resolve: (value?: T | PromiseLike<T>) => void;
-    _reject: (reason?: any) => void;
+    private _resolve;
+    private _reject;
     promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
     constructor({ previousResolved, startResolved, startResolvedWith }?: NewResolvableArgs<T>);
