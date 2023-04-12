@@ -762,7 +762,7 @@ function forceUpdateNpmLinks() {
 
 class Resolvable {
   // constructor(previousResolved?: UnixTimestamp) {
-  constructor({ previousResolved, startResolved, startResolvedWith } = {}) {
+  constructor({ previousResolved, startResolved, startResolvedWith, then } = {}) {
     this.inProgress = true;
     // _resolve: () => void = () => {};
     this._resolve = () => {
@@ -778,6 +778,8 @@ class Resolvable {
       this.promise = Promise.resolve(ensure(startResolvedWith));
       this.inProgress = false;
     }
+    if (then)
+      this.promise.then(then);
   }
   // resolve() {
   resolve(value) {

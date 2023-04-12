@@ -1,10 +1,11 @@
 import { ensure } from "./ensure.js";
 import { UnixTimestamp } from "./types.js";
 
-export interface NewResolvableArgs<T> {
+export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
   startResolved?: boolean;
   startResolvedWith?: T;
+  then?: (value: T) => void;
 }
 
 // export class Resolvable {
@@ -19,12 +20,14 @@ export class Resolvable<T = void> {
   previousResolved: UnixTimestamp | undefined;
 
   // constructor(previousResolved?: UnixTimestamp) {
-  constructor({ previousResolved, startResolved, startResolvedWith }: NewResolvableArgs<T> = {}) {
+  constructor({ previousResolved, startResolved, startResolvedWith, then }: ResolvableConfig<T> = {}) {
     this.previousResolved = previousResolved;
     if ( startResolved ) {
       this.promise = Promise.resolve(ensure(startResolvedWith));
       this.inProgress = false;
     }
+    if ( then )
+      this.promise.then(then);
   }
 
   // resolve() {
