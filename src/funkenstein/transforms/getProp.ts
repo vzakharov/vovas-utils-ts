@@ -7,8 +7,8 @@ export function getProp<Object extends object, Key extends keyof Object>(key: Ke
   return (obj) => obj[key];
 }
 
-// // Example / compile-time test:
-// //
+// Example / compile-time test:
+//
 type Dog = { class: "dog", breed: string };
 type Car = { class: "car", make: string };
 type Person = { class: "person", ethnicity: string };
