@@ -127,7 +127,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
     serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
   };
   const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
-  const { shrinkArrays } = defaultOptions;
+  const { dontShrinkArrays } = defaultOptions;
   if (typeof index === "undefined") {
     logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
@@ -142,11 +142,11 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
           console.log(
             String(
               isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
-                shrinkArrays ? _.cloneDeepWith(arg, (value, key) => {
-                  if (_.isArray(value) && value.length > 10) {
-                    return _.sampleSize(value, 10);
+                dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
+                  if (_.isArray(value) && value.length > 3) {
+                    return _.sampleSize(value, 3);
                   }
-                }) : arg
+                })
               )
             ).split("\n").map(paint[color]).join("\n")
           );

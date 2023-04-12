@@ -824,7 +824,7 @@ type SerializeAs = keyof typeof serializer;
 type LogOptions = {
     color: Color;
     serializeAs: SerializeAs;
-    shrinkArrays?: boolean;
+    dontShrinkArrays?: boolean;
 };
 type LogFunction = (...args: any[]) => void;
 type PossiblySerializedLogFunction = LogFunction & {
