@@ -398,20 +398,14 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
-function pipe(...fns) {
-  return (from) => {
-    let result = from;
-    for (const fn of fns) {
-      result = fn(result);
-    }
-    return result;
-  };
-}
-
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
 }
 const shouldNotBe = compileTimeError;
+
+function callIts(key, ...args) {
+  return (object) => object[key](...args);
+}
 
 function getProp(key) {
   return (obj) => obj[key];
@@ -483,6 +477,16 @@ const to = commonTransforms;
 const go = commonTransforms;
 function give$(arg) {
   return () => arg;
+}
+
+function pipe(...fns) {
+  return (from) => {
+    let result = from;
+    for (const fn of fns) {
+      result = fn(result);
+    }
+    return result;
+  };
 }
 
 function shiftTo(direction) {
@@ -816,6 +820,7 @@ exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
 exports.assign = assign;
 exports.both = both;
+exports.callIts = callIts;
 exports.chainified = chainified;
 exports.check = check;
 exports.commonPredicates = commonPredicates;
