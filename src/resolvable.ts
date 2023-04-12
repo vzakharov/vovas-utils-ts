@@ -20,7 +20,10 @@ export class Resolvable<T = void> {
   previousResolved: UnixTimestamp | undefined;
 
   // constructor(previousResolved?: UnixTimestamp) {
-  constructor({ previousResolved, startResolved, startResolvedWith, then }: ResolvableConfig<T> = {}) {
+  constructor(
+    private config: ResolvableConfig<T> = {}
+  ) {
+    const { previousResolved, startResolved, startResolvedWith, then } = this.config;
     this.previousResolved = previousResolved;
     if ( startResolved ) {
       this.promise = Promise.resolve(ensure(startResolvedWith));
@@ -46,7 +49,11 @@ export class Resolvable<T = void> {
   // reset() {
   reset(value?: T | PromiseLike<T>) {
     this.resolve(value);
-    Object.assign(this, new Resolvable({ previousResolved: Date.now() }));
+    Object.assign(this, new Resolvable({ 
+      ...this.config,
+      startResolved: false,
+      previousResolved: Date.now()
+    }));
   }
 
 }

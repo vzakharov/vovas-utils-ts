@@ -762,7 +762,8 @@ function forceUpdateNpmLinks() {
 
 class Resolvable {
   // constructor(previousResolved?: UnixTimestamp) {
-  constructor({ previousResolved, startResolved, startResolvedWith, then } = {}) {
+  constructor(config = {}) {
+    this.config = config;
     this.inProgress = true;
     // _resolve: () => void = () => {};
     this._resolve = () => {
@@ -773,6 +774,7 @@ class Resolvable {
     this.promise = new Promise((_resolve, _reject) => {
       Object.assign(this, { _resolve, _reject });
     });
+    const { previousResolved, startResolved, startResolvedWith, then } = this.config;
     this.previousResolved = previousResolved;
     if (startResolved) {
       this.promise = Promise.resolve(ensure(startResolvedWith));
@@ -793,7 +795,11 @@ class Resolvable {
   // reset() {
   reset(value) {
     this.resolve(value);
-    Object.assign(this, new Resolvable({ previousResolved: Date.now() }));
+    Object.assign(this, new Resolvable({
+      ...this.config,
+      startResolved: false,
+      previousResolved: Date.now()
+    }));
   }
 }
 

@@ -878,12 +878,13 @@ interface ResolvableConfig<T> {
     then?: (value: T) => void;
 }
 declare class Resolvable<T = void> {
+    private config;
     inProgress: boolean;
     private _resolve;
     private _reject;
     promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
-    constructor({ previousResolved, startResolved, startResolvedWith, then }?: ResolvableConfig<T>);
+    constructor(config?: ResolvableConfig<T>);
     resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
     reset(value?: T | PromiseLike<T>): void;
