@@ -803,6 +803,11 @@ class Resolvable {
       startResolved: false
     }));
   }
+  async restartAfterWait() {
+    while (this.inProgress)
+      await this.promise;
+    this.start();
+  }
 }
 
 function toType(type) {

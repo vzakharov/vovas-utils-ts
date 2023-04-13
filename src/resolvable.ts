@@ -56,6 +56,12 @@ export class Resolvable<T = void> {
     }));
   };
 
-
+  async restartAfterWait() {
+    while ( this.inProgress )
+      await this.promise;
+    this.start();
+    // The point: If we have multiple things waiting for the same resolvable, we want to make sure that only one of them actually starts executing once the wait is over.
+    // In this case, the first one who responds to the promise will start the resolvable again, and the others will have to wait again.
+  };
 
 }
