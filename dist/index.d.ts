@@ -888,6 +888,7 @@ declare class Resolvable<T = void> {
     resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
     reset(value?: T | PromiseLike<T>): void;
+    start(): void;
 }
 
 type Typed<T extends string | number> = {

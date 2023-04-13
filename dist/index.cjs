@@ -763,16 +763,13 @@ function forceUpdateNpmLinks() {
 }
 
 class Resolvable {
-  // constructor(previousResolved?: UnixTimestamp) {
   constructor(config = {}) {
     this.config = config;
     this.inProgress = true;
-    // _resolve: () => void = () => {};
     this._resolve = () => {
     };
     this._reject = () => {
     };
-    // promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
     this.promise = new Promise((_resolve, _reject) => {
       Object.assign(this, { _resolve, _reject });
     });
@@ -785,22 +782,25 @@ class Resolvable {
     if (then)
       this.promise.then(then);
   }
-  // resolve() {
   resolve(value) {
     this._resolve(value);
     this.inProgress = false;
+    this.previousResolved = Date.now();
   }
   reject(reason) {
     this._reject(reason);
     this.inProgress = false;
   }
-  // reset() {
   reset(value) {
     this.resolve(value);
+    this.start();
+  }
+  start() {
+    if (this.inProgress)
+      throw new Error("Cannot start a Resolvable that is already in progress.");
     Object.assign(this, new Resolvable({
       ...this.config,
-      startResolved: false,
-      previousResolved: Date.now()
+      startResolved: false
     }));
   }
 }

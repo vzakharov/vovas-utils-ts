@@ -8,18 +8,14 @@ export interface ResolvableConfig<T> {
   then?: (value: T) => void;
 }
 
-// export class Resolvable {
 export class Resolvable<T = void> {
   
   inProgress: boolean = true;
-  // _resolve: () => void = () => {};
   private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
-  // promise = new Promise<void>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   previousResolved: UnixTimestamp | undefined;
 
-  // constructor(previousResolved?: UnixTimestamp) {
   constructor(
     private config: ResolvableConfig<T> = {}
   ) {
@@ -33,11 +29,11 @@ export class Resolvable<T = void> {
       this.promise.then(then);
   }
 
-  // resolve() {
   resolve(value?: T | PromiseLike<T>) {
     // console.log('Resolving');
     this._resolve(value);
     this.inProgress = false;
+    this.previousResolved = Date.now();
     // console.log('Resolved:', this);
   }
 
@@ -46,14 +42,20 @@ export class Resolvable<T = void> {
     this.inProgress = false;
   }
 
-  // reset() {
   reset(value?: T | PromiseLike<T>) {
     this.resolve(value);
-    Object.assign(this, new Resolvable({ 
+    this.start();
+  }
+
+  start() {
+    if ( this.inProgress )
+      throw new Error('Cannot start a Resolvable that is already in progress.');
+    Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false,
-      previousResolved: Date.now()
     }));
-  }
+  };
+
+
 
 }
