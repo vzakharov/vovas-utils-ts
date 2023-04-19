@@ -1,3 +1,6 @@
+export function ensure<T>(x: T | undefined | null, variableName?: string): T
+export function ensure<T>(x: T | undefined, variableName?: string): T 
+export function ensure<T>(x: T | null, variableName?: string): T
 export function ensure<T>(x: T | undefined | null, variableName?: string): T {
   if (typeof x === 'undefined' || x === null) {
     throw new Error(

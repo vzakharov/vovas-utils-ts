@@ -9,6 +9,8 @@ export function callIts<Key extends PropertyKey, Args extends any[]>(
   return (object) => object[key](...args);
 }
 
+export const please = callIts;
+
 // Example / compile-time test:
 //
 type Dog = { type: "dog", bark: () => string };

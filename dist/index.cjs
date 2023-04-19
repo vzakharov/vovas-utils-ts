@@ -413,6 +413,7 @@ const shouldNotBe = compileTimeError;
 function callIts(key, ...args) {
   return (object) => object[key](...args);
 }
+const please = callIts;
 
 function getProp(key) {
   return (obj) => obj[key];
@@ -893,6 +894,7 @@ exports.paint = paint;
 exports.parseSwitch = parseSwitch;
 exports.parseTransform = parseTransform;
 exports.pipe = pipe;
+exports.please = please;
 exports.pushToStack = pushToStack;
 exports.respectively = respectively;
 exports.serializer = serializer;
