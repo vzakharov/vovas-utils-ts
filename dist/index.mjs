@@ -142,7 +142,10 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
               isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
                 dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
                   if (_.isArray(value) && value.length > 3) {
-                    return _.sampleSize(value, 3);
+                    return [
+                      ..._.sampleSize(value, 3),
+                      `... ${value.length - 3} more elements ...`
+                    ];
                   }
                 })
               )
