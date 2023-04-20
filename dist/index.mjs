@@ -146,6 +146,8 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
                       ..._.sampleSize(value, 3),
                       `... ${value.length - 3} more elements ...`
                     ];
+                  } else if (_.isFunction(value)) {
+                    return value.toString().slice(0, 30);
                   }
                 })
               )
