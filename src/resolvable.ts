@@ -29,6 +29,10 @@ export class Resolvable<T = void> {
       this.promise.then(then);
   }
 
+  get resolved() {
+    return !this.inProgress;
+  }
+
   resolve(value?: T | PromiseLike<T>) {
     // console.log('Resolving');
     this._resolve(value);

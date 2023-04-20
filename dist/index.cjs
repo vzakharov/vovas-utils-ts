@@ -786,6 +786,9 @@ class Resolvable {
     if (then)
       this.promise.then(then);
   }
+  get resolved() {
+    return !this.inProgress;
+  }
   resolve(value) {
     this._resolve(value);
     this.inProgress = false;

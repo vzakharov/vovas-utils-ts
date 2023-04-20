@@ -888,6 +888,7 @@ declare class Resolvable<T = void> {
     promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
     constructor(config?: ResolvableConfig<T>);
+    get resolved(): boolean;
     resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
     reset(value?: T | PromiseLike<T>): void;
