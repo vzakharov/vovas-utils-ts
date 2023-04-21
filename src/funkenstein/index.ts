@@ -15,6 +15,7 @@ export * from './predicates/its';
 export * from './predicates/has';
 export * from './predicates/not';
 export * from './respectively';
+export * from './transforms/also';
 export * from './transforms/assignTo';
 export * from './transforms/callIts';
 export * from './transforms/common';

@@ -410,6 +410,10 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
+function also(handler) {
+  return (value) => (handler(value), value);
+}
+
 function assignTo(object, property) {
   return (value) => object[property] = value;
 }
@@ -852,6 +856,7 @@ exports.GroupListener = GroupListener;
 exports.Resolvable = Resolvable;
 exports.aint = aint;
 exports.aliasify = aliasify;
+exports.also = also;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
