@@ -410,6 +410,10 @@ function respectivelyReturn(...transforms) {
 }
 respectively.return = respectivelyReturn;
 
+function assignTo(object, property) {
+  return (value) => object[property] = value;
+}
+
 function compileTimeError(item) {
   throw new Error(`This should not exist: ${item}`);
 }
@@ -852,6 +856,7 @@ exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.assert = assert;
 exports.assign = assign;
+exports.assignTo = assignTo;
 exports.both = both;
 exports.callIts = callIts;
 exports.chainified = chainified;
