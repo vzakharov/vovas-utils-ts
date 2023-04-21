@@ -60,6 +60,11 @@ export class Resolvable<T = void> {
     }));
   };
 
+  startIfNotInProgress() {
+    if ( !this.inProgress )
+      this.start();
+  };
+
   async restartAfterWait() {
     while ( this.inProgress )
       await this.promise;

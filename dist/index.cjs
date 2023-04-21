@@ -812,6 +812,10 @@ class Resolvable {
       startResolved: false
     }));
   }
+  startIfNotInProgress() {
+    if (!this.inProgress)
+      this.start();
+  }
   async restartAfterWait() {
     while (this.inProgress)
       await this.promise;
