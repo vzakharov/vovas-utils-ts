@@ -778,7 +778,7 @@ declare function downloadAsStream(url: string): Promise<fs.ReadStream>;
 declare function ensure<T>(x: T | undefined | null, variableName?: string): T;
 declare function ensure<T>(x: T | undefined, variableName?: string): T;
 declare function ensure<T>(x: T | null, variableName?: string): T;
-declare function ensure<T, U>(x: T | U, typeguard: (x: T | U) => x is T): T;
+declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T): T;
 type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
 declare function assert<T>(x: CouldBeNullOrUndefined<T>, variableName?: string): asserts x is T;
 interface EnsurePropertyOptions {

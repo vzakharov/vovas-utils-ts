@@ -1,7 +1,7 @@
 export function ensure<T>(x: T | undefined | null, variableName?: string): T
 export function ensure<T>(x: T | undefined, variableName?: string): T 
 export function ensure<T>(x: T | null, variableName?: string): T
-export function ensure<T, U>(x: T | U, typeguard: (x: T | U) => x is T): T
+export function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T): T
 // export function ensure<T>(x: T | undefined | null, variableName?: string): T {
 export function ensure<T, U>(x: T | U, typeguardOrVariableName?: ((x: T | U) => x is T) | string): T {
   if (typeof typeguardOrVariableName === 'string' || typeof typeguardOrVariableName === 'undefined') {
