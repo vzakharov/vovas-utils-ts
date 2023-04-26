@@ -29,7 +29,11 @@ export class Resolvable<T = void> {
       this.inProgress = false;
     }
     if ( then )
-      this.promise.then(then);
+      this.then(then);
+  }
+
+  then( callback: (value: T) => void | Promise<void> ) {
+    this.promise.then(callback);
   }
 
   get resolved() {
