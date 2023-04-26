@@ -906,6 +906,7 @@ declare class Resolvable<T = void> {
     resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
     reset(value?: T | PromiseLike<T>): void;
+    restart(value?: T | PromiseLike<T>): void;
     start(): void;
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;

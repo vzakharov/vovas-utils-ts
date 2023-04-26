@@ -822,6 +822,10 @@ class Resolvable {
     this.resolve(value);
     this.start();
   }
+  // restart as an alias for reset
+  restart(value) {
+    this.reset(value);
+  }
   start() {
     if (this.inProgress)
       throw new Error("Cannot start a Resolvable that is already in progress.");
