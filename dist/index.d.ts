@@ -912,6 +912,7 @@ declare class Resolvable<T = void> {
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;
     static resolvedWith<T>(value: T): Resolvable<T>;
+    static resolved(): Resolvable<void>;
 }
 
 type Typed<T extends string | number> = {

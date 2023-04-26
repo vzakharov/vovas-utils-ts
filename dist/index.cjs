@@ -858,6 +858,9 @@ class Resolvable {
   static resolvedWith(value) {
     return new Resolvable({ startResolved: true, startResolvedWith: value });
   }
+  static resolved() {
+    return new Resolvable({ startResolved: true });
+  }
 }
 
 function toType(type) {

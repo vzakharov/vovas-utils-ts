@@ -85,4 +85,8 @@ export class Resolvable<T = void> {
     return new Resolvable<T>({ startResolved: true, startResolvedWith: value });
   };
 
+  static resolved() {
+    return new Resolvable<void>({ startResolved: true });
+  }
+
 }
