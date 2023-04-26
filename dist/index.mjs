@@ -100,6 +100,15 @@ const ansiPrefixes = {
   magenta: "\x1B[35m",
   cyan: "\x1B[36m"
 };
+const coloredEmojis = {
+  gray: "\u{1F42D}",
+  red: "\u{1F98A}",
+  green: "\u{1F438}",
+  yellow: "\u{1F424}",
+  blue: "\u{1F42C}",
+  magenta: "\u{1F984}",
+  cyan: "\u{1F433}"
+};
 const ansiColors = _.keys(ansiPrefixes);
 const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
@@ -134,7 +143,8 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    if (loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex) {
+    const mustLog = loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex;
+    if (mustLog) {
       args.forEach((arg) => {
         try {
           console.log(
@@ -843,6 +853,9 @@ class Resolvable {
       await this.promise;
     this.start();
   }
+  static resolvedWith(value) {
+    return new Resolvable({ startResolved: true, startResolvedWith: value });
+  }
 }
 
 function toType(type) {
@@ -859,4 +872,4 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };

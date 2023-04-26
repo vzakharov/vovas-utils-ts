@@ -81,4 +81,8 @@ export class Resolvable<T = void> {
     // In this case, the first one who responds to the promise will start the resolvable again, and the others will have to wait again.
   };
 
+  static resolvedWith<T>(value: T) {
+    return new Resolvable<T>({ startResolved: true, startResolvedWith: value });
+  };
+
 }

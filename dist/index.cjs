@@ -102,6 +102,15 @@ const ansiPrefixes = {
   magenta: "\x1B[35m",
   cyan: "\x1B[36m"
 };
+const coloredEmojis = {
+  gray: "\u{1F42D}",
+  red: "\u{1F98A}",
+  green: "\u{1F438}",
+  yellow: "\u{1F424}",
+  blue: "\u{1F42C}",
+  magenta: "\u{1F984}",
+  cyan: "\u{1F433}"
+};
 const ansiColors = _.keys(ansiPrefixes);
 const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
@@ -136,7 +145,8 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    if (loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex) {
+    const mustLog = loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex;
+    if (mustLog) {
       args.forEach((arg) => {
         try {
           console.log(
@@ -845,6 +855,9 @@ class Resolvable {
       await this.promise;
     this.start();
   }
+  static resolvedWith(value) {
+    return new Resolvable({ startResolved: true, startResolvedWith: value });
+  }
 }
 
 function toType(type) {
@@ -882,6 +895,7 @@ exports.both = both;
 exports.callIts = callIts;
 exports.chainified = chainified;
 exports.check = check;
+exports.coloredEmojis = coloredEmojis;
 exports.commonPredicates = commonPredicates;
 exports.commonTransforms = commonTransforms;
 exports.compileTimeError = compileTimeError;

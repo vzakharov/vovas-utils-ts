@@ -17,6 +17,7 @@ import yaml from 'js-yaml';
 import _ from 'lodash';
 import { $throw, $try } from './funkenstein';
 import { isPrimitive } from './types.js';
+import path from 'path';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -39,6 +40,16 @@ export const ansiPrefixes: ColorMap<string> = {
   blue: '\x1b[34m',
   magenta: '\x1b[35m',
   cyan: '\x1b[36m',
+};
+
+export const coloredEmojis: ColorMap<string> = {
+  gray: '🐭',
+  red: '🦊',
+  green: '🐸',
+  yellow: '🐤',
+  blue: '🐬',
+  magenta: '🦄',
+  cyan: '🐳',
 };
 
 export const ansiColors = _.keys(ansiPrefixes) as Color[];
@@ -143,8 +154,9 @@ export function logger(index?: number | 'always',
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
+    const mustLog = loggerInfo.logAll || index === 'always' || index === loggerInfo.lastLogIndex;
   
-    if ( loggerInfo.logAll || index === 'always' || index === loggerInfo.lastLogIndex ) {
+    if ( mustLog ) {
       // console.log(...args.map( arg =>
       args.forEach( arg => {
         try {
@@ -172,7 +184,20 @@ export function logger(index?: number | 'always',
           console.log(arg);
         }
       });
-    }
+
+      // // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
+      // // Create the file and the tmp directory if it doesn't exist
+      // const tmpDir = path.join(process.cwd(), 'tmp');
+      // fs.mkdirSync(tmpDir, { recursive: true });
+      // const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
+      // fs.appendFileSync(logFile,
+      //   `${new Date().toISOString()}\n` +
+      //   coloredEmojis[color] + '\n' +
+      //   JSON.stringify(args, null, 2) + '\n\n'
+      // );
+
+    };
+    
   }
 
   const log = (...args: any[]) => _log(defaultOptions, ...args);
