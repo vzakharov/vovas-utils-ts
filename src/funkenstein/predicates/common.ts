@@ -8,6 +8,7 @@ export const commonPredicates = {
 
   undefined: <T>(arg: T | undefined): arg is undefined => _.isUndefined(arg),
   null: <T>(arg: T | null): arg is null => _.isNull(arg),
+  nil: <T>(arg: T | undefined | null): arg is undefined | null => _.isNil(arg),
   string: <T>(arg: T | string): arg is string => _.isString(arg),
   // string: <T>(arg: T): arg is T & string => _.isString(arg),
   emptyString: <T>(arg: T | ''): arg is '' => arg === '',
@@ -64,6 +65,7 @@ export const is = merge(commonPredicates, is => ({
   not: {
     undefined: not(is.undefined),
     null: not(is.null),
+    nil: not(is.nil),
     string: not(is.string),
     emptyString: not(is.emptyString),
     number: not(is.number),

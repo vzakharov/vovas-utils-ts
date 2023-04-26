@@ -310,6 +310,7 @@ function not(predicate) {
 const commonPredicates = {
   undefined: (arg) => _.isUndefined(arg),
   null: (arg) => _.isNull(arg),
+  nil: (arg) => _.isNil(arg),
   string: (arg) => _.isString(arg),
   // string: <T>(arg: T): arg is T & string => _.isString(arg),
   emptyString: (arg) => arg === "",
@@ -347,6 +348,7 @@ const is = merge(commonPredicates, (is2) => ({
   not: {
     undefined: not(is2.undefined),
     null: not(is2.null),
+    nil: not(is2.nil),
     string: not(is2.string),
     emptyString: not(is2.emptyString),
     number: not(is2.number),
@@ -520,13 +522,22 @@ const shift = {
   right: shiftTo("right")
 };
 
-function ensure(x, variableName) {
-  if (typeof x === "undefined" || x === null) {
-    throw new Error(
-      variableName ? `${variableName} is undefined.` : "A variable is undefined. Check the call stack to see which one."
-    );
+function ensure(x, typeguardOrVariableName) {
+  if (typeof typeguardOrVariableName === "string" || typeof typeguardOrVariableName === "undefined") {
+    const variableName = typeguardOrVariableName;
+    if (typeof x === "undefined" || x === null) {
+      throw new Error(
+        variableName ? `${variableName} is undefined.` : "A variable is undefined. Check the call stack to see which one."
+      );
+    }
+    return x;
+  } else {
+    const typeguard = typeguardOrVariableName;
+    if (!typeguard(x)) {
+      throw new Error("Value does not match typeguard.");
+    }
+    return x;
   }
-  return x;
 }
 function assert(x, variableName) {
   ensure(x, variableName);
@@ -779,6 +790,7 @@ function forceUpdateNpmLinks() {
 class Resolvable {
   constructor(config = {}) {
     this.config = config;
+    this.id = _.uniqueId("res-");
     this.inProgress = true;
     this._resolve = () => {
     };

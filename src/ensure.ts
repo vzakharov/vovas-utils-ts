@@ -1,15 +1,26 @@
 export function ensure<T>(x: T | undefined | null, variableName?: string): T
 export function ensure<T>(x: T | undefined, variableName?: string): T 
 export function ensure<T>(x: T | null, variableName?: string): T
-export function ensure<T>(x: T | undefined | null, variableName?: string): T {
-  if (typeof x === 'undefined' || x === null) {
-    throw new Error(
-      variableName ?
-        `${variableName} is undefined.` :
-        "A variable is undefined. Check the call stack to see which one."
-    )
+export function ensure<T, U>(x: T | U, typeguard: (x: T | U) => x is T): T
+// export function ensure<T>(x: T | undefined | null, variableName?: string): T {
+export function ensure<T, U>(x: T | U, typeguardOrVariableName?: ((x: T | U) => x is T) | string): T {
+  if (typeof typeguardOrVariableName === 'string' || typeof typeguardOrVariableName === 'undefined') {
+    const variableName = typeguardOrVariableName;
+    if (typeof x === 'undefined' || x === null) {
+      throw new Error(
+        variableName ?
+          `${variableName} is undefined.` :
+          "A variable is undefined. Check the call stack to see which one."
+      )
+    }
+    return x as T;
+  } else {
+    const typeguard = typeguardOrVariableName;
+    if (!typeguard(x)) {
+      throw new Error("Value does not match typeguard.")
+    }
+    return x;
   }
-  return x;
 }
 
 export type CouldBeNullOrUndefined<T> = ( T | undefined | null ) | ( T | undefined ) | ( T | null );

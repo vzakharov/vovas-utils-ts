@@ -1,3 +1,5 @@
+import _ from "lodash";
+
 import { ensure } from "./ensure.js";
 import { UnixTimestamp } from "./types.js";
 
@@ -9,7 +11,8 @@ export interface ResolvableConfig<T> {
 }
 
 export class Resolvable<T = void> {
-  
+
+  id = _.uniqueId('res-');
   inProgress: boolean = true;
   private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
