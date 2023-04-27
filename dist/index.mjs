@@ -865,9 +865,12 @@ class Resolvable {
   restart(value) {
     this.reset(value);
   }
-  start() {
+  start(okayIfInProgress = false) {
     if (this.inProgress)
-      throw new Error("Cannot start a Resolvable that is already in progress.");
+      if (okayIfInProgress)
+        log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
+      else
+        throw new Error("Cannot start a Resolvable that is already in progress.");
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false

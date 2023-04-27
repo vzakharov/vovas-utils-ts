@@ -912,7 +912,7 @@ declare class Resolvable<T = void> {
     reject(reason?: any): void;
     reset(value?: T): void;
     restart(value?: T): void;
-    start(): void;
+    start(okayIfInProgress?: boolean): void;
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;
     static resolvedWith<T>(value: T): Resolvable<T>;
