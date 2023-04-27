@@ -87,7 +87,7 @@ export class Resolvable<T = void> {
   start(okayIfInProgress: boolean = false) {
     if ( this.inProgress )
       if ( okayIfInProgress )
-        log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
+        return log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
       else
         throw new Error('Cannot start a Resolvable that is already in progress.');
     Object.assign(this, new Resolvable({
