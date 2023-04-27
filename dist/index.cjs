@@ -130,6 +130,17 @@ const serializer = {
   yaml: (arg) => yaml.dump(arg),
   none: (arg) => arg
 };
+function serializable(arg) {
+  if (_.isFunction(arg))
+    return "[Function]";
+  if (typeof arg === "bigint" || typeof arg === "symbol")
+    return arg.toString();
+  if (_.isArray(arg))
+    return arg.map(serializable);
+  if (_.isPlainObject(arg))
+    return _.mapValues(arg, serializable);
+  return arg;
+}
 function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
     color: defaultColorOrOptions ?? "gray",
@@ -148,6 +159,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
     const mustLog = loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex;
     if (mustLog) {
       args.forEach((arg) => {
+        arg = serializable(arg);
         try {
           console.log(
             String(
@@ -187,9 +199,9 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   return log;
 }
 
-const log$1 = logger(28, "yellow");
+const log$2 = logger(28, "yellow");
 function parseSwitch(kind, hasArgument, argument, switchStack) {
-  log$1("parseSwitch", { kind, hasArgument, argument, switchStack });
+  log$2("parseSwitch", { kind, hasArgument, argument, switchStack });
   function $if2(predicate, transform2) {
     return transform2 ? pushToStack(
       kind,
@@ -223,7 +235,7 @@ function parseSwitch(kind, hasArgument, argument, switchStack) {
   };
 }
 function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
-  log$1("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
+  log$2("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
   return {
     then: (transform2) => pushToStack(
       kind,
@@ -236,7 +248,7 @@ function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
   };
 }
 function pushToStack(kind, hasArgument, argument, predicate, transform2, switchStack) {
-  log$1("pushToStack", { kind, hasArgument, argument, predicate, transform: transform2, switchStack });
+  log$2("pushToStack", { kind, hasArgument, argument, predicate, transform: transform2, switchStack });
   switchStack.push([predicate, transform2]);
   return kind === "last" ? evaluate(
     hasArgument,
@@ -250,12 +262,12 @@ function pushToStack(kind, hasArgument, argument, predicate, transform2, switchS
   );
 }
 function evaluate(hasArgument, argument, switchStack) {
-  log$1("evaluate", { hasArgument, argument, switchStack });
+  log$2("evaluate", { hasArgument, argument, switchStack });
   function evaluateForArgument(argument2) {
     for (const [predicate, transform2] of switchStack) {
       if (predicate(argument2)) {
         const result = transform2(argument2);
-        log$1.green("Found matching predicate", { predicate, transform: transform2, result });
+        log$2.green("Found matching predicate", { predicate, transform: transform2, result });
         return result;
       }
     }
@@ -747,12 +759,12 @@ function merge(target, ...sources) {
   return result;
 }
 
-const log = logger(23, "yellow");
+const log$1 = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
   );
-  log("npmLsOutput:\n", npmLsOutput);
+  log$1("npmLsOutput:\n", npmLsOutput);
   const npmLinks = Object.entries(
     _.mapValues(
       npmLsOutput.dependencies,
@@ -763,9 +775,9 @@ function getNpmLinks() {
 }
 function viteConfigForNpmLinks() {
   const npmLinks = getNpmLinks();
-  log("npmLinks:\n", npmLinks);
+  log$1("npmLinks:\n", npmLinks);
   const viteConfig = npmLinks.reduce((vite, packageName) => {
-    log("Adding alias for", packageName, "to vite config");
+    log$1("Adding alias for", packageName, "to vite config");
     const [alias, relativePath] = Array.isArray(packageName) ? packageName : [packageName, packageName];
     const resolvedPath = path.resolve(__dirname, `${relativePath}/src`);
     const toMerge = _.merge(vite, {
@@ -784,19 +796,20 @@ function viteConfigForNpmLinks() {
         }
       }
     });
-    log.green("Resulting vite config:", vite);
+    log$1.green("Resulting vite config:", vite);
     return toMerge;
   }, {});
   return viteConfig;
 }
 function forceUpdateNpmLinks() {
   getNpmLinks().forEach(([packageName]) => {
-    log(`Forcing update of npm-linked package ${packageName}`);
+    log$1(`Forcing update of npm-linked package ${packageName}`);
     childProcess.execSync(`yarn add --force ${packageName}`);
-    log.green(`Successfully updated npm-linked package ${packageName}`);
+    log$1.green(`Successfully updated npm-linked package ${packageName}`);
   });
 }
 
+const log = logger(85);
 class Resolvable {
   constructor(config = {}) {
     this.config = config;
@@ -819,21 +832,28 @@ class Resolvable {
       this.then(then);
   }
   then(callback) {
-    if (this.config.then)
-      throw new Error("Cannot set multiple then callbacks on a Resolvable.");
+    if (this.config.then && this.config.then !== callback)
+      throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
+    this.promise.then((value) => (log("Resolvable.then callback", this), callback(value)));
+    return this;
   }
   get resolved() {
     return !this.inProgress;
   }
+  get everResolved() {
+    return this.resolved || !!this.previousResolved;
+  }
   resolve(value) {
+    if (this.resolved)
+      throw new Error("Cannot resolve a Resolvable that is already resolved.");
     if (this.config.prohibitResolve)
       throw new Error("This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.");
+    log("Resolving", this);
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
-    if (this.config.then)
-      this.config.then(value);
+    log("Resolved", this);
   }
   reject(reason) {
     this._reject(reason);
@@ -853,7 +873,7 @@ class Resolvable {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false
-    }));
+    }), { id: this.id });
   }
   startIfNotInProgress() {
     if (!this.inProgress)
@@ -875,9 +895,12 @@ class Resolvable {
     const resolvable = new Resolvable({
       prohibitResolve: true
     });
+    log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
     init().then(() => {
+      log("Resolving resolvable", resolvable.id);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
+      log("Resolved resolvable", resolvable.id);
     });
     return resolvable;
   }
@@ -889,7 +912,7 @@ class Resolvable {
     resolvables.forEach((resolvable, index) => {
       resolvable.then((value) => {
         values[index] = value;
-        if (resolvables.every((r) => r.resolved)) {
+        if (resolvables.every((r) => r.everResolved)) {
           allResolvable.config.prohibitResolve = false;
           allResolvable.resolve(values);
         }
@@ -988,6 +1011,7 @@ exports.pipe = pipe;
 exports.please = please;
 exports.pushToStack = pushToStack;
 exports.respectively = respectively;
+exports.serializable = serializable;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
 exports.shift = shift;

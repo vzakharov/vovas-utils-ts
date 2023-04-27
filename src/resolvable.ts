@@ -1,7 +1,10 @@
 import _ from "lodash";
 
-import { give, is } from "./funkenstein/index.js";
+import { is } from "./funkenstein/index.js";
+import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
+
+const log = logger(85);
 
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
@@ -36,25 +39,34 @@ export class Resolvable<T = void> {
   then( callback: (value: T) => void | Promise<void> ) {
     // If there's already a then callback, throw an error
     // TODO: Maybe allow multiple then callbacks? Think of a fitting use case/architecture.
-    if ( this.config.then )
-      throw new Error('Cannot set multiple then callbacks on a Resolvable.');
+    if ( this.config.then && this.config.then !== callback )
+      throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
+    this.promise.then(value => (
+      log("Resolvable.then callback", this),
+      callback(value)
+    ));
+    return this;
   }
 
   get resolved() {
     return !this.inProgress;
   }
 
+  get everResolved() {
+    return this.resolved || !!this.previousResolved;
+  }
+
   resolve(value?: T) {
-    // console.log('Resolving');
+    if ( this.resolved )
+      throw new Error('Cannot resolve a Resolvable that is already resolved.');
     if ( this.config.prohibitResolve )
       throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
+    log("Resolving", this);
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
-    if ( this.config.then )
-      this.config.then(value as T);
-    // console.log('Resolved:', this);
+    log('Resolved', this);
   }
 
   reject(reason?: any) {
@@ -78,7 +90,7 @@ export class Resolvable<T = void> {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false,
-    }));
+    }), { id: this.id });
   };
 
   startIfNotInProgress() {
@@ -109,10 +121,13 @@ export class Resolvable<T = void> {
     const resolvable = new Resolvable({
       prohibitResolve: true,
     });
+    log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
     // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
     init().then(() => {
+      log("Resolving resolvable", resolvable.id);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
+      log("Resolved resolvable", resolvable.id);
     });
     return resolvable;
   };
@@ -125,7 +140,7 @@ export class Resolvable<T = void> {
     resolvables.forEach((resolvable, index) => {
       resolvable.then(value => {
         values[index] = value;
-        if ( resolvables.every(r => r.resolved) ) {
+        if ( resolvables.every(r => r.everResolved) ) {
           allResolvable.config.prohibitResolve = false;
           allResolvable.resolve(values);
         }

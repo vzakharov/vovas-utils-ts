@@ -124,6 +124,19 @@ export type Log = PossiblySerializedLogFunction & {
   always: Log;
 }
 
+export function serializable(arg: any): any {
+  if ( _.isFunction(arg) )
+    return "[Function]"
+  if ( typeof arg === 'bigint' || typeof arg === 'symbol' )
+    return arg.toString()
+  if ( _.isArray(arg) )
+    return arg.map(serializable)
+  if ( _.isPlainObject(arg) )
+    return _.mapValues(arg, serializable)
+  return arg
+}
+
+
 export function logger(index?: number | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
 export function logger(index?: number | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
 export function logger(index?: number | 'always', 
@@ -159,6 +172,7 @@ export function logger(index?: number | 'always',
     if ( mustLog ) {
       // console.log(...args.map( arg =>
       args.forEach( arg => {
+        arg = serializable(arg);
         try {
           console.log(
             String(
@@ -181,6 +195,7 @@ export function logger(index?: number | 'always',
             ).split('\n').map( paint[color] ).join('\n')
           )
         } catch (error) {
+          // console.log("Couldn't serialize:", error);
           console.log(arg);
         }
       });
