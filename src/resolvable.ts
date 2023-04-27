@@ -36,6 +36,7 @@ export class Resolvable<T = void> {
 
   then( callback: (value: T) => void | Promise<void> ) {
     this.promise.then(this.config.then = callback);
+    return this;
   }
 
   get resolved() {
@@ -119,7 +120,7 @@ export class Resolvable<T = void> {
         values[index] = value;
         if ( resolvables.every(r => r.resolved) ) {
           allResolvable.config.prohibitResolve = false;
-          allResolvable.resolve(values as T[]);
+          allResolvable.resolve(values);
         }
       });
     });

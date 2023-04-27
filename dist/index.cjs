@@ -820,6 +820,7 @@ class Resolvable {
   }
   then(callback) {
     this.promise.then(this.config.then = callback);
+    return this;
   }
   get resolved() {
     return !this.inProgress;
