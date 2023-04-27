@@ -893,6 +893,7 @@ interface ResolvableConfig<T> {
     startResolved?: boolean;
     startResolvedWith?: T;
     then?: (value: T) => void;
+    prohibitResolve?: boolean;
 }
 declare class Resolvable<T = void> {
     private config;
@@ -903,6 +904,7 @@ declare class Resolvable<T = void> {
     promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
     constructor(config?: ResolvableConfig<T>);
+    then(callback: (value: T) => void | Promise<void>): void;
     get resolved(): boolean;
     resolve(value?: T | PromiseLike<T>): void;
     reject(reason?: any): void;
@@ -913,6 +915,7 @@ declare class Resolvable<T = void> {
     restartAfterWait(): Promise<void>;
     static resolvedWith<T>(value: T): Resolvable<T>;
     static resolved(): Resolvable<void>;
+    static after(init: () => Promise<void>): Resolvable<void>;
 }
 
 type Typed<T extends string | number> = {

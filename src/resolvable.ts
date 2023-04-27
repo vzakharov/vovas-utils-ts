@@ -8,6 +8,7 @@ export interface ResolvableConfig<T> {
   startResolved?: boolean;
   startResolvedWith?: T;
   then?: (value: T) => void;
+  prohibitResolve?: boolean;
 }
 
 export class Resolvable<T = void> {
@@ -25,15 +26,15 @@ export class Resolvable<T = void> {
     const { previousResolved, startResolved, startResolvedWith, then } = this.config;
     this.previousResolved = previousResolved;
     if ( startResolved ) {
-      this.promise = Promise.resolve(ensure(startResolvedWith));
+      this.resolve(startResolvedWith);
       this.inProgress = false;
     }
     if ( then )
-      this.then(then);
+      this.promise.then(then);
   }
 
   then( callback: (value: T) => void | Promise<void> ) {
-    this.promise.then(callback);
+    this.promise.then(this.config.then = callback);
   }
 
   get resolved() {
@@ -42,6 +43,8 @@ export class Resolvable<T = void> {
 
   resolve(value?: T | PromiseLike<T>) {
     // console.log('Resolving');
+    if ( this.config.prohibitResolve )
+      throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
@@ -92,5 +95,17 @@ export class Resolvable<T = void> {
   static resolved() {
     return new Resolvable<void>({ startResolved: true });
   }
+
+  static after(init: () => Promise<void>) {
+    const resolvable = new Resolvable({
+      prohibitResolve: true,
+    });
+    // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
+    init().then(() => {
+      resolvable.config.prohibitResolve = false;
+      resolvable.resolve();
+    });
+    return resolvable;
+  };
 
 }

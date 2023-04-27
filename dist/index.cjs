@@ -812,16 +812,21 @@ class Resolvable {
     const { previousResolved, startResolved, startResolvedWith, then } = this.config;
     this.previousResolved = previousResolved;
     if (startResolved) {
-      this.promise = Promise.resolve(ensure(startResolvedWith));
+      this.resolve(startResolvedWith);
       this.inProgress = false;
     }
     if (then)
       this.promise.then(then);
   }
+  then(callback) {
+    this.promise.then(this.config.then = callback);
+  }
   get resolved() {
     return !this.inProgress;
   }
   resolve(value) {
+    if (this.config.prohibitResolve)
+      throw new Error("This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.");
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
@@ -860,6 +865,16 @@ class Resolvable {
   }
   static resolved() {
     return new Resolvable({ startResolved: true });
+  }
+  static after(init) {
+    const resolvable = new Resolvable({
+      prohibitResolve: true
+    });
+    init().then(() => {
+      resolvable.config.prohibitResolve = false;
+      resolvable.resolve();
+    });
+    return resolvable;
   }
 }
 
