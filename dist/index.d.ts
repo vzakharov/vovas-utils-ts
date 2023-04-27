@@ -904,12 +904,12 @@ declare class Resolvable<T = void> {
     promise: Promise<T>;
     previousResolved: UnixTimestamp | undefined;
     constructor(config?: ResolvableConfig<T>);
-    then(callback: (value: T) => void | Promise<void>): this;
+    then(callback: (value: T) => void | Promise<void>): void;
     get resolved(): boolean;
-    resolve(value?: T | PromiseLike<T>): void;
+    resolve(value?: T): void;
     reject(reason?: any): void;
-    reset(value?: T | PromiseLike<T>): void;
-    restart(value?: T | PromiseLike<T>): void;
+    reset(value?: T): void;
+    restart(value?: T): void;
     start(): void;
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;

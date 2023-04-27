@@ -1,8 +1,7 @@
 import _ from "lodash";
 
-import { ensure } from "./ensure.js";
+import { give, is } from "./funkenstein/index.js";
 import { UnixTimestamp } from "./types.js";
-import { give, is, its } from "./funkenstein/index.js";
 
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
@@ -31,7 +30,7 @@ export class Resolvable<T = void> {
       this.inProgress = false;
     }
     if ( then )
-      this.promise.then(then);
+      this.then(then);
   }
 
   then( callback: (value: T) => void | Promise<void> ) {
@@ -39,21 +38,22 @@ export class Resolvable<T = void> {
     // TODO: Maybe allow multiple then callbacks? Think of a fitting use case/architecture.
     if ( this.config.then )
       throw new Error('Cannot set multiple then callbacks on a Resolvable.');
-    this.promise.then(this.config.then = callback);
-    return this;
+    this.config.then = callback;
   }
 
   get resolved() {
     return !this.inProgress;
   }
 
-  resolve(value?: T | PromiseLike<T>) {
+  resolve(value?: T) {
     // console.log('Resolving');
     if ( this.config.prohibitResolve )
       throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
+    if ( this.config.then )
+      this.config.then(value as T);
     // console.log('Resolved:', this);
   }
 
@@ -62,13 +62,13 @@ export class Resolvable<T = void> {
     this.inProgress = false;
   }
 
-  reset(value?: T | PromiseLike<T>) {
+  reset(value?: T) {
     this.resolve(value);
     this.start();
   }
 
   // restart as an alias for reset
-  restart(value?: T | PromiseLike<T>) {
+  restart(value?: T) {
     this.reset(value);
   }
 

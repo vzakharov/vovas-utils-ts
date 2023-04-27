@@ -816,13 +816,12 @@ class Resolvable {
       this.inProgress = false;
     }
     if (then)
-      this.promise.then(then);
+      this.then(then);
   }
   then(callback) {
     if (this.config.then)
       throw new Error("Cannot set multiple then callbacks on a Resolvable.");
-    this.promise.then(this.config.then = callback);
-    return this;
+    this.config.then = callback;
   }
   get resolved() {
     return !this.inProgress;
@@ -833,6 +832,8 @@ class Resolvable {
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
+    if (this.config.then)
+      this.config.then(value);
   }
   reject(reason) {
     this._reject(reason);
