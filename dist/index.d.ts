@@ -915,7 +915,8 @@ declare class Resolvable<T = void> {
     restartAfterWait(): Promise<void>;
     static resolvedWith<T>(value: T): Resolvable<T>;
     static resolved(): Resolvable<void>;
-    static after(init: () => Promise<void>): Resolvable<void>;
+    static after(promise: Promise<void>): Resolvable;
+    static after(init: () => Promise<void>): Resolvable;
     static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
 }
 

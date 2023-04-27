@@ -867,7 +867,8 @@ class Resolvable {
   static resolved() {
     return new Resolvable({ startResolved: true });
   }
-  static after(init) {
+  static after(promiseOrInit) {
+    const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true
     });

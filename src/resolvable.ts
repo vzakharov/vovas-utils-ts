@@ -102,7 +102,10 @@ export class Resolvable<T = void> {
     return new Resolvable<void>({ startResolved: true });
   }
 
-  static after(init: () => Promise<void>) {
+  static after(promise: Promise<void>): Resolvable
+  static after(init: () => Promise<void>): Resolvable
+  static after (promiseOrInit: Promise<void> | (() => Promise<void>)) {
+    const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true,
     });
