@@ -874,6 +874,22 @@ class Resolvable {
     });
     return resolvable;
   }
+  static all(resolvables) {
+    const allResolvable = new Resolvable({
+      prohibitResolve: true
+    });
+    const values = [];
+    resolvables.forEach((resolvable, index) => {
+      resolvable.then((value) => {
+        values[index] = value;
+        if (resolvables.every((r) => r.resolved)) {
+          allResolvable.config.prohibitResolve = false;
+          allResolvable.resolve(values);
+        }
+      });
+    });
+    return allResolvable;
+  }
 }
 
 function toType(type) {

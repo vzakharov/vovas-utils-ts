@@ -2,6 +2,7 @@ import _ from "lodash";
 
 import { ensure } from "./ensure.js";
 import { UnixTimestamp } from "./types.js";
+import { give, is, its } from "./funkenstein/index.js";
 
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
@@ -106,6 +107,23 @@ export class Resolvable<T = void> {
       resolvable.resolve();
     });
     return resolvable;
+  };
+
+  static all<T>(resolvables: Resolvable<T>[]) {
+    const allResolvable = new Resolvable<T[]>({
+      prohibitResolve: true,
+    });
+    const values: T[] = [];
+    resolvables.forEach((resolvable, index) => {
+      resolvable.then(value => {
+        values[index] = value;
+        if ( resolvables.every(r => r.resolved) ) {
+          allResolvable.config.prohibitResolve = false;
+          allResolvable.resolve(values as T[]);
+        }
+      });
+    });
+    return allResolvable;
   };
 
 }

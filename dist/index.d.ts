@@ -916,6 +916,7 @@ declare class Resolvable<T = void> {
     static resolvedWith<T>(value: T): Resolvable<T>;
     static resolved(): Resolvable<void>;
     static after(init: () => Promise<void>): Resolvable<void>;
+    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
 }
 
 type Typed<T extends string | number> = {
