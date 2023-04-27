@@ -35,6 +35,10 @@ export class Resolvable<T = void> {
   }
 
   then( callback: (value: T) => void | Promise<void> ) {
+    // If there's already a then callback, throw an error
+    // TODO: Maybe allow multiple then callbacks? Think of a fitting use case/architecture.
+    if ( this.config.then )
+      throw new Error('Cannot set multiple then callbacks on a Resolvable.');
     this.promise.then(this.config.then = callback);
     return this;
   }

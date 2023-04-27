@@ -819,6 +819,8 @@ class Resolvable {
       this.promise.then(then);
   }
   then(callback) {
+    if (this.config.then)
+      throw new Error("Cannot set multiple then callbacks on a Resolvable.");
     this.promise.then(this.config.then = callback);
     return this;
   }
