@@ -4,7 +4,7 @@ import { is } from "./funkenstein/index.js";
 import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
 
-const log = logger(85);
+const log = logger(86);
 
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
@@ -137,10 +137,19 @@ export class Resolvable<T = void> {
       prohibitResolve: true,
     });
     const values: T[] = [];
+    let leftUnresolved = resolvables.length;
+    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
     resolvables.forEach((resolvable, index) => {
+      resolvable.promise.catch(error => {
+        log("Resolvable", resolvable.id, "rejected with", error);
+        throw error;
+      });
       resolvable.then(value => {
         values[index] = value;
-        if ( resolvables.every(r => r.everResolved) ) {
+        leftUnresolved && leftUnresolved--;
+        log("Resolvable", resolvable.id, "resolved with", value, "left unresolved", leftUnresolved);
+        if ( !leftUnresolved ) {
+          log("No more unresolved resolvables, resolving allResolvable", allResolvable.id, "with", values);
           allResolvable.config.prohibitResolve = false;
           allResolvable.resolve(values);
         }

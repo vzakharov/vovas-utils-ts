@@ -807,7 +807,7 @@ function forceUpdateNpmLinks() {
   });
 }
 
-const log = logger(85);
+const log = logger(86);
 class Resolvable {
   constructor(config = {}) {
     this.config = config;
@@ -907,10 +907,19 @@ class Resolvable {
       prohibitResolve: true
     });
     const values = [];
+    let leftUnresolved = resolvables.length;
+    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
     resolvables.forEach((resolvable, index) => {
+      resolvable.promise.catch((error) => {
+        log("Resolvable", resolvable.id, "rejected with", error);
+        throw error;
+      });
       resolvable.then((value) => {
         values[index] = value;
-        if (resolvables.every((r) => r.everResolved)) {
+        leftUnresolved && leftUnresolved--;
+        log("Resolvable", resolvable.id, "resolved with", value, "left unresolved", leftUnresolved);
+        if (!leftUnresolved) {
+          log("No more unresolved resolvables, resolving allResolvable", allResolvable.id, "with", values);
           allResolvable.config.prohibitResolve = false;
           allResolvable.resolve(values);
         }
