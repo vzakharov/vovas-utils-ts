@@ -6,6 +6,8 @@ import { UnixTimestamp } from "./types.js";
 
 const log = logger(86);
 
+const resolvables: Record<string, Resolvable<any>> = {};
+
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
   startResolved?: boolean;
@@ -16,7 +18,6 @@ export interface ResolvableConfig<T> {
 
 export class Resolvable<T = void> {
 
-  id = _.uniqueId('res-');
   inProgress: boolean = true;
   private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
@@ -24,7 +25,8 @@ export class Resolvable<T = void> {
   previousResolved: UnixTimestamp | undefined;
 
   constructor(
-    private config: ResolvableConfig<T> = {}
+    private config: ResolvableConfig<T> = {},
+    public id = _.uniqueId('res-')
   ) {
     const { previousResolved, startResolved, startResolvedWith, then } = this.config;
     this.previousResolved = previousResolved;
@@ -34,6 +36,9 @@ export class Resolvable<T = void> {
     }
     if ( then )
       this.then(then);
+
+    resolvables[this.id] = this;
+    
   }
 
   then( callback: (value: T) => void | Promise<void> ) {
@@ -93,7 +98,7 @@ export class Resolvable<T = void> {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false,
-    }), { id: this.id });
+    }, this.id));
   };
 
   startIfNotInProgress() {
@@ -159,6 +164,10 @@ export class Resolvable<T = void> {
       });
     });
     return allResolvable;
+  };
+
+  static get(id?: string) {
+    return id ? resolvables[id] : resolvables;
   };
 
 }

@@ -9,7 +9,9 @@ import { logger } from './logger';
 const log = logger("vovas-utils-download");
 
 export async function download(url: string, release: Resolvable, filename?: string): Promise<string> {
-  const filePath = path.join(os.tmpdir(), filename ?? _.uniqueId(path.basename(url)));
+  const basename = path.basename(url);
+  const [ name, extension ] = basename.match(/(.*)\.([^.]*)$/)?.slice(1) ?? [];
+  const filePath = path.join(os.tmpdir(), filename ?? [ _.uniqueId(name+'_'), extension ].join('.'));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, response => response.pipe(file));
   await new Promise((resolve, reject) => {
@@ -17,10 +19,9 @@ export async function download(url: string, release: Resolvable, filename?: stri
     [ file, request ].forEach(stream => stream.on('error', reject));
   });
   log.green(`Downloaded ${url} to ${filePath}`);
-  release.promise.then(() => {
-    fs.rmSync(filePath);
-    log.red(`Deleted ${filePath}`);
-  });
+  release.promise.then(() =>
+    fs.rm(filePath, () => log.magenta(`Deleted ${filePath}`))
+  );
   return filePath;
 }
 

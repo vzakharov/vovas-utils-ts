@@ -645,7 +645,9 @@ function doWith(target, callback, { finally: cleanMethodName }) {
 
 const log$2 = logger("vovas-utils-download");
 async function download(url, release, filename) {
-  const filePath = path.join(os.tmpdir(), filename ?? _.uniqueId(path.basename(url)));
+  const basename = path.basename(url);
+  const [name, extension] = basename.match(/(.*)\.([^.]*)$/)?.slice(1) ?? [];
+  const filePath = path.join(os.tmpdir(), filename ?? [_.uniqueId(name + "_"), extension].join("."));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, (response) => response.pipe(file));
   await new Promise((resolve, reject) => {
@@ -653,10 +655,9 @@ async function download(url, release, filename) {
     [file, request].forEach((stream) => stream.on("error", reject));
   });
   log$2.green(`Downloaded ${url} to ${filePath}`);
-  release.promise.then(() => {
-    fs.rmSync(filePath);
-    log$2.red(`Deleted ${filePath}`);
-  });
+  release.promise.then(
+    () => fs.rm(filePath, () => log$2.magenta(`Deleted ${filePath}`))
+  );
   return filePath;
 }
 function downloadAsStream(url, release) {
@@ -826,10 +827,11 @@ function forceUpdateNpmLinks() {
 }
 
 const log = logger(86);
+const resolvables = {};
 class Resolvable {
-  constructor(config = {}) {
+  constructor(config = {}, id = _.uniqueId("res-")) {
     this.config = config;
-    this.id = _.uniqueId("res-");
+    this.id = id;
     this.inProgress = true;
     this._resolve = () => {
     };
@@ -846,6 +848,7 @@ class Resolvable {
     }
     if (then)
       this.then(then);
+    resolvables[this.id] = this;
   }
   then(callback) {
     if (this.config.then && this.config.then !== callback)
@@ -892,7 +895,7 @@ class Resolvable {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false
-    }), { id: this.id });
+    }, this.id));
   }
   startIfNotInProgress() {
     if (!this.inProgress)
@@ -923,14 +926,14 @@ class Resolvable {
     });
     return resolvable;
   }
-  static all(resolvables) {
+  static all(resolvables2) {
     const allResolvable = new Resolvable({
       prohibitResolve: true
     });
     const values = [];
-    let leftUnresolved = resolvables.length;
-    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
-    resolvables.forEach((resolvable, index) => {
+    let leftUnresolved = resolvables2.length;
+    log("Created resolvable", allResolvable.id, "resolving after all", resolvables2.length, "resolvables");
+    resolvables2.forEach((resolvable, index) => {
       resolvable.promise.catch((error) => {
         log("Resolvable", resolvable.id, "rejected with", error);
         throw error;
@@ -947,6 +950,9 @@ class Resolvable {
       });
     });
     return allResolvable;
+  }
+  static get(id) {
+    return id ? resolvables[id] : resolvables;
   }
 }
 
