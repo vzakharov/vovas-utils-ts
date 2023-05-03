@@ -138,10 +138,17 @@ export function serializable(arg: any): any {
   return arg
 }
 
+export function withLogFile<T>(index: number | string, callback: (logFile: string) => T) {
+  const tmpDir = path.join(process.cwd(), 'tmp');
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
+  return callback(logFile);
+}
 
-export function logger(index?: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
-export function logger(index?: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
-export function logger(index?: number | string | 'always', 
+
+export function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
+export function logger(index: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
+export function logger(index: number | string | 'always', 
   defaultColorOrOptions?: Color | LogOptions,
   defaultSerializeAsOrAddAlways?: SerializeAs | boolean
 ): Log {
@@ -159,6 +166,7 @@ export function logger(index?: number | string | 'always',
   const { dontShrinkArrays } = defaultOptions;
   
   if ( typeof index === 'undefined' ) {
+    // Fallback for non-typescript users
     logger('always').yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
 
@@ -206,14 +214,14 @@ export function logger(index?: number | string | 'always',
       if ( logToFile ) {
         // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
         // Create the file and the tmp directory if it doesn't exist
-        const tmpDir = path.join(process.cwd(), 'tmp');
-          fs.mkdirSync(tmpDir, { recursive: true });
-          const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
+        withLogFile(index, logFile =>
           fs.appendFileSync(logFile,
             `${new Date().toISOString()}\n` +
             coloredEmojis[color] + '\n' +
             JSON.stringify(args, null, 2) + '\n\n'
-          );
+          )
+        );
+
       }
 
     };

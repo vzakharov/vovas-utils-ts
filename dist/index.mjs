@@ -139,6 +139,12 @@ function serializable(arg) {
     return _.mapValues(arg, serializable);
   return arg;
 }
+function withLogFile(index, callback) {
+  const tmpDir = path.join(process.cwd(), "tmp");
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const logFile = path.join(tmpDir, `log-${( new Date()).toISOString().slice(0, 13)}00-${index}.log`);
+  return callback(logFile);
+}
 function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
     color: defaultColorOrOptions ?? "gray",
@@ -181,13 +187,13 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
         }
       });
       if (logToFile) {
-        const tmpDir = path.join(process.cwd(), "tmp");
-        fs.mkdirSync(tmpDir, { recursive: true });
-        const logFile = path.join(tmpDir, `log-${( new Date()).toISOString().slice(0, 13)}00-${index}.log`);
-        fs.appendFileSync(
-          logFile,
-          `${( new Date()).toISOString()}
+        withLogFile(
+          index,
+          (logFile) => fs.appendFileSync(
+            logFile,
+            `${( new Date()).toISOString()}
 ` + coloredEmojis[color] + "\n" + JSON.stringify(args, null, 2) + "\n\n"
+          )
         );
       }
     }
@@ -968,4 +974,4 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, withLogFile, wrap };
