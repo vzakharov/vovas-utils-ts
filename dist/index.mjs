@@ -642,7 +642,7 @@ function doWith(target, callback, { finally: cleanMethodName }) {
 }
 
 async function download(url, release, filename) {
-  const filePath = path.join(os.tmpdir(), filename ?? path.basename(url));
+  const filePath = path.join(os.tmpdir(), filename ?? _.uniqueId(path.basename(url)));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, (response) => response.pipe(file));
   await new Promise((resolve, reject) => {
@@ -650,10 +650,11 @@ async function download(url, release, filename) {
     [file, request].forEach((stream) => stream.on("error", reject));
   });
   console.log(`Downloaded ${url} to ${filePath}`);
+  release.promise.then(() => fs.rmSync(filePath));
   return filePath;
 }
 function downloadAsStream(url, release) {
-  return download(url).then(fs.createReadStream);
+  return download(url, release).then(fs.createReadStream);
 }
 
 const groupListeners = {};
