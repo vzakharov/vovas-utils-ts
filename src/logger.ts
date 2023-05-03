@@ -192,24 +192,8 @@ export function logger(index: number | string | 'always',
         arg = serializable(arg);
         try {
           console.log(
-            String(
-              isPrimitive(arg)
-                ? arg
-                : _.isFunction(arg)
-                  ? arg.toString()  
-                  : serializer[serializeAs](
-                    dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
-                      if ( _.isArray(value) && value.length > 3 ) {
-                        return [
-                          ..._.sampleSize(value, 3),
-                          `... ${value.length - 3} more elements ...`
-                        ];
-                      } else if ( _.isFunction(value) ) {
-                        return value.toString().slice(0, 30);
-                      }
-                    })
-                  )
-            ).split('\n').map( paint[color] ).join('\n')
+            getArgString(arg, serializeAs)
+            .split('\n').map( paint[color] ).join('\n')
           )
         } catch (error) {
           console.log(arg);
@@ -223,10 +207,31 @@ export function logger(index: number | string | 'always',
           fs.appendFileSync(logFile,
             `${new Date().toISOString()}\n` +
             coloredEmojis[color] + '\n' +
-            JSON.stringify(args, null, 2) + '\n\n'
+            // JSON.stringify(args, null, 2) + '\n\n'
+            args.map(arg => getArgString(arg, 'json')).join('\n') + '\n\n'
           )
         );
+      }
 
+      function getArgString(arg: any, serializeAs: SerializeAs) {
+        return String(
+          isPrimitive(arg)
+            ? arg
+            : _.isFunction(arg)
+              ? arg.toString()  
+              : serializer[serializeAs](
+                dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
+                  if ( _.isArray(value) && value.length > 3 ) {
+                    return [
+                      ..._.sampleSize(value, 3),
+                      `... ${value.length - 3} more elements ...`
+                    ];
+                  } else if ( _.isFunction(value) ) {
+                    return value.toString().slice(0, 30);
+                  }
+                })
+              )
+        )
       }
 
     };
