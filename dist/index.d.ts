@@ -772,8 +772,41 @@ declare function doWith<T, Result>(target: T, callback: (target: T) => Result, {
     finally: string;
 }): Result;
 
-declare function download(url: string, filename?: string): Promise<string>;
-declare function downloadAsStream(url: string): Promise<fs.ReadStream>;
+interface ResolvableConfig<T> {
+    previousResolved?: UnixTimestamp;
+    startResolved?: boolean;
+    startResolvedWith?: T;
+    then?: (value: T) => void;
+    prohibitResolve?: boolean;
+}
+declare class Resolvable<T = void> {
+    private config;
+    id: string;
+    inProgress: boolean;
+    private _resolve;
+    private _reject;
+    promise: Promise<T>;
+    previousResolved: UnixTimestamp | undefined;
+    constructor(config?: ResolvableConfig<T>);
+    then(callback: (value: T) => void | Promise<void>): this;
+    get resolved(): boolean;
+    get everResolved(): boolean;
+    resolve(value?: T): void;
+    reject(reason?: any): void;
+    reset(value?: T): void;
+    restart(value?: T): void;
+    start(okayIfInProgress?: boolean): void;
+    startIfNotInProgress(): void;
+    restartAfterWait(): Promise<void>;
+    static resolvedWith<T>(value: T): Resolvable<T>;
+    static resolved(): Resolvable<void>;
+    static after(promise: Promise<void>): Resolvable;
+    static after(init: () => Promise<void>): Resolvable;
+    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
+}
+
+declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;
+declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream>;
 
 declare function ensure<T>(x: T | undefined | null, variableName?: string): T;
 declare function ensure<T>(x: T | undefined, variableName?: string): T;
@@ -829,6 +862,7 @@ declare const paint: Paint;
 type LoggerInfo = {
     lastLogIndex: number;
     logAll?: boolean;
+    logToFile?: boolean;
 };
 declare const loggerInfo: LoggerInfo;
 declare function setLastLogIndex(index: number): void;
@@ -888,39 +922,6 @@ interface IViteConfig {
     };
 }
 declare function forceUpdateNpmLinks(): void;
-
-interface ResolvableConfig<T> {
-    previousResolved?: UnixTimestamp;
-    startResolved?: boolean;
-    startResolvedWith?: T;
-    then?: (value: T) => void;
-    prohibitResolve?: boolean;
-}
-declare class Resolvable<T = void> {
-    private config;
-    id: string;
-    inProgress: boolean;
-    private _resolve;
-    private _reject;
-    promise: Promise<T>;
-    previousResolved: UnixTimestamp | undefined;
-    constructor(config?: ResolvableConfig<T>);
-    then(callback: (value: T) => void | Promise<void>): this;
-    get resolved(): boolean;
-    get everResolved(): boolean;
-    resolve(value?: T): void;
-    reject(reason?: any): void;
-    reset(value?: T): void;
-    restart(value?: T): void;
-    start(okayIfInProgress?: boolean): void;
-    startIfNotInProgress(): void;
-    restartAfterWait(): Promise<void>;
-    static resolvedWith<T>(value: T): Resolvable<T>;
-    static resolved(): Resolvable<void>;
-    static after(promise: Promise<void>): Resolvable;
-    static after(init: () => Promise<void>): Resolvable;
-    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
-}
 
 type Typed<T extends string | number> = {
     type: T;

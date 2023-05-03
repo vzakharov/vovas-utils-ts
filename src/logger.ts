@@ -68,6 +68,7 @@ Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color as
 export type LoggerInfo = {
   lastLogIndex: number;
   logAll?: boolean;
+  logToFile?: boolean;
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -167,7 +168,8 @@ export function logger(index?: number | 'always',
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const mustLog = loggerInfo.logAll || index === 'always' || index === loggerInfo.lastLogIndex;
+    const { logAll, lastLogIndex, logToFile } = loggerInfo;
+    const mustLog = logAll || index === 'always' || index === lastLogIndex;
   
     if ( mustLog ) {
       // console.log(...args.map( arg =>
@@ -200,16 +202,18 @@ export function logger(index?: number | 'always',
         }
       });
 
-      // // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
-      // // Create the file and the tmp directory if it doesn't exist
-      // const tmpDir = path.join(process.cwd(), 'tmp');
-      // fs.mkdirSync(tmpDir, { recursive: true });
-      // const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
-      // fs.appendFileSync(logFile,
-      //   `${new Date().toISOString()}\n` +
-      //   coloredEmojis[color] + '\n' +
-      //   JSON.stringify(args, null, 2) + '\n\n'
-      // );
+      if ( logToFile ) {
+        // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
+        // Create the file and the tmp directory if it doesn't exist
+        const tmpDir = path.join(process.cwd(), 'tmp');
+          fs.mkdirSync(tmpDir, { recursive: true });
+          const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
+          fs.appendFileSync(logFile,
+            `${new Date().toISOString()}\n` +
+            coloredEmojis[color] + '\n' +
+            JSON.stringify(args, null, 2) + '\n\n'
+          );
+      }
 
     };
     

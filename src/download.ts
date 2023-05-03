@@ -2,8 +2,9 @@ import fs from 'fs';
 import https from 'https';
 import path from 'path';
 import os from 'os';
+import { Resolvable } from './resolvable';
 
-export async function download(url: string, filename?: string): Promise<string> {
+export async function download(url: string, release: Resolvable, filename?: string): Promise<string> {
   const filePath = path.join(os.tmpdir(), filename ?? path.basename(url));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, response => response.pipe(file));
@@ -15,6 +16,6 @@ export async function download(url: string, filename?: string): Promise<string> 
   return filePath;
 }
 
-export function downloadAsStream(url: string): Promise<fs.ReadStream> {
-  return download(url).then(fs.createReadStream);
+export function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream> {
+  return download(url, release).then(fs.createReadStream);
 }

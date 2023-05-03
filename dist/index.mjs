@@ -154,7 +154,8 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const mustLog = loggerInfo.logAll || index === "always" || index === loggerInfo.lastLogIndex;
+    const { logAll, lastLogIndex, logToFile } = loggerInfo;
+    const mustLog = logAll || index === "always" || index === lastLogIndex;
     if (mustLog) {
       args.forEach((arg) => {
         arg = serializable(arg);
@@ -179,6 +180,16 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
           console.log(arg);
         }
       });
+      if (logToFile) {
+        const tmpDir = path.join(process.cwd(), "tmp");
+        fs.mkdirSync(tmpDir, { recursive: true });
+        const logFile = path.join(tmpDir, `log-${( new Date()).toISOString().slice(0, 13)}00-${index}.log`);
+        fs.appendFileSync(
+          logFile,
+          `${( new Date()).toISOString()}
+` + coloredEmojis[color] + "\n" + JSON.stringify(args, null, 2) + "\n\n"
+        );
+      }
     }
   }
   const log = (...args) => _log(defaultOptions, ...args);
@@ -630,7 +641,7 @@ function doWith(target, callback, { finally: cleanMethodName }) {
   }
 }
 
-async function download(url, filename) {
+async function download(url, release, filename) {
   const filePath = path.join(os.tmpdir(), filename ?? path.basename(url));
   const file = fs.createWriteStream(filePath);
   const request = https.get(url, (response) => response.pipe(file));
@@ -641,7 +652,7 @@ async function download(url, filename) {
   console.log(`Downloaded ${url} to ${filePath}`);
   return filePath;
 }
-function downloadAsStream(url) {
+function downloadAsStream(url, release) {
   return download(url).then(fs.createReadStream);
 }
 
