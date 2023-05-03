@@ -145,13 +145,29 @@ function withLogFile(index, callback) {
   const logFile = path.join(tmpDir, `log-${( new Date()).toISOString().slice(0, 13)}00-${index}.log`);
   return callback(logFile);
 }
+function serialize(arg, serializeAs) {
+  const { dontShrinkArrays } = loggerInfo;
+  return String(
+    isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
+      dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
+        if (_.isArray(value) && value.length > 3) {
+          return [
+            ..._.sampleSize(value, 3),
+            `... ${value.length - 3} more elements ...`
+          ];
+        } else if (_.isFunction(value)) {
+          return value.toString().slice(0, 30);
+        }
+      })
+    )
+  );
+}
 function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
     color: defaultColorOrOptions ?? "gray",
     serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
   };
   const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
-  const { dontShrinkArrays } = defaultOptions;
   if (typeof index === "undefined") {
     logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
@@ -160,27 +176,14 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const { dontShrinkArrays, logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
     const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
     if (mustLog) {
       args.forEach((arg) => {
         arg = serializable(arg);
         try {
           console.log(
-            String(
-              isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
-                dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
-                  if (_.isArray(value) && value.length > 3) {
-                    return [
-                      ..._.sampleSize(value, 3),
-                      `... ${value.length - 3} more elements ...`
-                    ];
-                  } else if (_.isFunction(value)) {
-                    return value.toString().slice(0, 30);
-                  }
-                })
-              )
-            ).split("\n").map(paint[color]).join("\n")
+            serialize(arg, serializeAs).split("\n").map(paint[color]).join("\n")
           );
         } catch (error) {
           console.log(arg);
@@ -192,7 +195,8 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
           (logFile) => fs.appendFileSync(
             logFile,
             `${( new Date()).toISOString()}
-` + coloredEmojis[color] + "\n" + JSON.stringify(args, null, 2) + "\n\n"
+` + coloredEmojis[color] + "\n" + // JSON.stringify(args, null, 2) + '\n\n'
+            args.map((arg) => serialize(arg, "json")).join("\n") + "\n\n"
           )
         );
       }
@@ -974,4 +978,4 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, withLogFile, wrap };

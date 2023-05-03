@@ -76,6 +76,7 @@ export type LoggerInfo = {
   logAll?: boolean;
   logToFile?: boolean;
   logIndices: LogIndices;
+  dontShrinkArrays?: boolean;
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -117,7 +118,6 @@ export type SerializeAs = keyof typeof serializer;
 export type LogOptions = {
   color: Color;
   serializeAs: SerializeAs;
-  dontShrinkArrays?: boolean; // If not set, only 3 random elements will be logged from any arrays, including nested ones
 };  
 
 export type LogFunction = (...args: any[]) => void
@@ -151,6 +151,27 @@ export function withLogFile<T>(index: number | string, callback: (logFile: strin
   return callback(logFile);
 }
 
+export function serialize(arg: any, serializeAs: SerializeAs) {
+  const { dontShrinkArrays } = loggerInfo;
+  return String(
+    isPrimitive(arg)
+      ? arg
+      : _.isFunction(arg)
+        ? arg.toString()  
+        : serializer[serializeAs](
+          dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
+            if ( _.isArray(value) && value.length > 3 ) {
+              return [
+                ..._.sampleSize(value, 3),
+                `... ${value.length - 3} more elements ...`
+              ];
+            } else if ( _.isFunction(value) ) {
+              return value.toString().slice(0, 30);
+            }
+          })
+        )
+  )
+}
 
 export function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
 export function logger(index: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
@@ -169,7 +190,6 @@ export function logger(index: number | string | 'always',
   ) as LogOptions;
 
   const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
-  const { dontShrinkArrays } = defaultOptions;
   
   if ( typeof index === 'undefined' ) {
     // Fallback for non-typescript users
@@ -183,7 +203,7 @@ export function logger(index: number | string | 'always',
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const { dontShrinkArrays, logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
     const mustLog = logAll || index === 'always' || index === lastLogIndex || _.get(logIndices, index) === true;
   
     if ( mustLog ) {
@@ -192,7 +212,7 @@ export function logger(index: number | string | 'always',
         arg = serializable(arg);
         try {
           console.log(
-            getArgString(arg, serializeAs)
+            serialize(arg, serializeAs)
             .split('\n').map( paint[color] ).join('\n')
           )
         } catch (error) {
@@ -208,30 +228,9 @@ export function logger(index: number | string | 'always',
             `${new Date().toISOString()}\n` +
             coloredEmojis[color] + '\n' +
             // JSON.stringify(args, null, 2) + '\n\n'
-            args.map(arg => getArgString(arg, 'json')).join('\n') + '\n\n'
+            args.map(arg => serialize(arg, 'json')).join('\n') + '\n\n'
           )
         );
-      }
-
-      function getArgString(arg: any, serializeAs: SerializeAs) {
-        return String(
-          isPrimitive(arg)
-            ? arg
-            : _.isFunction(arg)
-              ? arg.toString()  
-              : serializer[serializeAs](
-                dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
-                  if ( _.isArray(value) && value.length > 3 ) {
-                    return [
-                      ..._.sampleSize(value, 3),
-                      `... ${value.length - 3} more elements ...`
-                    ];
-                  } else if ( _.isFunction(value) ) {
-                    return value.toString().slice(0, 30);
-                  }
-                })
-              )
-        )
       }
 
     };
