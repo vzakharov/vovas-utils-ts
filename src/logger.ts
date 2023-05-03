@@ -65,11 +65,17 @@ export const paint = (
 
 Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color as Color)));
 
+export type Index = number | string;
+
+export type LogIndices = {
+  [index in Index]: boolean | LogIndices;
+};
+
 export type LoggerInfo = {
   lastLogIndex: number;
   logAll?: boolean;
   logToFile?: boolean;
-  logIndices?: (number | string)[]; // If set, these indices will be logged regardless of the last log index
+  logIndices: LogIndices;
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -178,10 +184,10 @@ export function logger(index: number | string | 'always',
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
     const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
-    const mustLog = logAll || index === 'always' || index === lastLogIndex || ( index && logIndices?.includes(index) );
+    const mustLog = logAll || index === 'always' || index === lastLogIndex || _.get(logIndices, index) === true;
   
     if ( mustLog ) {
-      // console.log(...args.map( arg =>
+
       args.forEach( arg => {
         arg = serializable(arg);
         try {
@@ -206,7 +212,6 @@ export function logger(index: number | string | 'always',
             ).split('\n').map( paint[color] ).join('\n')
           )
         } catch (error) {
-          // console.log("Couldn't serialize:", error);
           console.log(arg);
         }
       });

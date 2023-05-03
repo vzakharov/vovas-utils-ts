@@ -163,7 +163,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
     const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
-    const mustLog = logAll || index === "always" || index === lastLogIndex || index && logIndices?.includes(index);
+    const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
     if (mustLog) {
       args.forEach((arg) => {
         arg = serializable(arg);
@@ -649,7 +649,7 @@ function doWith(target, callback, { finally: cleanMethodName }) {
   }
 }
 
-const log$2 = logger("vovas-utils-download");
+const log$2 = logger("vovas-utils.download");
 async function download(url, release, filename) {
   const basename = path.basename(url);
   const [name, extension] = basename.match(/(.*)\.([^.]*)$/)?.slice(1) ?? [];

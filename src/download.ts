@@ -6,7 +6,7 @@ import { Resolvable } from './resolvable';
 import _ from 'lodash';
 import { logger } from './logger';
 
-const log = logger("vovas-utils-download");
+const log = logger("vovas-utils.download");
 
 export async function download(url: string, release: Resolvable, filename?: string): Promise<string> {
   const basename = path.basename(url);
