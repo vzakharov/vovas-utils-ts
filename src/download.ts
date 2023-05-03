@@ -4,6 +4,9 @@ import path from 'path';
 import os from 'os';
 import { Resolvable } from './resolvable';
 import _ from 'lodash';
+import { logger } from './logger';
+
+const log = logger("vovas-utils-download");
 
 export async function download(url: string, release: Resolvable, filename?: string): Promise<string> {
   const filePath = path.join(os.tmpdir(), filename ?? _.uniqueId(path.basename(url)));
@@ -13,8 +16,11 @@ export async function download(url: string, release: Resolvable, filename?: stri
     file.on('finish', resolve);
     [ file, request ].forEach(stream => stream.on('error', reject));
   });
-  console.log(`Downloaded ${url} to ${filePath}`);
-  release.promise.then(() => fs.rmSync(filePath));
+  log.green(`Downloaded ${url} to ${filePath}`);
+  release.promise.then(() => {
+    fs.rmSync(filePath);
+    log.red(`Deleted ${filePath}`);
+  });
   return filePath;
 }
 

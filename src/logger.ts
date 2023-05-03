@@ -69,6 +69,7 @@ export type LoggerInfo = {
   lastLogIndex: number;
   logAll?: boolean;
   logToFile?: boolean;
+  logIndices?: (number | string)[]; // If set, these indices will be logged regardless of the last log index
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -138,9 +139,9 @@ export function serializable(arg: any): any {
 }
 
 
-export function logger(index?: number | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
-export function logger(index?: number | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
-export function logger(index?: number | 'always', 
+export function logger(index?: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
+export function logger(index?: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
+export function logger(index?: number | string | 'always', 
   defaultColorOrOptions?: Color | LogOptions,
   defaultSerializeAsOrAddAlways?: SerializeAs | boolean
 ): Log {
@@ -161,15 +162,15 @@ export function logger(index?: number | 'always',
     logger('always').yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
 
-  if ( index && index !== 'always' && index > loggerInfo.lastLogIndex ) {
+  if ( index && index !== 'always' && _.isNumber(index) && index > loggerInfo.lastLogIndex ) {
     setLastLogIndex(index);
   }
   
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile } = loggerInfo;
-    const mustLog = logAll || index === 'always' || index === lastLogIndex;
+    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const mustLog = logAll || index === 'always' || index === lastLogIndex || ( index && logIndices?.includes(index) );
   
     if ( mustLog ) {
       // console.log(...args.map( arg =>

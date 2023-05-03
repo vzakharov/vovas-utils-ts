@@ -149,13 +149,13 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   if (typeof index === "undefined") {
     logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
   }
-  if (index && index !== "always" && index > loggerInfo.lastLogIndex) {
+  if (index && index !== "always" && _.isNumber(index) && index > loggerInfo.lastLogIndex) {
     setLastLogIndex(index);
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile } = loggerInfo;
-    const mustLog = logAll || index === "always" || index === lastLogIndex;
+    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const mustLog = logAll || index === "always" || index === lastLogIndex || index && logIndices?.includes(index);
     if (mustLog) {
       args.forEach((arg) => {
         arg = serializable(arg);
@@ -208,9 +208,9 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   return log;
 }
 
-const log$2 = logger(28, "yellow");
+const log$3 = logger(28, "yellow");
 function parseSwitch(kind, hasArgument, argument, switchStack) {
-  log$2("parseSwitch", { kind, hasArgument, argument, switchStack });
+  log$3("parseSwitch", { kind, hasArgument, argument, switchStack });
   function $if2(predicate, transform2) {
     return transform2 ? pushToStack(
       kind,
@@ -244,7 +244,7 @@ function parseSwitch(kind, hasArgument, argument, switchStack) {
   };
 }
 function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
-  log$2("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
+  log$3("parseTransform", { kind, hasArgument, argument, predicate, switchStack });
   return {
     then: (transform2) => pushToStack(
       kind,
@@ -257,7 +257,7 @@ function parseTransform(kind, hasArgument, argument, predicate, switchStack) {
   };
 }
 function pushToStack(kind, hasArgument, argument, predicate, transform2, switchStack) {
-  log$2("pushToStack", { kind, hasArgument, argument, predicate, transform: transform2, switchStack });
+  log$3("pushToStack", { kind, hasArgument, argument, predicate, transform: transform2, switchStack });
   switchStack.push([predicate, transform2]);
   return kind === "last" ? evaluate(
     hasArgument,
@@ -271,12 +271,12 @@ function pushToStack(kind, hasArgument, argument, predicate, transform2, switchS
   );
 }
 function evaluate(hasArgument, argument, switchStack) {
-  log$2("evaluate", { hasArgument, argument, switchStack });
+  log$3("evaluate", { hasArgument, argument, switchStack });
   function evaluateForArgument(argument2) {
     for (const [predicate, transform2] of switchStack) {
       if (predicate(argument2)) {
         const result = transform2(argument2);
-        log$2.green("Found matching predicate", { predicate, transform: transform2, result });
+        log$3.green("Found matching predicate", { predicate, transform: transform2, result });
         return result;
       }
     }
@@ -641,6 +641,7 @@ function doWith(target, callback, { finally: cleanMethodName }) {
   }
 }
 
+const log$2 = logger("vovas-utils-download");
 async function download(url, release, filename) {
   const filePath = path.join(os.tmpdir(), filename ?? _.uniqueId(path.basename(url)));
   const file = fs.createWriteStream(filePath);
@@ -649,8 +650,11 @@ async function download(url, release, filename) {
     file.on("finish", resolve);
     [file, request].forEach((stream) => stream.on("error", reject));
   });
-  console.log(`Downloaded ${url} to ${filePath}`);
-  release.promise.then(() => fs.rmSync(filePath));
+  log$2.green(`Downloaded ${url} to ${filePath}`);
+  release.promise.then(() => {
+    fs.rmSync(filePath);
+    log$2.red(`Deleted ${filePath}`);
+  });
   return filePath;
 }
 function downloadAsStream(url, release) {

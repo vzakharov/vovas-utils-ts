@@ -863,6 +863,7 @@ type LoggerInfo = {
     lastLogIndex: number;
     logAll?: boolean;
     logToFile?: boolean;
+    logIndices?: (number | string)[];
 };
 declare const loggerInfo: LoggerInfo;
 declare function setLastLogIndex(index: number): void;
@@ -887,8 +888,8 @@ type Log = PossiblySerializedLogFunction & {
     always: Log;
 };
 declare function serializable(arg: any): any;
-declare function logger(index?: number | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log;
-declare function logger(index?: number | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log;
+declare function logger(index?: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log;
+declare function logger(index?: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log;
 
 declare function jsonClone<T>(obj: T): T & Jsonable;
 declare function jsonEqual<T>(a: T, b: T): boolean;
