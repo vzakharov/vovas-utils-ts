@@ -159,7 +159,7 @@ export function serialize(arg: any, serializeAs: SerializeAs) {
       : _.isFunction(arg)
         ? arg.toString()  
         : serializer[serializeAs](
-          dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value, key) => {
+          dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value) => {
             if ( _.isArray(value) && value.length > 3 ) {
               return [
                 ..._.sampleSize(value, 3),
@@ -203,7 +203,7 @@ export function logger(index: number | string | 'always',
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { dontShrinkArrays, logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
     const mustLog = logAll || index === 'always' || index === lastLogIndex || _.get(logIndices, index) === true;
   
     if ( mustLog ) {
@@ -227,8 +227,10 @@ export function logger(index: number | string | 'always',
           fs.appendFileSync(logFile,
             `${new Date().toISOString()}\n` +
             coloredEmojis[color] + '\n' +
-            // JSON.stringify(args, null, 2) + '\n\n'
-            args.map(arg => serialize(arg, 'json')).join('\n') + '\n\n'
+            $try(
+              () => args.map(arg => serialize(arg, serializeAs)).join('\n') + '\n\n',
+              JSON.stringify(args, null, 2) + '\n\n'
+            )
           )
         );
       }
