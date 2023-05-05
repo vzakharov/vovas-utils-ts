@@ -190,7 +190,7 @@ function checkHeapIncrease() {
   if ( heapIncrease >= ensure(loggerInfo.logIfHeapIncreasedByMB, 
     'monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined') 
   ) {
-    logger('always').magenta(`Heap increased by ${heapIncrease} MB`);
+    logger('always').magenta(`Memory usage increased by ${heapIncrease} MB, now at ${getHeapUsedMB()} MB`);
     lastHeapUsedMB = heapIncrease;
   }
 };
