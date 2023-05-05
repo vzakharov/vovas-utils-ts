@@ -15,9 +15,10 @@
 import fs from 'fs';
 import yaml from 'js-yaml';
 import _ from 'lodash';
-import { $throw, $try } from './funkenstein';
+import { $throw, $try, is } from './funkenstein';
 import { isPrimitive } from './types.js';
 import path from 'path';
+import { ensure } from './ensure';
 
 // import paint from 'ansi-colors';
 // export type LogColor = keyof typeof color;
@@ -77,6 +78,7 @@ export type LoggerInfo = {
   logToFile?: boolean;
   logIndices: LogIndices;
   dontShrinkArrays?: boolean;
+  logIfHeapIncreasedByMB?: number;
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -173,6 +175,36 @@ export function serialize(arg: any, serializeAs: SerializeAs) {
   )
 }
 
+let lastHeapUsedMB: number = getHeapUsedMB();
+
+export function getHeapUsedMB() {
+  return Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 10) / 10;
+};
+
+export function getHeapIncreaseMB() {
+  return getHeapUsedMB() - lastHeapUsedMB;
+}
+
+function checkHeapIncrease() {
+  const heapIncrease = getHeapIncreaseMB();
+  if ( heapIncrease >= ensure(loggerInfo.logIfHeapIncreasedByMB, 
+    'monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined') 
+  ) {
+    logger('always').magenta(`Heap increased by ${heapIncrease} MB`);
+    lastHeapUsedMB = heapIncrease;
+  }
+};
+
+function monitorHeapIncrease() {
+  checkHeapIncrease();
+  setTimeout(monitorHeapIncrease, 5000);
+}
+
+if ( loggerInfo.logIfHeapIncreasedByMB ) {
+  monitorHeapIncrease();
+};
+
+
 export function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
 export function logger(index: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log
 export function logger(index: number | string | 'always', 
@@ -203,7 +235,7 @@ export function logger(index: number | string | 'always',
   function _log(options: Partial<LogOptions>, ...args: any[]) {
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
     const mustLog = logAll || index === 'always' || index === lastLogIndex || _.get(logIndices, index) === true;
   
     if ( mustLog ) {
@@ -236,6 +268,10 @@ export function logger(index: number | string | 'always',
       }
 
     };
+
+    if ( reportHeapIncreaseByMB ) {
+      checkHeapIncrease();
+    }
     
   }
 
