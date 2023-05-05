@@ -857,7 +857,6 @@ function forceUpdateNpmLinks() {
 }
 
 const log = logger("vovas-utils.resolvable");
-const resolvables = {};
 class Resolvable {
   constructor(config = {}, id = _.uniqueId("res-")) {
     this.config = config;
@@ -878,7 +877,6 @@ class Resolvable {
     }
     if (then)
       this.then(then);
-    resolvables[this.id] = this;
   }
   then(callback) {
     if (this.config.then && this.config.then !== callback)
@@ -902,7 +900,6 @@ class Resolvable {
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
-    delete resolvables[this.id];
     log("Resolved", this);
   }
   reject(reason) {
@@ -957,14 +954,14 @@ class Resolvable {
     });
     return resolvable;
   }
-  static all(resolvables2) {
+  static all(resolvables) {
     const allResolvable = new Resolvable({
       prohibitResolve: true
     });
     const values = [];
-    let leftUnresolved = resolvables2.length;
-    log("Created resolvable", allResolvable.id, "resolving after all", resolvables2.length, "resolvables");
-    resolvables2.forEach((resolvable, index) => {
+    let leftUnresolved = resolvables.length;
+    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
+    resolvables.forEach((resolvable, index) => {
       resolvable.promise.catch((error) => {
         log("Resolvable", resolvable.id, "rejected with", error);
         throw error;
@@ -982,9 +979,9 @@ class Resolvable {
     });
     return allResolvable;
   }
-  static get(id) {
-    return id ? resolvables[id] : resolvables;
-  }
+  // static get(id?: string) {
+  //   return id ? resolvables[id] : resolvables;
+  // };
 }
 
 function toType(type) {

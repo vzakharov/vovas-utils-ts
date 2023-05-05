@@ -803,7 +803,6 @@ declare class Resolvable<T = void> {
     static after(promise: Promise<void>): Resolvable;
     static after(init: () => Promise<void>): Resolvable;
     static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
-    static get(id?: string): Resolvable<any> | Record<string, Resolvable<any>>;
 }
 
 declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;

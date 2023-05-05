@@ -6,7 +6,7 @@ import { UnixTimestamp } from "./types.js";
 
 const log = logger('vovas-utils.resolvable');
 
-const resolvables: Record<string, Resolvable<any>> = {};
+// const resolvables: Record<string, Resolvable<any>> = {};
 
 export interface ResolvableConfig<T> {
   previousResolved?: UnixTimestamp;
@@ -37,7 +37,7 @@ export class Resolvable<T = void> {
     if ( then )
       this.then(then);
 
-    resolvables[this.id] = this;
+    // resolvables[this.id] = this;
     
   }
 
@@ -71,7 +71,7 @@ export class Resolvable<T = void> {
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
-    delete resolvables[this.id];
+    // delete resolvables[this.id];
     log('Resolved', this);
   }
 
@@ -167,8 +167,8 @@ export class Resolvable<T = void> {
     return allResolvable;
   };
 
-  static get(id?: string) {
-    return id ? resolvables[id] : resolvables;
-  };
+  // static get(id?: string) {
+  //   return id ? resolvables[id] : resolvables;
+  // };
 
 }
