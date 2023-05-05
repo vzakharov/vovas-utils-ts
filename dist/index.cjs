@@ -904,6 +904,7 @@ class Resolvable {
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
+    delete resolvables[this.id];
     log("Resolved", this);
   }
   reject(reason) {

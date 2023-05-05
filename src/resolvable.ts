@@ -71,6 +71,7 @@ export class Resolvable<T = void> {
     this._resolve(value);
     this.inProgress = false;
     this.previousResolved = Date.now();
+    delete resolvables[this.id];
     log('Resolved', this);
   }
 
