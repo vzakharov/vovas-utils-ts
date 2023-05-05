@@ -79,6 +79,7 @@ export type LoggerInfo = {
   logIndices: LogIndices;
   dontShrinkArrays?: boolean;
   logIfHeapIncreasedByMB?: number;
+  lastHeapUsedMB?: number;
 }
 
 function loadOrSaveLoggerInfo(save?: LoggerInfo): LoggerInfo {
@@ -175,34 +176,35 @@ export function serialize(arg: any, serializeAs: SerializeAs) {
   )
 }
 
-let lastHeapUsedMB: number = getHeapUsedMB();
-
 export function getHeapUsedMB() {
-  return Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 10) / 10;
+  return process.memoryUsage().heapUsed / 1024 / 1024;
 };
-
-export function getHeapIncreaseMB() {
-  return getHeapUsedMB() - lastHeapUsedMB;
-}
 
 function checkHeapIncrease() {
-  const heapIncrease = getHeapIncreaseMB();
-  if ( heapIncrease >= ensure(loggerInfo.logIfHeapIncreasedByMB, 
-    'monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined') 
-  ) {
-    console.log(paint.magenta(`Memory usage increased by ${heapIncrease} MB, now at ${lastHeapUsedMB} MB`));
-    lastHeapUsedMB = heapIncrease;
-  }
+  const heapUsed = getHeapUsedMB();
+  const heapIncrease = heapUsed - (loggerInfo.lastHeapUsedMB ?? 0);
+  const delta = Math.abs(heapIncrease);
+  const mustLog = delta >= ensure(loggerInfo.logIfHeapIncreasedByMB, 
+    'monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined'
+  ) 
+  if ( mustLog ) {
+    const [ color, word ] = heapIncrease > 0 
+      ? [ 'magenta', 'increased' ] as const 
+      : [ 'cyan', 'decreased' ] as const;
+
+    console.log(paint[color](`Memory usage ${word} by ${delta.toFixed(1)} MB, now at ${heapUsed.toFixed(1)} MB`));
+    loggerInfo.lastHeapUsedMB = heapUsed;
+  };
 };
 
-function monitorHeapIncrease() {
-  checkHeapIncrease();
-  setTimeout(monitorHeapIncrease, 5000);
-}
+// function monitorHeapIncrease() {
+//   checkHeapIncrease();
+//   setTimeout(monitorHeapIncrease, 5000);
+// }
 
-if ( loggerInfo.logIfHeapIncreasedByMB ) {
-  monitorHeapIncrease();
-};
+// if ( loggerInfo.logIfHeapIncreasedByMB ) {
+//   monitorHeapIncrease();
+// };
 
 
 export function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log
@@ -236,37 +238,40 @@ export function logger(index: number | string | 'always',
 
     const { color, serializeAs } = _.defaults(options, defaultOptions);
     const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
-    const mustLog = logAll || index === 'always' || index === lastLogIndex || _.get(logIndices, index) === true;
+    const mustLog = 
+      logAll 
+      || index === 'always' 
+      || index === lastLogIndex 
+      || _.get(logIndices, index) === true
   
-    if ( mustLog ) {
+    if ( !mustLog )
+      return;
 
-      args.forEach( arg => {
-        arg = serializable(arg);
-        try {
-          console.log(
-            serialize(arg, serializeAs)
-            .split('\n').map( paint[color] ).join('\n')
-          )
-        } catch (error) {
-          console.log(arg);
-        }
-      });
-
-      if ( logToFile ) {
-        // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
-        // Create the file and the tmp directory if it doesn't exist
-        withLogFile(index, logFile =>
-          fs.appendFileSync(logFile,
-            `${new Date().toISOString()}\n` +
-            coloredEmojis[color] + '\n' +
-            $try(
-              () => args.map(arg => serialize(arg, serializeAs)).join('\n') + '\n\n',
-              JSON.stringify(args, null, 2) + '\n\n'
-            )
-          )
-        );
+    args.forEach( arg => {
+      arg = serializable(arg);
+      try {
+        console.log(
+          serialize(arg, serializeAs)
+          .split('\n').map( paint[color] ).join('\n')
+        )
+      } catch (error) {
+        console.log(arg);
       }
+    });
 
+    if ( logToFile ) {
+      // Append the log message to the end of file named log-YYMMDD-HH00-[index].log, including timestamp and color emojis
+      // Create the file and the tmp directory if it doesn't exist
+      withLogFile(index, logFile =>
+        fs.appendFileSync(logFile,
+          `${new Date().toISOString()}\n` +
+          coloredEmojis[color] + '\n' +
+          $try(
+            () => args.map(arg => serialize(arg, serializeAs)).join('\n') + '\n\n',
+            JSON.stringify(args, null, 2) + '\n\n'
+          )
+        )
+      );
     };
 
     if ( reportHeapIncreaseByMB ) {

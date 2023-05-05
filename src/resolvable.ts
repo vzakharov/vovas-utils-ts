@@ -4,7 +4,7 @@ import { is } from "./funkenstein/index.js";
 import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
 
-const log = logger(86);
+const log = logger('vovas-utils.resolvable');
 
 const resolvables: Record<string, Resolvable<any>> = {};
 

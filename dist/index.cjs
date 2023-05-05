@@ -209,29 +209,22 @@ function serialize(arg, serializeAs) {
     )
   );
 }
-let lastHeapUsedMB = getHeapUsedMB();
 function getHeapUsedMB() {
-  return Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 10) / 10;
-}
-function getHeapIncreaseMB() {
-  return getHeapUsedMB() - lastHeapUsedMB;
+  return process.memoryUsage().heapUsed / 1024 / 1024;
 }
 function checkHeapIncrease() {
-  const heapIncrease = getHeapIncreaseMB();
-  if (heapIncrease >= ensure(
+  const heapUsed = getHeapUsedMB();
+  const heapIncrease = heapUsed - (loggerInfo.lastHeapUsedMB ?? 0);
+  const delta = Math.abs(heapIncrease);
+  const mustLog = delta >= ensure(
     loggerInfo.logIfHeapIncreasedByMB,
     "monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined"
-  )) {
-    console.log(paint.magenta(`Memory usage increased by ${heapIncrease} MB, now at ${lastHeapUsedMB} MB`));
-    lastHeapUsedMB = heapIncrease;
+  );
+  if (mustLog) {
+    const [color, word] = heapIncrease > 0 ? ["magenta", "increased"] : ["cyan", "decreased"];
+    console.log(paint[color](`Memory usage ${word} by ${delta.toFixed(1)} MB, now at ${heapUsed.toFixed(1)} MB`));
+    loggerInfo.lastHeapUsedMB = heapUsed;
   }
-}
-function monitorHeapIncrease() {
-  checkHeapIncrease();
-  setTimeout(monitorHeapIncrease, 5e3);
-}
-if (loggerInfo.logIfHeapIncreasedByMB) {
-  monitorHeapIncrease();
 }
 function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
@@ -249,30 +242,30 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
     const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
     const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
-    if (mustLog) {
-      args.forEach((arg) => {
-        arg = serializable(arg);
-        try {
-          console.log(
-            serialize(arg, serializeAs).split("\n").map(paint[color]).join("\n")
-          );
-        } catch (error) {
-          console.log(arg);
-        }
-      });
-      if (logToFile) {
-        withLogFile(
-          index,
-          (logFile) => fs.appendFileSync(
-            logFile,
-            `${( new Date()).toISOString()}
-` + coloredEmojis[color] + "\n" + $try(
-              () => args.map((arg) => serialize(arg, serializeAs)).join("\n") + "\n\n",
-              JSON.stringify(args, null, 2) + "\n\n"
-            )
-          )
+    if (!mustLog)
+      return;
+    args.forEach((arg) => {
+      arg = serializable(arg);
+      try {
+        console.log(
+          serialize(arg, serializeAs).split("\n").map(paint[color]).join("\n")
         );
+      } catch (error) {
+        console.log(arg);
       }
+    });
+    if (logToFile) {
+      withLogFile(
+        index,
+        (logFile) => fs.appendFileSync(
+          logFile,
+          `${( new Date()).toISOString()}
+` + coloredEmojis[color] + "\n" + $try(
+            () => args.map((arg) => serialize(arg, serializeAs)).join("\n") + "\n\n",
+            JSON.stringify(args, null, 2) + "\n\n"
+          )
+        )
+      );
     }
     if (reportHeapIncreaseByMB) {
       checkHeapIncrease();
@@ -865,7 +858,7 @@ function forceUpdateNpmLinks() {
   });
 }
 
-const log = logger(86);
+const log = logger("vovas-utils.resolvable");
 const resolvables = {};
 class Resolvable {
   constructor(config = {}, id = _.uniqueId("res-")) {
@@ -1049,7 +1042,6 @@ exports.envKeys = envKeys;
 exports.evaluate = evaluate;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
-exports.getHeapIncreaseMB = getHeapIncreaseMB;
 exports.getHeapUsedMB = getHeapUsedMB;
 exports.getNpmLinks = getNpmLinks;
 exports.getProp = getProp;
