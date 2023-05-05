@@ -93,6 +93,51 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
   );
 }
 
+function ensure(x, typeguardOrErrorMessage, errorMessage) {
+  if (typeof typeguardOrErrorMessage === "string" || typeof typeguardOrErrorMessage === "undefined") {
+    errorMessage = typeguardOrErrorMessage;
+    if (typeof x === "undefined" || x === null) {
+      throw new Error(
+        errorMessage ?? "A variable is undefined. Check the call stack to see which one."
+      );
+    }
+    return x;
+  } else {
+    const typeguard = typeguardOrErrorMessage;
+    if (!typeguard(x)) {
+      throw new Error(errorMessage ?? `Variable ${x} did not pass typeguard ${typeguard.name}.`);
+    }
+    return x;
+  }
+}
+function assert(x, variableName) {
+  ensure(x, variableName);
+}
+function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
+  const keyOfObj = key;
+  const options = typeof optionsOrMessageIfInvalid === "string" ? { messageIfInvalid: optionsOrMessageIfInvalid } : optionsOrMessageIfInvalid;
+  const { requiredType, validate, messageIfInvalid } = options;
+  try {
+    if (typeof obj[keyOfObj] === "undefined") {
+      throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
+    }
+    if (requiredType && typeof obj[keyOfObj] !== requiredType) {
+      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
+    } else if (validate) {
+      if (!validate(obj[keyOfObj])) {
+        throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
+      }
+    }
+  } catch (e) {
+    if (messageIfInvalid) {
+      e.message += `
+${messageIfInvalid}`;
+    }
+    throw e;
+  }
+  return obj[keyOfObj];
+}
+
 const ansiPrefixes = {
   gray: "\x1B[90m",
   red: "\x1B[31m",
@@ -164,6 +209,30 @@ function serialize(arg, serializeAs) {
     )
   );
 }
+let lastHeapUsedMB = getHeapUsedMB();
+function getHeapUsedMB() {
+  return Math.round(process.memoryUsage().heapUsed / 1024 / 1024 * 10) / 10;
+}
+function getHeapIncreaseMB() {
+  return getHeapUsedMB() - lastHeapUsedMB;
+}
+function checkHeapIncrease() {
+  const heapIncrease = getHeapIncreaseMB();
+  if (heapIncrease >= ensure(
+    loggerInfo.logIfHeapIncreasedByMB,
+    "monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined"
+  )) {
+    logger("always").magenta(`Heap increased by ${heapIncrease} MB`);
+    lastHeapUsedMB = heapIncrease;
+  }
+}
+function monitorHeapIncrease() {
+  checkHeapIncrease();
+  setTimeout(monitorHeapIncrease, 5e3);
+}
+if (loggerInfo.logIfHeapIncreasedByMB) {
+  monitorHeapIncrease();
+}
 function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
     color: defaultColorOrOptions ?? "gray",
@@ -178,7 +247,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   }
   function _log(options, ...args) {
     const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile, logIndices } = loggerInfo;
+    const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
     const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
     if (mustLog) {
       args.forEach((arg) => {
@@ -204,6 +273,9 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
           )
         );
       }
+    }
+    if (reportHeapIncreaseByMB) {
+      checkHeapIncrease();
     }
   }
   const log = (...args) => _log(defaultOptions, ...args);
@@ -566,51 +638,6 @@ const shift = {
   left: shiftTo("left"),
   right: shiftTo("right")
 };
-
-function ensure(x, typeguardOrVariableName) {
-  if (typeof typeguardOrVariableName === "string" || typeof typeguardOrVariableName === "undefined") {
-    const variableName = typeguardOrVariableName;
-    if (typeof x === "undefined" || x === null) {
-      throw new Error(
-        variableName ? `${variableName} is undefined.` : "A variable is undefined. Check the call stack to see which one."
-      );
-    }
-    return x;
-  } else {
-    const typeguard = typeguardOrVariableName;
-    if (!typeguard(x)) {
-      throw new Error("Value does not match typeguard.");
-    }
-    return x;
-  }
-}
-function assert(x, variableName) {
-  ensure(x, variableName);
-}
-function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
-  const keyOfObj = key;
-  const options = typeof optionsOrMessageIfInvalid === "string" ? { messageIfInvalid: optionsOrMessageIfInvalid } : optionsOrMessageIfInvalid;
-  const { requiredType, validate, messageIfInvalid } = options;
-  try {
-    if (typeof obj[keyOfObj] === "undefined") {
-      throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
-    }
-    if (requiredType && typeof obj[keyOfObj] !== requiredType) {
-      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
-    } else if (validate) {
-      if (!validate(obj[keyOfObj])) {
-        throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
-      }
-    }
-  } catch (e) {
-    if (messageIfInvalid) {
-      e.message += `
-${messageIfInvalid}`;
-    }
-    throw e;
-  }
-  return obj[keyOfObj];
-}
 
 function createEnv(descriptor, options = {}) {
   const env = {};
@@ -1022,6 +1049,8 @@ exports.envKeys = envKeys;
 exports.evaluate = evaluate;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
+exports.getHeapIncreaseMB = getHeapIncreaseMB;
+exports.getHeapUsedMB = getHeapUsedMB;
 exports.getNpmLinks = getNpmLinks;
 exports.getProp = getProp;
 exports.give = give;
