@@ -150,7 +150,7 @@ export function serializable(arg: any): any {
 export function withLogFile<T>(index: number | string, callback: (logFile: string) => T) {
   const tmpDir = path.join(process.cwd(), 'tmp');
   fs.mkdirSync(tmpDir, { recursive: true });
-  const logFile = path.join(tmpDir, `log-${new Date().toISOString().slice(0, 13)}00-${index}.log`);
+  const logFile = path.join(tmpDir, `${index}.${new Date().toISOString().slice(0, 13)}00.log`);
   return callback(logFile);
 }
 

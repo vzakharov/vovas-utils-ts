@@ -147,11 +147,11 @@ export class Resolvable<T = void> {
     });
     const values: T[] = [];
     let leftUnresolved = resolvables.length;
-    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
+    log("Created resolvable", allResolvable.id, "resolving after resolvables ", _.map(resolvables, 'id'));
     resolvables.forEach((resolvable, index) => {
       resolvable.promise.catch(error => {
-        log("Resolvable", resolvable.id, "rejected with", error);
-        throw error;
+        log.always.red("Resolvable", resolvable.id, "rejected, rejecting allResolvable", allResolvable.id);
+        allResolvable.reject({ error, resolvable });
       });
       resolvable.then(value => {
         values[index] = value;

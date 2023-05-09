@@ -187,7 +187,7 @@ function serializable(arg) {
 function withLogFile(index, callback) {
   const tmpDir = path.join(process.cwd(), "tmp");
   fs.mkdirSync(tmpDir, { recursive: true });
-  const logFile = path.join(tmpDir, `log-${( new Date()).toISOString().slice(0, 13)}00-${index}.log`);
+  const logFile = path.join(tmpDir, `${index}.${( new Date()).toISOString().slice(0, 13)}00.log`);
   return callback(logFile);
 }
 function serialize(arg, serializeAs) {
@@ -960,11 +960,11 @@ class Resolvable {
     });
     const values = [];
     let leftUnresolved = resolvables.length;
-    log("Created resolvable", allResolvable.id, "resolving after all", resolvables.length, "resolvables");
+    log("Created resolvable", allResolvable.id, "resolving after resolvables ", _.map(resolvables, "id"));
     resolvables.forEach((resolvable, index) => {
       resolvable.promise.catch((error) => {
-        log("Resolvable", resolvable.id, "rejected with", error);
-        throw error;
+        log.always.red("Resolvable", resolvable.id, "rejected, rejecting allResolvable", allResolvable.id);
+        allResolvable.reject({ error, resolvable });
       });
       resolvable.then((value) => {
         values[index] = value;
