@@ -986,6 +986,14 @@ class Resolvable {
   // };
 }
 
+function setReliableTimeout(callback, timeout) {
+  const startTime = Date.now();
+  return setTimeout(() => {
+    const actualTimePassed = Date.now() - startTime;
+    callback(actualTimePassed);
+  }, timeout);
+}
+
 function toType(type) {
   return (object) => Object.assign(object, { type });
 }
@@ -1080,6 +1088,7 @@ exports.serializable = serializable;
 exports.serialize = serialize;
 exports.serializer = serializer;
 exports.setLastLogIndex = setLastLogIndex;
+exports.setReliableTimeout = setReliableTimeout;
 exports.shift = shift;
 exports.shiftTo = shiftTo;
 exports.shouldNotBe = shouldNotBe;

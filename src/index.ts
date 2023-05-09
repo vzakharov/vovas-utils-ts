@@ -12,5 +12,6 @@ export * from './json';
 export * from './merge';
 export * from './npmLinks';
 export * from './resolvable';
+export * from './setReliableTimeout';
 export * from './typed';
 export * from './types';
