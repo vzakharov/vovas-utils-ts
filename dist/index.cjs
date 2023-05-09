@@ -943,16 +943,22 @@ class Resolvable {
     return new Resolvable({ startResolved: true });
   }
   static after(promiseOrInit) {
-    const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
+    const promise = is.function(promiseOrInit) ? $try(
+      promiseOrInit,
+      (error) => Promise.reject(error)
+    ) : promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true
     });
     log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
-    init().then(() => {
+    promise.then(() => {
       log("Resolving resolvable", resolvable.id);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
       log("Resolved resolvable", resolvable.id);
+    }).catch((error) => {
+      log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
+      resolvable.reject(error);
     });
     return resolvable;
   }
@@ -962,16 +968,16 @@ class Resolvable {
     });
     const values = [];
     let leftUnresolved = resolvables.length;
-    log("Created resolvable", allResolvable.id, "resolving after resolvables ", _.map(resolvables, "id"));
+    log(`Created resolvable ${allResolvable.id}, resolving after resolvables ${_.map(resolvables, "id")}`);
     resolvables.forEach((resolvable, index) => {
-      resolvable.promise.catch((error) => {
-        log.always.red("Resolvable", resolvable.id, "rejected, rejecting allResolvable", allResolvable.id);
-        allResolvable.reject({ error, resolvable });
-      });
-      resolvable.then((value) => {
+      resolvable.promise.then((value) => {
         values[index] = value;
+        log(`Resolvable ${resolvable.id} resolved with`, value);
+      }).catch((error) => {
+        log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
+      }).finally(() => {
         leftUnresolved && leftUnresolved--;
-        log("Resolvable", resolvable.id, "resolved with", value, "left unresolved", leftUnresolved);
+        log(`${leftUnresolved} resolvables left unresolved`);
         if (!leftUnresolved) {
           log("No more unresolved resolvables, resolving allResolvable", allResolvable.id, "with", values);
           allResolvable.config.prohibitResolve = false;

@@ -1,6 +1,6 @@
 import _ from "lodash";
 
-import { is } from "./funkenstein/index.js";
+import { $try, is } from "./funkenstein/index.js";
 import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
 
@@ -126,17 +126,24 @@ export class Resolvable<T = void> {
   static after(promise: Promise<void>): Resolvable
   static after(init: () => Promise<void>): Resolvable
   static after (promiseOrInit: Promise<void> | (() => Promise<void>)) {
-    const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
+    // const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
+    const promise = is.function(promiseOrInit) ? $try(
+      promiseOrInit,
+      error => Promise.reject(error)
+    ) : promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true,
     });
     log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
     // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
-    init().then(() => {
+    promise.then(() => {
       log("Resolving resolvable", resolvable.id);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
       log("Resolved resolvable", resolvable.id);
+    }).catch(error => {
+      log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
+      resolvable.reject(error);
     });
     return resolvable;
   };
@@ -147,22 +154,26 @@ export class Resolvable<T = void> {
     });
     const values: T[] = [];
     let leftUnresolved = resolvables.length;
-    log("Created resolvable", allResolvable.id, "resolving after resolvables ", _.map(resolvables, 'id'));
+    log(`Created resolvable ${allResolvable.id}, resolving after resolvables ${_.map(resolvables, 'id')}`);
     resolvables.forEach((resolvable, index) => {
-      resolvable.promise.catch(error => {
-        log.always.red("Resolvable", resolvable.id, "rejected, rejecting allResolvable", allResolvable.id);
-        allResolvable.reject({ error, resolvable });
-      });
-      resolvable.then(value => {
-        values[index] = value;
-        leftUnresolved && leftUnresolved--;
-        log("Resolvable", resolvable.id, "resolved with", value, "left unresolved", leftUnresolved);
-        if ( !leftUnresolved ) {
-          log("No more unresolved resolvables, resolving allResolvable", allResolvable.id, "with", values);
-          allResolvable.config.prohibitResolve = false;
-          allResolvable.resolve(values);
-        }
-      });
+      resolvable.promise
+        .then(value => {
+          values[index] = value;
+          // leftUnresolved && leftUnresolved--;
+          log(`Resolvable ${resolvable.id} resolved with`, value);
+        })
+        .catch(error => {
+          log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
+        }).
+        finally(() => {
+          leftUnresolved && leftUnresolved--;
+          log(`${leftUnresolved} resolvables left unresolved`);
+          if ( !leftUnresolved ) {
+            log("No more unresolved resolvables, resolving allResolvable", allResolvable.id, "with", values);
+            allResolvable.config.prohibitResolve = false;
+            allResolvable.resolve(values);
+          }
+        });
     });
     return allResolvable;
   };
