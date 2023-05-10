@@ -79,7 +79,7 @@ export class Resolvable<T = void> {
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
     this.promise.then(value => (
-      log("Resolvable.then callback", this),
+      log(`Calling then callback for Resolvable (${this.id}) with value:`, value),
       callback(value)
     ));
     return this;
@@ -91,7 +91,7 @@ export class Resolvable<T = void> {
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
     this.promise.catch(reason => (
-      log("Resolvable.catch callback", this),
+      log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason),
       callback(reason)
     ));
     return this;
@@ -120,12 +120,12 @@ export class Resolvable<T = void> {
       throw new Error('Cannot resolve a Resolvable that is already resolved.');
     if ( this.config.prohibitResolve )
       throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
-    log("Resolving", this);
+    log(`Resolving ${this.id} with`, value);
     this._resolve(value);
     this.inProgress = false;
     this.config.previousResolved = Date.now();
     // delete resolvables[this.id];
-    log('Resolved', this);
+    log(`Resolved ${this.id} with`, value);
   }
 
   reject(reason?: any) {
@@ -133,14 +133,14 @@ export class Resolvable<T = void> {
     this.inProgress = false;
   }
 
-  reset(value?: T) {
+  restart(value?: T) {
     this.resolve(value);
     this.start();
   }
 
-  // restart as an alias for reset
-  restart(value?: T) {
-    this.reset(value);
+  // reset as an alias for backwards compatibility
+  reset(value?: T) {
+    this.restart(value);
   }
 
   start(okayIfInProgress: boolean = false) {
@@ -148,7 +148,7 @@ export class Resolvable<T = void> {
       if ( okayIfInProgress )
         return log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
       else
-        throw new Error('Cannot start a Resolvable that is already in progress.');
+        throw new Error(`Resolvable ${this.id} is already in progress. Cannot start.`);
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false,
@@ -176,24 +176,23 @@ export class Resolvable<T = void> {
     return new Resolvable<void>({ startResolved: true }, 'resolved');
   }
 
-  static after(promise: Promise<void>): Resolvable
-  static after(init: () => Promise<void>): Resolvable
-  static after (promiseOrInit: Promise<void> | (() => Promise<void>)) {
+  static after(occurrence: Promise<void> | Resolvable): Resolvable
+  static after(init: () => Promise<void> | Resolvable): Resolvable
+  static after (occurrenceOrInit: Promise<void> | Resolvable | (() => Promise<void> | Resolvable)) {
     // const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
-    const promise = is.function(promiseOrInit) ? $try(
-      promiseOrInit,
+    const occurrence = is.function(occurrenceOrInit) ? $try(
+      occurrenceOrInit,
       error => Promise.reject(error)
-    ) : promiseOrInit;
+    ) : occurrenceOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true,
     }, 'after');
-    log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
+    log(`Created resolvable ${resolvable.id}, resolving after ${occurrence}`);
     // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
-    promise.then(() => {
-      log("Resolving resolvable", resolvable.id);
+    occurrence.then(() => {
+      log(`Resolvable ${resolvable.id} is now allowed to resolve`);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
-      log("Resolved resolvable", resolvable.id);
     }).catch(error => {
       log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
       resolvable.reject(error);

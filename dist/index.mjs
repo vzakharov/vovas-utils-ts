@@ -887,14 +887,14 @@ class Resolvable {
     if (this.config.then && this.config.then !== callback)
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
-    this.promise.then((value) => (log("Resolvable.then callback", this), callback(value)));
+    this.promise.then((value) => (log(`Calling then callback for Resolvable (${this.id}) with value:`, value), callback(value)));
     return this;
   }
   catch(callback) {
     if (this.config.catch && this.config.catch !== callback)
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
-    this.promise.catch((reason) => (log("Resolvable.catch callback", this), callback(reason)));
+    this.promise.catch((reason) => (log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason), callback(reason)));
     return this;
   }
   // TODO: Abstractify then/catch(/finally?) into a single function
@@ -915,30 +915,30 @@ class Resolvable {
       throw new Error("Cannot resolve a Resolvable that is already resolved.");
     if (this.config.prohibitResolve)
       throw new Error("This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.");
-    log("Resolving", this);
+    log(`Resolving ${this.id} with`, value);
     this._resolve(value);
     this.inProgress = false;
     this.config.previousResolved = Date.now();
-    log("Resolved", this);
+    log(`Resolved ${this.id} with`, value);
   }
   reject(reason) {
     this._reject(reason);
     this.inProgress = false;
   }
-  reset(value) {
+  restart(value) {
     this.resolve(value);
     this.start();
   }
-  // restart as an alias for reset
-  restart(value) {
-    this.reset(value);
+  // reset as an alias for backwards compatibility
+  reset(value) {
+    this.restart(value);
   }
   start(okayIfInProgress = false) {
     if (this.inProgress)
       if (okayIfInProgress)
         return log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
       else
-        throw new Error("Cannot start a Resolvable that is already in progress.");
+        throw new Error(`Resolvable ${this.id} is already in progress. Cannot start.`);
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false

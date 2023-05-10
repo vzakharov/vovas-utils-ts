@@ -802,8 +802,8 @@ declare class Resolvable<T = void> {
     get id(): string;
     resolve(value?: T): void;
     reject(reason?: any): void;
-    reset(value?: T): void;
     restart(value?: T): void;
+    reset(value?: T): void;
     start(okayIfInProgress?: boolean): void;
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;
