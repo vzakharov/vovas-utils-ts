@@ -1,6 +1,6 @@
 {
   "name": "vovas-utils",
-  "version": "0.1.16",
+  "version": "0.1.17",
   "description": "Just a bunch of useful TypeScript helpers",
   "exports": {
     ".": {
