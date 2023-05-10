@@ -8,13 +8,19 @@ const log = logger('vovas-utils.resolvable');
 
 // const resolvables: Record<string, Resolvable<any>> = {};
 
-export interface ResolvableConfig<T> {
+export type PromiseHandlers<T> = {
+  then?: (value: T) => void;
+  catch?: (reason: any) => void;
+  // finally?: () => void;
+}
+
+export type ResolvableConfig<T> = {
+  id?: string;
   previousResolved?: UnixTimestamp;
   startResolved?: boolean;
   startResolvedWith?: T;
-  then?: (value: T) => void;
   prohibitResolve?: boolean;
-}
+} & PromiseHandlers<T>;
 
 export class Resolvable<T = void> {
 
@@ -26,9 +32,10 @@ export class Resolvable<T = void> {
 
   constructor(
     private config: ResolvableConfig<T> = {},
-    public id = _.uniqueId('res-')
+    slug?: string
   ) {
-    const { previousResolved, startResolved, startResolvedWith, then } = this.config;
+    const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
+    this.config.id ??= _.uniqueId(slug || 'resolvable');
     this.previousResolved = previousResolved;
     if ( startResolved ) {
       this.resolve(startResolvedWith);
@@ -36,6 +43,8 @@ export class Resolvable<T = void> {
     }
     if ( then )
       this.then(then);
+    if ( _catch )
+      this.catch(_catch);
 
     // resolvables[this.id] = this;
     
@@ -54,12 +63,30 @@ export class Resolvable<T = void> {
     return this;
   }
 
+  catch( callback: (reason: any) => void | Promise<void> ) {
+    // If there's already a catch callback, throw an error
+    if ( this.config.catch && this.config.catch !== callback )
+      throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
+    this.config.catch = callback;
+    this.promise.catch(reason => (
+      log("Resolvable.catch callback", this),
+      callback(reason)
+    ));
+    return this;
+  }
+
+  // TODO: Abstractify then/catch(/finally?) into a single function
+
   get resolved() {
     return !this.inProgress;
   }
 
   get everResolved() {
     return this.resolved || !!this.previousResolved;
+  }
+
+  get id() {
+    return this.config.id;
   }
 
   resolve(value?: T) {
@@ -99,7 +126,7 @@ export class Resolvable<T = void> {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false,
-    }, this.id));
+    }));
   };
 
   startIfNotInProgress() {

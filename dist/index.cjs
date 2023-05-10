@@ -860,9 +860,8 @@ function forceUpdateNpmLinks() {
 
 const log = logger("vovas-utils.resolvable");
 class Resolvable {
-  constructor(config = {}, id = _.uniqueId("res-")) {
+  constructor(config = {}, slug) {
     this.config = config;
-    this.id = id;
     this.inProgress = true;
     this._resolve = () => {
     };
@@ -871,7 +870,9 @@ class Resolvable {
     this.promise = new Promise((_resolve, _reject) => {
       Object.assign(this, { _resolve, _reject });
     });
-    const { previousResolved, startResolved, startResolvedWith, then } = this.config;
+    var _a;
+    const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
+    (_a = this.config).id ?? (_a.id = _.uniqueId(slug || "resolvable"));
     this.previousResolved = previousResolved;
     if (startResolved) {
       this.resolve(startResolvedWith);
@@ -879,6 +880,8 @@ class Resolvable {
     }
     if (then)
       this.then(then);
+    if (_catch)
+      this.catch(_catch);
   }
   then(callback) {
     if (this.config.then && this.config.then !== callback)
@@ -887,11 +890,22 @@ class Resolvable {
     this.promise.then((value) => (log("Resolvable.then callback", this), callback(value)));
     return this;
   }
+  catch(callback) {
+    if (this.config.catch && this.config.catch !== callback)
+      throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
+    this.config.catch = callback;
+    this.promise.catch((reason) => (log("Resolvable.catch callback", this), callback(reason)));
+    return this;
+  }
+  // TODO: Abstractify then/catch(/finally?) into a single function
   get resolved() {
     return !this.inProgress;
   }
   get everResolved() {
     return this.resolved || !!this.previousResolved;
+  }
+  get id() {
+    return this.config.id;
   }
   resolve(value) {
     if (this.resolved)
@@ -925,7 +939,7 @@ class Resolvable {
     Object.assign(this, new Resolvable({
       ...this.config,
       startResolved: false
-    }, this.id));
+    }));
   }
   startIfNotInProgress() {
     if (!this.inProgress)
