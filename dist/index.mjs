@@ -858,8 +858,7 @@ function forceUpdateNpmLinks() {
 
 const log = logger("vovas-utils.resolvable");
 class Resolvable {
-  constructor(config = {}, slug) {
-    this.config = config;
+  constructor(slugOrConfig = {}, nothingOrSlug = "resolvable") {
     this.inProgress = true;
     this._resolve = () => {
     };
@@ -868,10 +867,13 @@ class Resolvable {
     this.promise = new Promise((_resolve, _reject) => {
       Object.assign(this, { _resolve, _reject });
     });
-    var _a;
+    const [slug, config] = is.string(slugOrConfig) ? [slugOrConfig, {}] : [nothingOrSlug, slugOrConfig];
+    const id = config.id ?? _.uniqueId(slug + "-");
+    this.config = {
+      ...is.string(slugOrConfig) ? {} : slugOrConfig,
+      id
+    };
     const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
-    (_a = this.config).id ?? (_a.id = _.uniqueId(slug || "resolvable"));
-    this.previousResolved = previousResolved;
     if (startResolved) {
       this.resolve(startResolvedWith);
       this.inProgress = false;
@@ -899,6 +901,9 @@ class Resolvable {
   get resolved() {
     return !this.inProgress;
   }
+  get previousResolved() {
+    return this.config.previousResolved;
+  }
   get everResolved() {
     return this.resolved || !!this.previousResolved;
   }
@@ -913,7 +918,7 @@ class Resolvable {
     log("Resolving", this);
     this._resolve(value);
     this.inProgress = false;
-    this.previousResolved = Date.now();
+    this.config.previousResolved = Date.now();
     log("Resolved", this);
   }
   reject(reason) {

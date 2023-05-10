@@ -776,26 +776,30 @@ type PromiseHandlers<T> = {
     then?: (value: T) => void;
     catch?: (reason: any) => void;
 };
-type ResolvableConfig<T> = {
-    id?: string;
+type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
     previousResolved?: UnixTimestamp;
     startResolved?: boolean;
     startResolvedWith?: T;
     prohibitResolve?: boolean;
-} & PromiseHandlers<T>;
+} & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
+    id?: string;
+} : {
+    id: string;
+});
 declare class Resolvable<T = void> {
-    private config;
     inProgress: boolean;
     private _resolve;
     private _reject;
     promise: Promise<T>;
-    previousResolved: UnixTimestamp | undefined;
-    constructor(config?: ResolvableConfig<T>, slug?: string);
+    private config;
+    constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
+    constructor(slug: string);
     then(callback: (value: T) => void | Promise<void>): this;
     catch(callback: (reason: any) => void | Promise<void>): this;
     get resolved(): boolean;
+    get previousResolved(): number | undefined;
     get everResolved(): boolean;
-    get id(): string | undefined;
+    get id(): string;
     resolve(value?: T): void;
     reject(reason?: any): void;
     reset(value?: T): void;

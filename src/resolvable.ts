@@ -14,13 +14,12 @@ export type PromiseHandlers<T> = {
   // finally?: () => void;
 }
 
-export type ResolvableConfig<T> = {
-  id?: string;
+export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
   previousResolved?: UnixTimestamp;
   startResolved?: boolean;
   startResolvedWith?: T;
   prohibitResolve?: boolean;
-} & PromiseHandlers<T>;
+} & PromiseHandlers<T> & ( IdIsOptional extends 'idIsOptional' ? { id?: string } : { id: string } );
 
 export class Resolvable<T = void> {
 
@@ -28,15 +27,38 @@ export class Resolvable<T = void> {
   private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
-  previousResolved: UnixTimestamp | undefined;
+  // previousResolved: UnixTimestamp | undefined;
+
+  private config: ResolvableConfig<T>;
 
   constructor(
-    private config: ResolvableConfig<T> = {},
+    config?: ResolvableConfig<T, 'idIsOptional'>,
     slug?: string
+  )
+  
+  constructor(
+    slug: string,
+  )
+
+  constructor(
+    slugOrConfig: string | ResolvableConfig<T, 'idIsOptional'> = {},
+    nothingOrSlug: string = 'resolvable',
   ) {
+
+    const [ slug,           config        ] = is.string(slugOrConfig) 
+        ? [ slugOrConfig,   {}            ] 
+        : [ nothingOrSlug,  slugOrConfig  ];
+
+    const id = config.id ?? _.uniqueId(slug+'-');
+
+    this.config = {
+      ...is.string(slugOrConfig) ? {} : slugOrConfig,
+      id,
+    };
+
     const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
-    this.config.id ??= _.uniqueId(slug || 'resolvable');
-    this.previousResolved = previousResolved;
+
+    // this.previousResolved = previousResolved;
     if ( startResolved ) {
       this.resolve(startResolvedWith);
       this.inProgress = false;
@@ -81,6 +103,10 @@ export class Resolvable<T = void> {
     return !this.inProgress;
   }
 
+  get previousResolved() {
+    return this.config.previousResolved;
+  }
+
   get everResolved() {
     return this.resolved || !!this.previousResolved;
   }
@@ -97,7 +123,7 @@ export class Resolvable<T = void> {
     log("Resolving", this);
     this._resolve(value);
     this.inProgress = false;
-    this.previousResolved = Date.now();
+    this.config.previousResolved = Date.now();
     // delete resolvables[this.id];
     log('Resolved', this);
   }
