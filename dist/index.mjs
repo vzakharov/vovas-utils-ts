@@ -954,10 +954,10 @@ class Resolvable {
     this.start();
   }
   static resolvedWith(value) {
-    return new Resolvable({ startResolved: true, startResolvedWith: value });
+    return new Resolvable({ startResolved: true, startResolvedWith: value }, "resolvedWith");
   }
   static resolved() {
-    return new Resolvable({ startResolved: true });
+    return new Resolvable({ startResolved: true }, "resolved");
   }
   static after(promiseOrInit) {
     const promise = is.function(promiseOrInit) ? $try(
@@ -966,7 +966,7 @@ class Resolvable {
     ) : promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true
-    });
+    }, "after");
     log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
     promise.then(() => {
       log("Resolving resolvable", resolvable.id);
@@ -982,7 +982,7 @@ class Resolvable {
   static all(resolvables) {
     const allResolvable = new Resolvable({
       prohibitResolve: true
-    });
+    }, "all");
     const values = [];
     let leftUnresolved = resolvables.length;
     log(`Created resolvable ${allResolvable.id}, resolving after resolvables ${_.map(resolvables, "id")}`);

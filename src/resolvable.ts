@@ -169,11 +169,11 @@ export class Resolvable<T = void> {
   };
 
   static resolvedWith<T>(value: T) {
-    return new Resolvable<T>({ startResolved: true, startResolvedWith: value });
+    return new Resolvable<T>({ startResolved: true, startResolvedWith: value }, 'resolvedWith');
   };
 
   static resolved() {
-    return new Resolvable<void>({ startResolved: true });
+    return new Resolvable<void>({ startResolved: true }, 'resolved');
   }
 
   static after(promise: Promise<void>): Resolvable
@@ -186,7 +186,7 @@ export class Resolvable<T = void> {
     ) : promiseOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true,
-    });
+    }, 'after');
     log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
     // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
     promise.then(() => {
@@ -204,7 +204,7 @@ export class Resolvable<T = void> {
   static all<T>(resolvables: Resolvable<T>[]) {
     const allResolvable = new Resolvable<T[]>({
       prohibitResolve: true,
-    });
+    }, 'all');
     const values: T[] = [];
     let leftUnresolved = resolvables.length;
     log(`Created resolvable ${allResolvable.id}, resolving after resolvables ${_.map(resolvables, 'id')}`);
