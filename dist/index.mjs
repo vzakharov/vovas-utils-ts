@@ -959,20 +959,19 @@ class Resolvable {
   static resolved() {
     return new Resolvable({ startResolved: true }, "resolved");
   }
-  static after(promiseOrInit) {
-    const promise = is.function(promiseOrInit) ? $try(
-      promiseOrInit,
+  static after(occurrenceOrInit) {
+    const occurrence = is.function(occurrenceOrInit) ? $try(
+      occurrenceOrInit,
       (error) => Promise.reject(error)
-    ) : promiseOrInit;
+    ) : occurrenceOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true
     }, "after");
-    log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
-    promise.then(() => {
-      log("Resolving resolvable", resolvable.id);
+    log(`Created resolvable ${resolvable.id}, resolving after ${occurrence}`);
+    occurrence.then(() => {
+      log(`Resolvable ${resolvable.id} is now allowed to resolve`);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
-      log("Resolved resolvable", resolvable.id);
     }).catch((error) => {
       log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
       resolvable.reject(error);
@@ -1031,4 +1030,8 @@ function isKindOf(kind) {
   };
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, viteConfigForNpmLinks, withLogFile, wrap };
+function undefinedIfFalsey(value) {
+  return value || void 0;
+}
+
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

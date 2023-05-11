@@ -15,3 +15,4 @@ export * from './resolvable';
 export * from './setReliableTimeout';
 export * from './typed';
 export * from './types';
+export * from './undefinedIfFalsey';

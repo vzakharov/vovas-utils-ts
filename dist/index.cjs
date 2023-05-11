@@ -961,20 +961,19 @@ class Resolvable {
   static resolved() {
     return new Resolvable({ startResolved: true }, "resolved");
   }
-  static after(promiseOrInit) {
-    const promise = is.function(promiseOrInit) ? $try(
-      promiseOrInit,
+  static after(occurrenceOrInit) {
+    const occurrence = is.function(occurrenceOrInit) ? $try(
+      occurrenceOrInit,
       (error) => Promise.reject(error)
-    ) : promiseOrInit;
+    ) : occurrenceOrInit;
     const resolvable = new Resolvable({
       prohibitResolve: true
     }, "after");
-    log("Created resolvable", resolvable.id, "resolving after", promiseOrInit);
-    promise.then(() => {
-      log("Resolving resolvable", resolvable.id);
+    log(`Created resolvable ${resolvable.id}, resolving after ${occurrence}`);
+    occurrence.then(() => {
+      log(`Resolvable ${resolvable.id} is now allowed to resolve`);
       resolvable.config.prohibitResolve = false;
       resolvable.resolve();
-      log("Resolved resolvable", resolvable.id);
     }).catch((error) => {
       log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
       resolvable.reject(error);
@@ -1031,6 +1030,10 @@ function isKindOf(kind) {
   return function(object) {
     return object.kind === kind;
   };
+}
+
+function undefinedIfFalsey(value) {
+  return value || void 0;
 }
 
 exports.$as = $as;
@@ -1123,6 +1126,7 @@ exports.transform = transform;
 exports.tuple = tuple;
 exports.unEnvCase = unEnvCase;
 exports.unEnvKeys = unEnvKeys;
+exports.undefinedIfFalsey = undefinedIfFalsey;
 exports.viteConfigForNpmLinks = viteConfigForNpmLinks;
 exports.withLogFile = withLogFile;
 exports.wrap = wrap;
