@@ -25,6 +25,7 @@ export async function download(url: string, release: Resolvable, filename?: stri
   return filePath;
 }
 
-export function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream> {
-  return download(url, release).then(fs.createReadStream);
+export async function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream> {
+  const path = await download(url, release);
+  return fs.createReadStream(path);
 }
