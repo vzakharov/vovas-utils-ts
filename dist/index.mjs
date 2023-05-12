@@ -690,8 +690,9 @@ async function download(url, release, filename) {
   );
   return filePath;
 }
-function downloadAsStream(url, release) {
-  return download(url, release).then(fs.createReadStream);
+async function downloadAsStream(url, release) {
+  const path2 = await download(url, release);
+  return fs.createReadStream(path2);
 }
 
 const groupListeners = {};
@@ -910,14 +911,17 @@ class Resolvable {
   get id() {
     return this.config.id;
   }
+  get lastPromise() {
+    return this.config.previousPromise ?? this.promise;
+  }
   resolve(value) {
     if (this.resolved)
       throw new Error("Cannot resolve a Resolvable that is already resolved.");
     if (this.config.prohibitResolve)
       throw new Error("This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.");
-    log(`Resolving ${this.id} with`, value);
     this._resolve(value);
     this.inProgress = false;
+    this.config.previousPromise = this.promise;
     this.config.previousResolved = Date.now();
     log(`Resolved ${this.id} with`, value);
   }

@@ -778,6 +778,7 @@ type PromiseHandlers<T> = {
 };
 type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
     previousResolved?: UnixTimestamp;
+    previousPromise?: Promise<T>;
     startResolved?: boolean;
     startResolvedWith?: T;
     prohibitResolve?: boolean;
@@ -800,6 +801,7 @@ declare class Resolvable<T = void> {
     get previousResolved(): number | undefined;
     get everResolved(): boolean;
     get id(): string;
+    get lastPromise(): Promise<T>;
     resolve(value?: T): void;
     reject(reason?: any): void;
     restart(value?: T): void;

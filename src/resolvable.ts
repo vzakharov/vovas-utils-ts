@@ -16,6 +16,7 @@ export type PromiseHandlers<T> = {
 
 export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
   previousResolved?: UnixTimestamp;
+  previousPromise?: Promise<T>;
   startResolved?: boolean;
   startResolvedWith?: T;
   prohibitResolve?: boolean;
@@ -115,14 +116,19 @@ export class Resolvable<T = void> {
     return this.config.id;
   }
 
+  get lastPromise() {
+    return this.config.previousPromise ?? this.promise;
+  }
+
   resolve(value?: T) {
     if ( this.resolved )
       throw new Error('Cannot resolve a Resolvable that is already resolved.');
     if ( this.config.prohibitResolve )
       throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
-    log(`Resolving ${this.id} with`, value);
+    // log(`Resolving ${this.id} with`, value);
     this._resolve(value);
     this.inProgress = false;
+    this.config.previousPromise = this.promise;
     this.config.previousResolved = Date.now();
     // delete resolvables[this.id];
     log(`Resolved ${this.id} with`, value);
