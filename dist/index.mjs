@@ -108,8 +108,8 @@ function ensure(x, typeguardOrErrorMessage, errorMessage) {
     return x;
   }
 }
-function assert(x, variableName) {
-  ensure(x, variableName);
+function assert(x, errorMessage) {
+  ensure(x, errorMessage);
 }
 function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
   const keyOfObj = key;

@@ -27,8 +27,8 @@ export function ensure<T, U>(
 
 export type CouldBeNullOrUndefined<T> = ( T | undefined | null ) | ( T | undefined ) | ( T | null );
 
-export function assert<T>(x: CouldBeNullOrUndefined<T>, variableName?: string): asserts x is T {
-  ensure(x, variableName);
+export function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T {
+  ensure(x, errorMessage);
 }
 
 export interface EnsurePropertyOptions {
