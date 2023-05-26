@@ -12,7 +12,7 @@ export type CreateEnvOptions = {
   missingKeyError?: (key: string) => Error;
 }
 
-export function createEnv<T>(descriptor: T, options: CreateEnvOptions = {}): CreateEnvResult<T> {
+export function createEnv<T>(descriptor: Record<keyof T, string>, options: CreateEnvOptions = {}): CreateEnvResult<T> {
 
   const env: T = {} as T;
   const missingEnvs: Partial<T> = {};
