@@ -762,7 +762,7 @@ interface CreateEnvResult<T> {
 type CreateEnvOptions = {
     missingKeyError?: (key: string) => Error;
 };
-declare function createEnv<T>(descriptor: T, options?: CreateEnvOptions): CreateEnvResult<T>;
+declare function createEnv<T>(descriptor: Record<keyof T, string>, options?: CreateEnvOptions): CreateEnvResult<T>;
 declare const envCase: (string: string) => string;
 declare const unEnvCase: (string?: string | undefined) => string;
 declare function envKeys<T extends Dict>(dict: T): T;
