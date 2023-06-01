@@ -18,7 +18,8 @@ export async function download(url: string, release: Resolvable, filename?: stri
     file.on('finish', resolve);
     [ file, request ].forEach(stream => stream.on('error', reject));
   });
-  log.green(`Downloaded ${url} to ${filePath}`);
+  // Log the size
+  log.green(`Downloaded ${url} to ${filePath} (${fs.statSync(filePath).size} bytes)`);
   release.promise.then(() =>
     fs.rm(filePath, () => log.magenta(`Deleted ${filePath}`))
   );

@@ -684,7 +684,7 @@ async function download(url, release, filename) {
     file.on("finish", resolve);
     [file, request].forEach((stream) => stream.on("error", reject));
   });
-  log$2.green(`Downloaded ${url} to ${filePath}`);
+  log$2.green(`Downloaded ${url} to ${filePath} (${fs.statSync(filePath).size} bytes)`);
   release.promise.then(
     () => fs.rm(filePath, () => log$2.magenta(`Deleted ${filePath}`))
   );
