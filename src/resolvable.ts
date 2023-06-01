@@ -184,7 +184,7 @@ export class Resolvable<T = void> {
 
   static after(occurrence: Promise<void> | Resolvable): Resolvable
   static after(init: () => Promise<void> | Resolvable): Resolvable
-  static after (occurrenceOrInit: Promise<void> | Resolvable | (() => Promise<void> | Resolvable)) {
+  static after(occurrenceOrInit: Promise<void> | Resolvable | (() => Promise<void> | Resolvable)) {
     // const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
     const occurrence = is.function(occurrenceOrInit) ? $try(
       occurrenceOrInit,
