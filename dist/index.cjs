@@ -927,6 +927,9 @@ class Resolvable {
     this.config.previousResolved = Date.now();
     log(`Resolved ${this.id} with`, value);
   }
+  resolveIfInProgress(value) {
+    this.inProgress && this.resolve(value);
+  }
   reject(reason) {
     this._reject(reason);
     this.inProgress = false;

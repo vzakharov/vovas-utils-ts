@@ -134,6 +134,10 @@ export class Resolvable<T = void> {
     log(`Resolved ${this.id} with`, value);
   }
 
+  resolveIfInProgress(value?: T) {
+    this.inProgress && this.resolve(value);
+  };
+
   reject(reason?: any) {
     this._reject(reason);
     this.inProgress = false;

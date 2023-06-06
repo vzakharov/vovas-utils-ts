@@ -803,6 +803,7 @@ declare class Resolvable<T = void> {
     get id(): string;
     get lastPromise(): Promise<T>;
     resolve(value?: T): void;
+    resolveIfInProgress(value?: T): void;
     reject(reason?: any): void;
     restart(value?: T): void;
     reset(value?: T): void;
