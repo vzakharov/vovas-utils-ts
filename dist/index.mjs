@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import fs from 'fs';
-import yaml from 'js-yaml';
 import https from 'https';
 import path from 'path';
 import os from 'os';
+import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
 function aliasify(object, aliasesDefinition) {
@@ -17,6 +17,94 @@ function aliasify(object, aliasesDefinition) {
     }
   }
   return retypedObject;
+}
+
+function ensure(x, typeguardOrErrorMessage, errorMessage) {
+  if (typeof typeguardOrErrorMessage === "string" || typeof typeguardOrErrorMessage === "undefined") {
+    errorMessage = typeguardOrErrorMessage;
+    if (typeof x === "undefined" || x === null) {
+      throw new Error(
+        errorMessage ?? "A variable is undefined. Check the call stack to see which one."
+      );
+    }
+    return x;
+  } else {
+    const typeguard = typeguardOrErrorMessage;
+    if (!typeguard(x)) {
+      throw new Error(errorMessage ?? `Variable ${x} did not pass typeguard ${typeguard.name}.`);
+    }
+    return x;
+  }
+}
+function assert(x, errorMessage) {
+  ensure(x, errorMessage);
+}
+function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
+  const keyOfObj = key;
+  const options = typeof optionsOrMessageIfInvalid === "string" ? { messageIfInvalid: optionsOrMessageIfInvalid } : optionsOrMessageIfInvalid;
+  const { requiredType, validate, messageIfInvalid } = options;
+  try {
+    if (typeof obj[keyOfObj] === "undefined") {
+      throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
+    }
+    if (requiredType && typeof obj[keyOfObj] !== requiredType) {
+      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
+    } else if (validate) {
+      if (!validate(obj[keyOfObj])) {
+        throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
+      }
+    }
+  } catch (e) {
+    if (messageIfInvalid) {
+      e.message += `
+${messageIfInvalid}`;
+    }
+    throw e;
+  }
+  return obj[keyOfObj];
+}
+
+function createEnv(descriptor, options = {}) {
+  const env = {};
+  const missingEnvs = {};
+  const presentEnvs = {};
+  for (const key of Object.getOwnPropertyNames(descriptor)) {
+    const keyOfT = key;
+    const description = descriptor[keyOfT];
+    const ENV_KEY = _.snakeCase(key).toUpperCase();
+    try {
+      env[keyOfT] = ensureProperty(process.env, ENV_KEY, description);
+      if (presentEnvs)
+        presentEnvs[keyOfT] = env[keyOfT];
+    } catch (e) {
+      if (missingEnvs)
+        missingEnvs[keyOfT] = description;
+      Object.defineProperty(env, keyOfT, {
+        get() {
+          throw options.missingKeyError?.(ENV_KEY) ?? new Error(`Missing env ${ENV_KEY} (${description})`);
+        },
+        configurable: true
+      });
+      console.log(`WARNING: Missing env ${ENV_KEY} (${description}). Not throwing error until it is attempted to be used.`);
+    }
+  }
+  return { env, missingEnvs, presentEnvs };
+}
+const envCase = (string) => _.snakeCase(string).toUpperCase();
+const unEnvCase = _.camelCase;
+function envKeys(dict) {
+  return _.mapKeys(dict, (value, key) => envCase(key));
+}
+function unEnvKeys(dict) {
+  return _.mapKeys(dict, (value, key) => unEnvCase(key));
+}
+
+function doWith(target, callback, { finally: cleanMethodName }) {
+  try {
+    return callback(target);
+  } finally {
+    ensureProperty(target, cleanMethodName)();
+  }
 }
 
 function $do(fnOrKey, ...args) {
@@ -89,200 +177,6 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
     },
     {}
   );
-}
-
-function ensure(x, typeguardOrErrorMessage, errorMessage) {
-  if (typeof typeguardOrErrorMessage === "string" || typeof typeguardOrErrorMessage === "undefined") {
-    errorMessage = typeguardOrErrorMessage;
-    if (typeof x === "undefined" || x === null) {
-      throw new Error(
-        errorMessage ?? "A variable is undefined. Check the call stack to see which one."
-      );
-    }
-    return x;
-  } else {
-    const typeguard = typeguardOrErrorMessage;
-    if (!typeguard(x)) {
-      throw new Error(errorMessage ?? `Variable ${x} did not pass typeguard ${typeguard.name}.`);
-    }
-    return x;
-  }
-}
-function assert(x, errorMessage) {
-  ensure(x, errorMessage);
-}
-function ensureProperty(obj, key, optionsOrMessageIfInvalid = {}) {
-  const keyOfObj = key;
-  const options = typeof optionsOrMessageIfInvalid === "string" ? { messageIfInvalid: optionsOrMessageIfInvalid } : optionsOrMessageIfInvalid;
-  const { requiredType, validate, messageIfInvalid } = options;
-  try {
-    if (typeof obj[keyOfObj] === "undefined") {
-      throw new Error(`Property ${String(keyOfObj)} is undefined: ${JSON.stringify(obj)}`);
-    }
-    if (requiredType && typeof obj[keyOfObj] !== requiredType) {
-      throw new Error(`Property ${String(keyOfObj)} is not of type ${requiredType}: ${JSON.stringify(obj)}`);
-    } else if (validate) {
-      if (!validate(obj[keyOfObj])) {
-        throw new Error(`Property ${String(keyOfObj)} is invalid: ${JSON.stringify(obj)}`);
-      }
-    }
-  } catch (e) {
-    if (messageIfInvalid) {
-      e.message += `
-${messageIfInvalid}`;
-    }
-    throw e;
-  }
-  return obj[keyOfObj];
-}
-
-const ansiPrefixes = {
-  gray: "\x1B[90m",
-  red: "\x1B[31m",
-  green: "\x1B[32m",
-  yellow: "\x1B[33m",
-  blue: "\x1B[34m",
-  magenta: "\x1B[35m",
-  cyan: "\x1B[36m"
-};
-const coloredEmojis = {
-  gray: "\u{1F42D}",
-  red: "\u{1F98A}",
-  green: "\u{1F438}",
-  yellow: "\u{1F424}",
-  blue: "\u{1F42C}",
-  magenta: "\u{1F984}",
-  cyan: "\u{1F433}"
-};
-const ansiColors = _.keys(ansiPrefixes);
-const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
-Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
-function loadOrSaveLoggerInfo(save) {
-  return $try(
-    () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
-    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
-  );
-}
-const loggerInfo = loadOrSaveLoggerInfo();
-function setLastLogIndex(index) {
-  loggerInfo.lastLogIndex = index;
-  loadOrSaveLoggerInfo(loggerInfo);
-}
-const serializer = {
-  json: (arg) => JSON.stringify(arg, null, 2),
-  yaml: (arg) => yaml.dump(arg),
-  none: (arg) => arg
-};
-function serializable(arg) {
-  if (_.isFunction(arg))
-    return "[Function]";
-  if (typeof arg === "bigint" || typeof arg === "symbol")
-    return arg.toString();
-  if (_.isArray(arg))
-    return arg.map(serializable);
-  if (_.isPlainObject(arg))
-    return _.mapValues(arg, serializable);
-  return arg;
-}
-function withLogFile(index, callback) {
-  const tmpDir = path.join(process.cwd(), "tmp");
-  fs.mkdirSync(tmpDir, { recursive: true });
-  const logFile = path.join(tmpDir, `${index}.${( new Date()).toISOString().slice(0, 13)}00.log`);
-  return callback(logFile);
-}
-function serialize(arg, serializeAs) {
-  const { dontShrinkArrays } = loggerInfo;
-  return String(
-    isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
-      dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value) => {
-        if (_.isArray(value) && value.length > 3) {
-          return [
-            ..._.sampleSize(value, 3),
-            `... ${value.length - 3} more elements ...`
-          ];
-        } else if (_.isFunction(value)) {
-          return value.toString().slice(0, 30);
-        }
-      })
-    )
-  );
-}
-function getHeapUsedMB() {
-  return process.memoryUsage().heapUsed / 1024 / 1024;
-}
-function checkHeapIncrease() {
-  const heapUsed = getHeapUsedMB();
-  const heapIncrease = heapUsed - (loggerInfo.lastHeapUsedMB ?? 0);
-  const delta = Math.abs(heapIncrease);
-  const mustLog = delta >= ensure(
-    loggerInfo.logIfHeapIncreasedByMB,
-    "monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined"
-  );
-  if (mustLog) {
-    const [color, word] = heapIncrease > 0 ? ["magenta", "increased"] : ["cyan", "decreased"];
-    console.log(paint[color](`Memory usage ${word} by ${delta.toFixed(1)} MB, now at ${heapUsed.toFixed(1)} MB`));
-    loggerInfo.lastHeapUsedMB = heapUsed;
-  }
-}
-function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
-  const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
-    color: defaultColorOrOptions ?? "gray",
-    serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
-  };
-  const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
-  if (typeof index === "undefined") {
-    logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
-  }
-  if (index && index !== "always" && _.isNumber(index) && index > loggerInfo.lastLogIndex) {
-    setLastLogIndex(index);
-  }
-  function _log(options, ...args) {
-    const { color, serializeAs } = _.defaults(options, defaultOptions);
-    const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
-    const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
-    if (!mustLog)
-      return;
-    args.forEach((arg) => {
-      arg = serializable(arg);
-      try {
-        console.log(
-          serialize(arg, serializeAs).split("\n").map(paint[color]).join("\n")
-        );
-      } catch (error) {
-        console.log(arg);
-      }
-    });
-    if (logToFile) {
-      withLogFile(
-        index,
-        (logFile) => fs.appendFileSync(
-          logFile,
-          `${( new Date()).toISOString()}
-` + coloredEmojis[color] + "\n" + $try(
-            () => args.map((arg) => serialize(arg, serializeAs)).join("\n") + "\n\n",
-            JSON.stringify(args, null, 2) + "\n\n"
-          )
-        )
-      );
-    }
-    if (reportHeapIncreaseByMB) {
-      checkHeapIncrease();
-    }
-  }
-  const log = (...args) => _log(defaultOptions, ...args);
-  for (const color of [void 0, ...Object.keys(paint)]) {
-    for (const serializeAs of [void 0, "json", "yaml"]) {
-      if (color || serializeAs)
-        _.set(
-          log,
-          _.compact([color, serializeAs]),
-          (...args) => _log({ color, serializeAs }, ...args)
-        );
-    }
-  }
-  if (addAlways)
-    log.always = logger("always", defaultOptions, false);
-  return log;
 }
 
 const log$3 = logger(28, "yellow");
@@ -630,47 +524,153 @@ const shift = {
   right: shiftTo("right")
 };
 
-function createEnv(descriptor, options = {}) {
-  const env = {};
-  const missingEnvs = {};
-  const presentEnvs = {};
-  for (const key of Object.getOwnPropertyNames(descriptor)) {
-    const keyOfT = key;
-    const description = descriptor[keyOfT];
-    const ENV_KEY = _.snakeCase(key).toUpperCase();
-    try {
-      env[keyOfT] = ensureProperty(process.env, ENV_KEY, description);
-      if (presentEnvs)
-        presentEnvs[keyOfT] = env[keyOfT];
-    } catch (e) {
-      if (missingEnvs)
-        missingEnvs[keyOfT] = description;
-      Object.defineProperty(env, keyOfT, {
-        get() {
-          throw options.missingKeyError?.(ENV_KEY) ?? new Error(`Missing env ${ENV_KEY} (${description})`);
-        },
-        configurable: true
-      });
-      console.log(`WARNING: Missing env ${ENV_KEY} (${description}). Not throwing error until it is attempted to be used.`);
+const ansiPrefixes = {
+  gray: "\x1B[90m",
+  red: "\x1B[31m",
+  green: "\x1B[32m",
+  yellow: "\x1B[33m",
+  blue: "\x1B[34m",
+  magenta: "\x1B[35m",
+  cyan: "\x1B[36m"
+};
+const coloredEmojis = {
+  gray: "\u{1F42D}",
+  red: "\u{1F98A}",
+  green: "\u{1F438}",
+  yellow: "\u{1F424}",
+  blue: "\u{1F42C}",
+  magenta: "\u{1F984}",
+  cyan: "\u{1F433}"
+};
+const ansiColors = _.keys(ansiPrefixes);
+const paint = (color) => (text) => ansiPrefixes[color] + text + "\x1B[0m";
+Object.assign(paint, _.mapValues(ansiPrefixes, (prefix, color) => paint(color)));
+function loadOrSaveLoggerInfo(save) {
+  return $try(
+    () => save ? (fs.writeFileSync("./logger.json", JSON.stringify(save, null, 2)), save) : fs.existsSync("./logger.json") ? JSON.parse(fs.readFileSync("./logger.json", "utf8")) : {},
+    (error) => error instanceof TypeError ? save ? (localStorage.setItem("loggerInfo", JSON.stringify(save)), save) : JSON.parse(localStorage.getItem("loggerInfo") ?? "{}") : $throw(error)
+  );
+}
+const loggerInfo = loadOrSaveLoggerInfo();
+function setLastLogIndex(index) {
+  loggerInfo.lastLogIndex = index;
+  loadOrSaveLoggerInfo(loggerInfo);
+}
+const serializer = {
+  json: (arg) => JSON.stringify(arg, null, 2),
+  yaml: (arg) => yaml.dump(arg),
+  none: (arg) => arg
+};
+function serializable(arg) {
+  if (_.isFunction(arg))
+    return "[Function]";
+  if (typeof arg === "bigint" || typeof arg === "symbol")
+    return arg.toString();
+  if (_.isArray(arg))
+    return arg.map(serializable);
+  if (_.isPlainObject(arg))
+    return _.mapValues(arg, serializable);
+  return arg;
+}
+function withLogFile(index, callback) {
+  const tmpDir = path.join(process.cwd(), "tmp");
+  fs.mkdirSync(tmpDir, { recursive: true });
+  const logFile = path.join(tmpDir, `${index}.${( new Date()).toISOString().slice(0, 13)}00.log`);
+  return callback(logFile);
+}
+function serialize(arg, serializeAs) {
+  const { dontShrinkArrays } = loggerInfo;
+  return String(
+    isPrimitive(arg) ? arg : _.isFunction(arg) ? arg.toString() : serializer[serializeAs](
+      dontShrinkArrays ? arg : _.cloneDeepWith(arg, (value) => {
+        if (_.isArray(value) && value.length > 3) {
+          return [
+            ..._.sampleSize(value, 3),
+            `... ${value.length - 3} more elements ...`
+          ];
+        } else if (_.isFunction(value)) {
+          return value.toString().slice(0, 30);
+        }
+      })
+    )
+  );
+}
+function getHeapUsedMB() {
+  return process.memoryUsage().heapUsed / 1024 / 1024;
+}
+function checkHeapIncrease() {
+  const heapUsed = getHeapUsedMB();
+  const heapIncrease = heapUsed - (loggerInfo.lastHeapUsedMB ?? 0);
+  const delta = Math.abs(heapIncrease);
+  const mustLog = delta >= ensure(
+    loggerInfo.logIfHeapIncreasedByMB,
+    "monitorHeapIncrease called although logIfHeapIncreasedByMB is not defined"
+  );
+  if (mustLog) {
+    const [color, word] = heapIncrease > 0 ? ["magenta", "increased"] : ["cyan", "decreased"];
+    console.log(paint[color](`Memory usage ${word} by ${delta.toFixed(1)} MB, now at ${heapUsed.toFixed(1)} MB`));
+    loggerInfo.lastHeapUsedMB = heapUsed;
+  }
+}
+function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
+  const defaultOptions = _.isPlainObject(defaultColorOrOptions) ? defaultColorOrOptions : {
+    color: defaultColorOrOptions ?? "gray",
+    serializeAs: defaultSerializeAsOrAddAlways ?? "yaml"
+  };
+  const addAlways = _.isBoolean(defaultSerializeAsOrAddAlways) ? defaultSerializeAsOrAddAlways : true;
+  if (typeof index === "undefined") {
+    logger("always").yellow("Warning: logger index is not set, this will not log anything. Set to 0 explicitly to remove this warning. Set to 'always' to always log.");
+  }
+  if (index && index !== "always" && _.isNumber(index) && index > loggerInfo.lastLogIndex) {
+    setLastLogIndex(index);
+  }
+  function _log(options, ...args) {
+    const { color, serializeAs } = _.defaults(options, defaultOptions);
+    const { logAll, lastLogIndex, logToFile, logIndices, logIfHeapIncreasedByMB: reportHeapIncreaseByMB } = loggerInfo;
+    const mustLog = logAll || index === "always" || index === lastLogIndex || _.get(logIndices, index) === true;
+    if (!mustLog)
+      return;
+    args.forEach((arg) => {
+      arg = serializable(arg);
+      try {
+        console.log(
+          serialize(arg, serializeAs).split("\n").map(paint[color]).join("\n")
+        );
+      } catch (error) {
+        console.log(arg);
+      }
+    });
+    if (logToFile) {
+      withLogFile(
+        index,
+        (logFile) => fs.appendFileSync(
+          logFile,
+          `${( new Date()).toISOString()}
+` + coloredEmojis[color] + "\n" + $try(
+            () => args.map((arg) => serialize(arg, serializeAs)).join("\n") + "\n\n",
+            JSON.stringify(args, null, 2) + "\n\n"
+          )
+        )
+      );
+    }
+    if (reportHeapIncreaseByMB) {
+      checkHeapIncrease();
     }
   }
-  return { env, missingEnvs, presentEnvs };
-}
-const envCase = (string) => _.snakeCase(string).toUpperCase();
-const unEnvCase = _.camelCase;
-function envKeys(dict) {
-  return _.mapKeys(dict, (value, key) => envCase(key));
-}
-function unEnvKeys(dict) {
-  return _.mapKeys(dict, (value, key) => unEnvCase(key));
-}
-
-function doWith(target, callback, { finally: cleanMethodName }) {
-  try {
-    return callback(target);
-  } finally {
-    ensureProperty(target, cleanMethodName)();
+  const log = (...args) => _log(defaultOptions, ...args);
+  for (const color of [void 0, ...Object.keys(paint)]) {
+    for (const serializeAs of [void 0, "json", "yaml"]) {
+      if (color || serializeAs)
+        _.set(
+          log,
+          _.compact([color, serializeAs]),
+          (...args) => _log({ color, serializeAs }, ...args)
+        );
+    }
   }
+  if (addAlways)
+    log.always = logger("always", defaultOptions, false);
+  return log;
 }
 
 const log$2 = logger("vovas-utils.download");
@@ -793,6 +793,15 @@ function isJsonable(obj) {
 }
 function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
+}
+
+function mapKeysDeep(obj, fn) {
+  return _(obj).mapValues((value) => {
+    if (_.isPlainObject(value)) {
+      return mapKeysDeep(value, fn);
+    }
+    return value;
+  }).mapKeys((__, key) => fn(key)).value();
 }
 
 function merge(target, ...sources) {
@@ -1041,4 +1050,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

@@ -20,24 +20,15 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
 type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
-type MethodKey<T, Args extends any[], Result> = {
-    [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
-}[keyof T];
-declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare const wrap: typeof $do;
-
 type Dict<T = any> = {
     [key: string]: T;
 } | Promise<Dict>;
 type UnixTimestamp = number;
 type Primitive = string | number | boolean | null | undefined;
 declare function isPrimitive(v: any): v is Primitive;
-interface JsonableObject {
+type JsonableObject = {
     [key: string]: Jsonable;
-}
+};
 type JsonableNonArray = Primitive | JsonableObject;
 type Jsonable = JsonableNonArray | Jsonable[];
 type FunctionThatReturns<T> = (...args: any[]) => T;
@@ -46,6 +37,94 @@ declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 declare function assign<T extends {}, U>(target: T, source: U): T & U;
 declare function tuple<T extends any[]>(...args: T): T;
+
+interface CreateEnvResult<T> {
+    env: T;
+    missingEnvs: Partial<T>;
+    presentEnvs: Partial<T>;
+}
+type CreateEnvOptions = {
+    missingKeyError?: (key: string) => Error;
+};
+declare function createEnv<T>(descriptor: Record<keyof T, string>, options?: CreateEnvOptions): CreateEnvResult<T>;
+declare const envCase: (string: string) => string;
+declare const unEnvCase: (string?: string | undefined) => string;
+declare function envKeys<T extends Dict>(dict: T): T;
+declare function unEnvKeys<T extends Dict>(dict: T): T;
+
+declare function doWith<T, Result>(target: T, callback: (target: T) => Result, { finally: cleanMethodName }: {
+    finally: string;
+}): Result;
+
+type PromiseHandlers<T> = {
+    then?: (value: T) => void;
+    catch?: (reason: any) => void;
+};
+type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
+    previousResolved?: UnixTimestamp;
+    previousPromise?: Promise<T>;
+    startResolved?: boolean;
+    startResolvedWith?: T;
+    prohibitResolve?: boolean;
+} & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
+    id?: string;
+} : {
+    id: string;
+});
+declare class Resolvable<T = void> {
+    inProgress: boolean;
+    private _resolve;
+    private _reject;
+    promise: Promise<T>;
+    private config;
+    constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
+    constructor(slug: string);
+    then(callback: (value: T) => void | Promise<void>): this;
+    catch(callback: (reason: any) => void | Promise<void>): this;
+    get resolved(): boolean;
+    get previousResolved(): number | undefined;
+    get everResolved(): boolean;
+    get id(): string;
+    get lastPromise(): Promise<T>;
+    resolve(value?: T): void;
+    resolveIfInProgress(value?: T): void;
+    reject(reason?: any): void;
+    restart(value?: T): void;
+    reset(value?: T): void;
+    start(okayIfInProgress?: boolean): void;
+    startIfNotInProgress(): void;
+    restartAfterWait(): Promise<void>;
+    static resolvedWith<T>(value: T): Resolvable<T>;
+    static resolved(): Resolvable<void>;
+    static after(occurrence: Promise<void> | Resolvable): Resolvable;
+    static after(init: () => Promise<void> | Resolvable): Resolvable;
+    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
+}
+
+declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;
+declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream>;
+
+declare function ensure<T>(x: T | undefined | null, errorMessage?: string): T;
+declare function ensure<T>(x: T | undefined, errorMessage?: string): T;
+declare function ensure<T>(x: T | null, errorMessage?: string): T;
+declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string): T;
+type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
+declare function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T;
+interface EnsurePropertyOptions {
+    requiredType?: string;
+    validate?: (value: any) => boolean;
+    messageIfInvalid?: string;
+}
+declare function ensureProperty<Result, Container = any>(obj: Container, key: string, optionsOrMessageIfInvalid?: EnsurePropertyOptions | string): Result;
+
+type MethodKey<T, Args extends any[], Result> = {
+    [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
+}[keyof T];
+declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare const wrap: typeof $do;
 
 declare function $throw<T extends Error>(error: T): never;
 declare function $throw(message: string): never;
@@ -754,85 +833,6 @@ declare const shift: {
     right: <Args_1 extends any[]>(args: Args_1) => Args_1 extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
 };
 
-interface CreateEnvResult<T> {
-    env: T;
-    missingEnvs: Partial<T>;
-    presentEnvs: Partial<T>;
-}
-type CreateEnvOptions = {
-    missingKeyError?: (key: string) => Error;
-};
-declare function createEnv<T>(descriptor: Record<keyof T, string>, options?: CreateEnvOptions): CreateEnvResult<T>;
-declare const envCase: (string: string) => string;
-declare const unEnvCase: (string?: string | undefined) => string;
-declare function envKeys<T extends Dict>(dict: T): T;
-declare function unEnvKeys<T extends Dict>(dict: T): T;
-
-declare function doWith<T, Result>(target: T, callback: (target: T) => Result, { finally: cleanMethodName }: {
-    finally: string;
-}): Result;
-
-type PromiseHandlers<T> = {
-    then?: (value: T) => void;
-    catch?: (reason: any) => void;
-};
-type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
-    previousResolved?: UnixTimestamp;
-    previousPromise?: Promise<T>;
-    startResolved?: boolean;
-    startResolvedWith?: T;
-    prohibitResolve?: boolean;
-} & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
-    id?: string;
-} : {
-    id: string;
-});
-declare class Resolvable<T = void> {
-    inProgress: boolean;
-    private _resolve;
-    private _reject;
-    promise: Promise<T>;
-    private config;
-    constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
-    constructor(slug: string);
-    then(callback: (value: T) => void | Promise<void>): this;
-    catch(callback: (reason: any) => void | Promise<void>): this;
-    get resolved(): boolean;
-    get previousResolved(): number | undefined;
-    get everResolved(): boolean;
-    get id(): string;
-    get lastPromise(): Promise<T>;
-    resolve(value?: T): void;
-    resolveIfInProgress(value?: T): void;
-    reject(reason?: any): void;
-    restart(value?: T): void;
-    reset(value?: T): void;
-    start(okayIfInProgress?: boolean): void;
-    startIfNotInProgress(): void;
-    restartAfterWait(): Promise<void>;
-    static resolvedWith<T>(value: T): Resolvable<T>;
-    static resolved(): Resolvable<void>;
-    static after(occurrence: Promise<void> | Resolvable): Resolvable;
-    static after(init: () => Promise<void> | Resolvable): Resolvable;
-    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
-}
-
-declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;
-declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream>;
-
-declare function ensure<T>(x: T | undefined | null, errorMessage?: string): T;
-declare function ensure<T>(x: T | undefined, errorMessage?: string): T;
-declare function ensure<T>(x: T | null, errorMessage?: string): T;
-declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string): T;
-type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
-declare function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T;
-interface EnsurePropertyOptions {
-    requiredType?: string;
-    validate?: (value: any) => boolean;
-    messageIfInvalid?: string;
-}
-declare function ensureProperty<Result, Container = any>(obj: Container, key: string, optionsOrMessageIfInvalid?: EnsurePropertyOptions | string): Result;
-
 type Handler<HandlerArg> = (arg: HandlerArg) => void;
 type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => void;
 type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
@@ -860,6 +860,11 @@ declare function labelize(values: string[]): {
 }[];
 
 declare function jsObjectString(obj: JsonableObject): string;
+
+declare function jsonClone<T>(obj: T): T & Jsonable;
+declare function jsonEqual<T>(a: T, b: T): boolean;
+declare function isJsonable(obj: any): obj is Jsonable;
+declare function isJsonableObject(obj: any): obj is JsonableObject;
 
 type Color = 'gray' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan';
 type Painter = (text: string) => string;
@@ -912,10 +917,7 @@ declare function getHeapUsedMB(): number;
 declare function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log;
 declare function logger(index: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log;
 
-declare function jsonClone<T>(obj: T): T & Jsonable;
-declare function jsonEqual<T>(a: T, b: T): boolean;
-declare function isJsonable(obj: any): obj is Jsonable;
-declare function isJsonableObject(obj: any): obj is JsonableObject;
+declare function mapKeysDeep(obj: Record<string, any>, fn: (key: string) => string): Record<string, any>;
 
 type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
     [K in keyof Target | keyof Source]: K extends keyof Target ? K extends keyof Source ? Target[K] extends object ? Source[K] extends object ? Merge<Target[K], Source[K]> : never : never : Target[K] : K extends keyof Source ? Source[K] : never;
@@ -961,4 +963,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
