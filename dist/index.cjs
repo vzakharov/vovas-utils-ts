@@ -797,6 +797,15 @@ function isJsonableObject(obj) {
   return isJsonable(obj) && _.isPlainObject(obj);
 }
 
+function mapKeysDeep(obj, fn) {
+  return _(obj).mapValues((value) => {
+    if (_.isPlainObject(value)) {
+      return mapKeysDeep(value, fn);
+    }
+    return value;
+  }).mapKeys((__, key) => fn(key)).value();
+}
+
 function merge(target, ...sources) {
   let result = target;
   for (const source of sources) {
@@ -1109,6 +1118,7 @@ exports.labelize = labelize;
 exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
+exports.mapKeysDeep = mapKeysDeep;
 exports.merge = merge;
 exports.meta = meta;
 exports.not = not;
