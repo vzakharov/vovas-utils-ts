@@ -14,7 +14,7 @@ export function isPrimitive(v: any): v is Primitive {
   return result;
 }
 
-export type JsonableObject = {
+export interface JsonableObject {
   [key: string]: Jsonable;
 };
 
