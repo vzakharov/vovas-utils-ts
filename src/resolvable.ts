@@ -3,6 +3,7 @@ import _ from "lodash";
 import { $try, is } from "./funkenstein/index.js";
 import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
+import { ensure } from "./ensure.js";
 
 const log = logger('vovas-utils.resolvable');
 
@@ -18,7 +19,7 @@ export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = fa
   previousResolved?: UnixTimestamp;
   previousPromise?: Promise<T>;
   startResolved?: boolean;
-  startResolvedWith?: T;
+  startResolvedWith?: T extends void ? undefined : T;
   prohibitResolve?: boolean;
 } & PromiseHandlers<T> & ( IdIsOptional extends 'idIsOptional' ? { id?: string } : { id: string } );
 
@@ -61,7 +62,7 @@ export class Resolvable<T = void> {
 
     // this.previousResolved = previousResolved;
     if ( startResolved ) {
-      this.resolve(startResolvedWith);
+      this.resolve(ensure(startResolvedWith, "startResolvedWith is required when startResolved is true"));
       this.inProgress = false;
     }
     if ( then )
@@ -120,7 +121,7 @@ export class Resolvable<T = void> {
     return this.config.previousPromise ?? this.promise;
   }
 
-  resolve(value?: T) {
+  resolve(value?: T extends void ? undefined : T) {
     if ( this.resolved )
       throw new Error('Cannot resolve a Resolvable that is already resolved.');
     if ( this.config.prohibitResolve )
@@ -134,7 +135,7 @@ export class Resolvable<T = void> {
     log(`Resolved ${this.id} with`, value);
   }
 
-  resolveIfInProgress(value?: T) {
+  resolveIfInProgress(value: T extends void ? undefined : T) {
     this.inProgress && this.resolve(value);
   };
 
@@ -143,13 +144,13 @@ export class Resolvable<T = void> {
     this.inProgress = false;
   }
 
-  restart(value?: T) {
+  restart(value: T extends void ? undefined : T) {
     this.resolve(value);
     this.start();
   }
 
   // reset as an alias for backwards compatibility
-  reset(value?: T) {
+  reset(value: T extends void ? undefined : T) {
     this.restart(value);
   }
 
@@ -178,8 +179,8 @@ export class Resolvable<T = void> {
     // In this case, the first one who responds to the promise will start the resolvable again, and the others will have to wait again.
   };
 
-  static resolvedWith<T>(value: T) {
-    return new Resolvable<T>({ startResolved: true, startResolvedWith: value }, 'resolvedWith');
+  static resolvedWith<U>(value: U extends void ? undefined : U) {
+    return new Resolvable<U>({ startResolved: true, startResolvedWith: value }, 'resolvedWith');
   };
 
   static resolved() {
