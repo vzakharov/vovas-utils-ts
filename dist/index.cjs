@@ -818,7 +818,12 @@ function merge(target, ...sources) {
   return result;
 }
 
-const mutate = (object, newValues) => Object.assign(object, newValues);
+function mutate(object, newValuesOrCallback) {
+  Object.assign(
+    object,
+    is.function(newValuesOrCallback) ? newValuesOrCallback(object) : newValuesOrCallback
+  );
+}
 
 const log$1 = logger(23, "yellow");
 function getNpmLinks() {

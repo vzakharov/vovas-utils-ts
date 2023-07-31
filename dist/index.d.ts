@@ -927,7 +927,8 @@ declare function merge<Target extends object, Source extends object>(target: Tar
 declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
 declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
 
-declare const mutate: <T extends Record<string, any>>(object: T, newValues: Partial<T>) => T;
+declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValues: U): asserts object is T & U;
+declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, callback: (object: T) => U): asserts object is T & U;
 
 interface INpmLsOutput {
     dependencies: Record<string, {
