@@ -1,24 +1,21 @@
 import { is } from ".";
 
-export function mutate<T extends Record<string, any>, U extends Partial<T>>(
+export function assign<T extends Record<string, any>, U extends Partial<T>>(
   object: T, 
-  newValues: U
-): asserts object is T & U;
-
-export function mutate<T extends Record<string, any>, U extends Partial<T>>(
-  object: T,
-  callback: (object: T) => U
-): asserts object is T & U;
-
-export function mutate<T extends Record<string, any>, U extends Partial<T>>(
-  object: T,
   newValuesOrCallback: U | ((object: T) => U)
-) {
-  Object.assign(object,
+): T & U {
+  return Object.assign(object,
     is.function(newValuesOrCallback)
       ? newValuesOrCallback(object)
       : newValuesOrCallback
   );
+};
+
+export function mutate<T extends Record<string, any>, U extends Partial<T>>(
+  object: T,
+  newValuesOrCallback: U | ((object: T) => U)
+): asserts object is T & U {
+  assign(object, newValuesOrCallback);
 };
 
 // // example/test

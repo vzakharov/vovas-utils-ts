@@ -19,6 +19,16 @@ function aliasify(object, aliasesDefinition) {
   return retypedObject;
 }
 
+function assign(object, newValuesOrCallback) {
+  return Object.assign(
+    object,
+    is.function(newValuesOrCallback) ? newValuesOrCallback(object) : newValuesOrCallback
+  );
+}
+function mutate(object, newValuesOrCallback) {
+  assign(object, newValuesOrCallback);
+}
+
 function $do(fnOrKey, ...args) {
   return typeof fnOrKey === "string" ? (target) => target[fnOrKey](...args) : (target) => fnOrKey(target, ...args);
 }
@@ -47,23 +57,6 @@ function $with(...args) {
   };
 }
 
-function isPrimitive(v) {
-  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
-  return result;
-}
-function functionThatReturns(value) {
-  return (...args) => value;
-}
-function $as(what) {
-  return _.isFunction(what) ? what : what;
-}
-function assign(target, source) {
-  return Object.assign(target, source);
-}
-function tuple(...args) {
-  return args;
-}
-
 function chainified($function, chainedParameterIndex, chainedKeys) {
   return chainedKeys.reduce(
     (output, key, index, keys) => {
@@ -89,6 +82,20 @@ function chainified($function, chainedParameterIndex, chainedKeys) {
     },
     {}
   );
+}
+
+function isPrimitive(v) {
+  const result = _.isString(v) || _.isNumber(v) || _.isBoolean(v) || _.isNull(v) || _.isUndefined(v);
+  return result;
+}
+function functionThatReturns(value) {
+  return (...args) => value;
+}
+function $as(what) {
+  return _.isFunction(what) ? what : what;
+}
+function tuple(...args) {
+  return args;
 }
 
 function ensure(x, typeguardOrErrorMessage, errorMessage) {
@@ -814,13 +821,6 @@ function merge(target, ...sources) {
     }
   }
   return result;
-}
-
-function mutate(object, newValuesOrCallback) {
-  Object.assign(
-    object,
-    is.function(newValuesOrCallback) ? newValuesOrCallback(object) : newValuesOrCallback
-  );
 }
 
 const log$1 = logger(23, "yellow");

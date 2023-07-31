@@ -38,10 +38,6 @@ export function $as<AsWhat>(
     : what as AsWhat;
 };
 
-export function assign<T extends {}, U>(target: T, source: U): T & U {
-  return Object.assign<T, U>(target, source);
-};
-
 export function tuple<T extends any[]>(...args: T): T {
   return args;
 }

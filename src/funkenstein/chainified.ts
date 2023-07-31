@@ -1,4 +1,4 @@
-import { assign, Jsonable } from "../types";
+import { assign } from "../assign";
 
 export type ChainableKeys<
   Function extends (...args: any[]) => any,

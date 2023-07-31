@@ -20,6 +20,9 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
 type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
+declare function assign<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): T & U;
+declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
+
 type MethodKey<T, Args extends any[], Result> = {
     [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
 }[keyof T];
@@ -44,7 +47,6 @@ type FunctionThatReturns<T> = (...args: any[]) => T;
 declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
-declare function assign<T extends {}, U>(target: T, source: U): T & U;
 declare function tuple<T extends any[]>(...args: T): T;
 
 declare function $throw<T extends Error>(error: T): never;
@@ -148,8 +150,8 @@ declare const commonPredicates: {
     array: <T_12>(arg: any[] | T_12) => arg is any[];
     regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
     itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Primitive;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Jsonable;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
     defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
     empty: <T_19 extends {
@@ -191,8 +193,8 @@ declare const is: {
     array: <T_12>(arg: any[] | T_12) => arg is any[];
     regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
     itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Primitive;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Jsonable;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
     defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
     empty: <T_19 extends {
@@ -226,8 +228,8 @@ declare const is: {
         array: <T_12>(arg: any[] | T_12) => arg is Exclude<T_12, any[]>;
         regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
         itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-        primitive: <T_15>(arg: Primitive | T_15) => arg is Exclude<T_15, Primitive>;
-        jsonable: <T_16>(arg: Jsonable | T_16) => arg is Exclude<T_16, Jsonable>;
+        primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
+        jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
         jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
         defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
         empty: <T_19 extends {
@@ -265,8 +267,8 @@ declare const does: {
     array: <T_12>(arg: any[] | T_12) => arg is any[];
     regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
     itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Primitive;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Jsonable;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
     defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
     empty: <T_19 extends {
@@ -300,8 +302,8 @@ declare const does: {
         array: <T_12>(arg: any[] | T_12) => arg is Exclude<T_12, any[]>;
         regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
         itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-        primitive: <T_15>(arg: Primitive | T_15) => arg is Exclude<T_15, Primitive>;
-        jsonable: <T_16>(arg: Jsonable | T_16) => arg is Exclude<T_16, Jsonable>;
+        primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
+        jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
         jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
         defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
         empty: <T_19 extends {
@@ -338,8 +340,8 @@ declare const isnt: {
     array: <T_12>(arg: any[] | T_12) => arg is Exclude<T_12, any[]>;
     regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
     itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Exclude<T_16, Jsonable>;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
     defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
     empty: <T_19 extends {
@@ -375,8 +377,8 @@ declare const aint: {
     array: <T_12>(arg: any[] | T_12) => arg is Exclude<T_12, any[]>;
     regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
     itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Exclude<T_16, Jsonable>;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
     defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
     empty: <T_19 extends {
@@ -412,8 +414,8 @@ declare const doesnt: {
     array: <T_12>(arg: any[] | T_12) => arg is Exclude<T_12, any[]>;
     regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
     itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: Primitive | T_15) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: Jsonable | T_16) => arg is Exclude<T_16, Jsonable>;
+    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
+    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
     jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
     defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
     empty: <T_19 extends {
@@ -926,9 +928,6 @@ declare function merge<Target extends object, Source extends object>(target: Tar
 declare function merge<Target extends object, Source extends object>(target: Target, source: Source): Merge<Target, Source>;
 declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, getSource1: (target: Target) => Source1, getSource2: (mergedTarget: Merge<Target, Source1>) => Source2): Merge<Merge<Target, Source1>, Source2>;
 declare function merge<Target extends object, Source1 extends object, Source2 extends object>(target: Target, source1: Source1, source2: Source2): Merge<Merge<Target, Source1>, Source2>;
-
-declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValues: U): asserts object is T & U;
-declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, callback: (object: T) => U): asserts object is T & U;
 
 interface INpmLsOutput {
     dependencies: Record<string, {

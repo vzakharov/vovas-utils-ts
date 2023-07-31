@@ -1,4 +1,5 @@
 export * from './aliasify';
+export * from './assign';
 export * from './funkenstein';
 export * from './createEnv';
 export * from './doWith';
@@ -11,7 +12,6 @@ export * from './logger';
 export * from './json';
 export * from './mapKeysDeep';
 export * from './merge';
-export * from './mutate';
 export * from './npmLinks';
 export * from './resolvable';
 export * from './setReliableTimeout';
