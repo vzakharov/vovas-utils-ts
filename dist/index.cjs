@@ -818,6 +818,8 @@ function merge(target, ...sources) {
   return result;
 }
 
+const mutate = (object, newValues) => Object.assign(object, newValues);
+
 const log$1 = logger(23, "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -887,7 +889,7 @@ class Resolvable {
     };
     const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
     if (startResolved) {
-      this.resolve(startResolvedWith);
+      this.resolve(ensure(startResolvedWith, "startResolvedWith is required when startResolved is true"));
       this.inProgress = false;
     }
     if (then)
@@ -1121,6 +1123,7 @@ exports.loggerInfo = loggerInfo;
 exports.mapKeysDeep = mapKeysDeep;
 exports.merge = merge;
 exports.meta = meta;
+exports.mutate = mutate;
 exports.not = not;
 exports.paint = paint;
 exports.parseSwitch = parseSwitch;
