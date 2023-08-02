@@ -20,8 +20,11 @@ type AliasesFor<Object extends Record<string, any>, Definition extends AliasesDe
 type Aliasified<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>> = Object & AliasesFor<Object, Definition>;
 declare function aliasify<Object extends Record<string, any>, Definition extends AliasesDefinition<keyof Object>>(object: Object, aliasesDefinition: Definition): Aliasified<Object, Definition>;
 
-declare function assign<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): T & U;
-declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
+type StrictlyPartial<T> = {
+    [K in string]: K extends keyof T ? T[K] : never;
+};
+declare function assign<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): Required<T> extends Required<U> ? T & U : never;
+declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is Required<T> extends Required<U> ? T & U : never;
 
 type MethodKey<T, Args extends any[], Result> = {
     [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
@@ -57,6 +60,7 @@ declare function $thrower<T extends Error>(errorOrMessage: T | string): Function
 declare function $try<T>(fn: () => T, fallbackValue: T, finallyCallback?: () => void): T;
 declare function $try<T>(fn: () => T, fallback?: (error?: Error) => T, finallyCallback?: () => void): T;
 
+declare function $with<Arg, Result>(arg: Arg, fn: (arg: Arg) => Result): Result;
 declare function $with<Args extends any[]>(...args: Args): {
     do: <Result>(fn: (...args: Args) => Result) => Result;
 };
@@ -782,7 +786,7 @@ type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = 
     previousResolved?: UnixTimestamp;
     previousPromise?: Promise<T>;
     startResolved?: boolean;
-    startResolvedWith?: T extends void ? undefined : T;
+    startResolvedWith?: T;
     prohibitResolve?: boolean;
 } & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
     id?: string;
@@ -804,15 +808,15 @@ declare class Resolvable<T = void> {
     get everResolved(): boolean;
     get id(): string;
     get lastPromise(): Promise<T>;
-    resolve(value?: T extends void ? undefined : T): void;
-    resolveIfInProgress(value: T extends void ? undefined : T): void;
+    resolve(value: T): void;
+    resolveIfInProgress(value: T): void;
     reject(reason?: any): void;
-    restart(value: T extends void ? undefined : T): void;
-    reset(value: T extends void ? undefined : T): void;
+    restart(value: T): void;
+    reset(value: T): void;
     start(okayIfInProgress?: boolean): void;
     startIfNotInProgress(): void;
     restartAfterWait(): Promise<void>;
-    static resolvedWith<U>(value: U extends void ? undefined : U): Resolvable<U>;
+    static resolvedWith<U>(value: U): Resolvable<U>;
     static resolved(): Resolvable<void>;
     static after(occurrence: Promise<void> | Resolvable): Resolvable;
     static after(init: () => Promise<void> | Resolvable): Resolvable;
@@ -965,4 +969,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

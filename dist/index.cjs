@@ -53,8 +53,106 @@ function $try(fn, fallback = $throw, finallyCallback) {
   }
 }
 
+function isTypeguardMap(arg) {
+  return _.isObject(arg) && _.every(arg, _.isFunction);
+}
+function conformsToTypeguardMap(typeguardMap) {
+  return (object) => {
+    return _.every(typeguardMap, (typeguard, key) => typeguard(object[key]));
+  };
+}
+
+function isLike(sample) {
+  return _.isObject(sample) ? conformsToTypeguardMap(sample) : () => false;
+}
+
+function not(predicate) {
+  return (arg) => !predicate(arg);
+}
+
+const commonPredicates = {
+  undefined: (arg) => _.isUndefined(arg),
+  null: (arg) => _.isNull(arg),
+  nil: (arg) => _.isNil(arg),
+  string: (arg) => _.isString(arg),
+  // string: <T>(arg: T): arg is T & string => _.isString(arg),
+  emptyString: (arg) => arg === "",
+  number: (arg) => _.isNumber(arg),
+  zero: (arg) => arg === 0,
+  boolean: (arg) => _.isBoolean(arg),
+  false: (arg) => arg === false,
+  true: (arg) => arg === true,
+  function: (arg) => _.isFunction(arg),
+  object: (arg) => _.isObject(arg),
+  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
+  array: (arg) => _.isArray(arg),
+  regexp: (arg) => _.isRegExp(arg),
+  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
+  itself: (arg) => true,
+  primitive: (arg) => isPrimitive(arg),
+  jsonable: (arg) => isJsonable(arg),
+  jsonableObject: (arg) => isJsonableObject(arg),
+  defined: (arg) => !_.isUndefined(arg),
+  empty: (arg) => arg.length === 0,
+  truthy: (arg) => !!arg,
+  falsy: (arg) => !arg,
+  // exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
+  exactly: (sample) => (arg) => _.isEqual(arg, sample),
+  above: (sample) => (arg) => arg > sample,
+  below: (sample) => (arg) => arg < sample,
+  atLeast: (sample) => (arg) => arg >= sample,
+  atMost: (sample) => (arg) => arg <= sample,
+  match: (sample) => (arg) => _.isMatch(arg, sample),
+  like: isLike,
+  typed: isTyped,
+  anything: (...args) => true
+};
+const is = merge(commonPredicates, (is2) => ({
+  not: {
+    undefined: not(is2.undefined),
+    null: not(is2.null),
+    nil: not(is2.nil),
+    string: not(is2.string),
+    emptyString: not(is2.emptyString),
+    number: not(is2.number),
+    zero: not(is2.zero),
+    boolean: not(is2.boolean),
+    false: not(is2.false),
+    true: not(is2.true),
+    function: not(is2.function),
+    object: not(is2.object),
+    array: not(is2.array),
+    regexp: not(is2.regexp),
+    itself: not(is2.itself),
+    // funny ain't it?
+    primitive: not(is2.primitive),
+    jsonable: not(is2.jsonable),
+    jsonableObject: not(is2.jsonableObject),
+    defined: not(is2.defined),
+    empty: not(is2.empty),
+    truthy: not(is2.truthy),
+    falsy: not(is2.falsy),
+    exactly: (sample) => not(is2.exactly(sample)),
+    above: (sample) => not(is2.above(sample)),
+    below: (sample) => not(is2.below(sample)),
+    atLeast: (sample) => not(is2.atLeast(sample)),
+    atMost: (sample) => not(is2.atMost(sample)),
+    like: (sample) => not(isLike(sample)),
+    typed: (type) => not(isTyped(type)),
+    match: (sample) => not(is2.match(sample)),
+    // matching: (regex: RegExp) => not(is.matching(regex)),
+    // describing: (string: string) => not(is.describing(string)),
+    anything: not(is2.anything)
+  }
+  // TODO: Find a way to make the above work in TS without having to manually type it out.
+}));
+const does = is;
+const isnt = is.not;
+const aint = is.not;
+const doesnt = does.not;
+
 function $with(...args) {
-  return {
+  return args.length === 2 && is.function(args[1]) ? args[1](args[0]) : {
     do: (fn) => fn(...args)
   };
 }
@@ -406,104 +504,6 @@ function meta(fn) {
 function both(...predicates) {
   return (arg) => predicates.every((predicate) => predicate(arg));
 }
-
-function isTypeguardMap(arg) {
-  return _.isObject(arg) && _.every(arg, _.isFunction);
-}
-function conformsToTypeguardMap(typeguardMap) {
-  return (object) => {
-    return _.every(typeguardMap, (typeguard, key) => typeguard(object[key]));
-  };
-}
-
-function isLike(sample) {
-  return _.isObject(sample) ? conformsToTypeguardMap(sample) : () => false;
-}
-
-function not(predicate) {
-  return (arg) => !predicate(arg);
-}
-
-const commonPredicates = {
-  undefined: (arg) => _.isUndefined(arg),
-  null: (arg) => _.isNull(arg),
-  nil: (arg) => _.isNil(arg),
-  string: (arg) => _.isString(arg),
-  // string: <T>(arg: T): arg is T & string => _.isString(arg),
-  emptyString: (arg) => arg === "",
-  number: (arg) => _.isNumber(arg),
-  zero: (arg) => arg === 0,
-  boolean: (arg) => _.isBoolean(arg),
-  false: (arg) => arg === false,
-  true: (arg) => arg === true,
-  function: (arg) => _.isFunction(arg),
-  object: (arg) => _.isObject(arg),
-  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
-  array: (arg) => _.isArray(arg),
-  regexp: (arg) => _.isRegExp(arg),
-  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
-  itself: (arg) => true,
-  primitive: (arg) => isPrimitive(arg),
-  jsonable: (arg) => isJsonable(arg),
-  jsonableObject: (arg) => isJsonableObject(arg),
-  defined: (arg) => !_.isUndefined(arg),
-  empty: (arg) => arg.length === 0,
-  truthy: (arg) => !!arg,
-  falsy: (arg) => !arg,
-  // exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
-  exactly: (sample) => (arg) => _.isEqual(arg, sample),
-  above: (sample) => (arg) => arg > sample,
-  below: (sample) => (arg) => arg < sample,
-  atLeast: (sample) => (arg) => arg >= sample,
-  atMost: (sample) => (arg) => arg <= sample,
-  match: (sample) => (arg) => _.isMatch(arg, sample),
-  like: isLike,
-  typed: isTyped,
-  anything: (...args) => true
-};
-const is = merge(commonPredicates, (is2) => ({
-  not: {
-    undefined: not(is2.undefined),
-    null: not(is2.null),
-    nil: not(is2.nil),
-    string: not(is2.string),
-    emptyString: not(is2.emptyString),
-    number: not(is2.number),
-    zero: not(is2.zero),
-    boolean: not(is2.boolean),
-    false: not(is2.false),
-    true: not(is2.true),
-    function: not(is2.function),
-    object: not(is2.object),
-    array: not(is2.array),
-    regexp: not(is2.regexp),
-    itself: not(is2.itself),
-    // funny ain't it?
-    primitive: not(is2.primitive),
-    jsonable: not(is2.jsonable),
-    jsonableObject: not(is2.jsonableObject),
-    defined: not(is2.defined),
-    empty: not(is2.empty),
-    truthy: not(is2.truthy),
-    falsy: not(is2.falsy),
-    exactly: (sample) => not(is2.exactly(sample)),
-    above: (sample) => not(is2.above(sample)),
-    below: (sample) => not(is2.below(sample)),
-    atLeast: (sample) => not(is2.atLeast(sample)),
-    atMost: (sample) => not(is2.atMost(sample)),
-    like: (sample) => not(isLike(sample)),
-    typed: (type) => not(isTyped(type)),
-    match: (sample) => not(is2.match(sample)),
-    // matching: (regex: RegExp) => not(is.matching(regex)),
-    // describing: (string: string) => not(is.describing(string)),
-    anything: not(is2.anything)
-  }
-  // TODO: Find a way to make the above work in TS without having to manually type it out.
-}));
-const does = is;
-const isnt = is.not;
-const aint = is.not;
-const doesnt = does.not;
 
 function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
@@ -979,7 +979,10 @@ class Resolvable {
     this.start();
   }
   static resolvedWith(value) {
-    return new Resolvable({ startResolved: true, startResolvedWith: value }, "resolvedWith");
+    return new Resolvable({
+      startResolved: true,
+      startResolvedWith: value
+    }, "resolvedWith");
   }
   static resolved() {
     return new Resolvable({ startResolved: true }, "resolved");

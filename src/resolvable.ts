@@ -19,14 +19,14 @@ export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = fa
   previousResolved?: UnixTimestamp;
   previousPromise?: Promise<T>;
   startResolved?: boolean;
-  startResolvedWith?: T extends void ? undefined : T;
+  startResolvedWith?: T;
   prohibitResolve?: boolean;
 } & PromiseHandlers<T> & ( IdIsOptional extends 'idIsOptional' ? { id?: string } : { id: string } );
 
 export class Resolvable<T = void> {
 
   inProgress: boolean = true;
-  private _resolve: (value?: T | PromiseLike<T>) => void = () => {};
+  private _resolve: (value: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   // previousResolved: UnixTimestamp | undefined;
@@ -121,7 +121,7 @@ export class Resolvable<T = void> {
     return this.config.previousPromise ?? this.promise;
   }
 
-  resolve(value?: T extends void ? undefined : T) {
+  resolve(value: T) {
     if ( this.resolved )
       throw new Error('Cannot resolve a Resolvable that is already resolved.');
     if ( this.config.prohibitResolve )
@@ -135,7 +135,7 @@ export class Resolvable<T = void> {
     log(`Resolved ${this.id} with`, value);
   }
 
-  resolveIfInProgress(value: T extends void ? undefined : T) {
+  resolveIfInProgress(value: T) {
     this.inProgress && this.resolve(value);
   };
 
@@ -144,13 +144,13 @@ export class Resolvable<T = void> {
     this.inProgress = false;
   }
 
-  restart(value: T extends void ? undefined : T) {
+  restart(value: T) {
     this.resolve(value);
     this.start();
   }
 
   // reset as an alias for backwards compatibility
-  reset(value: T extends void ? undefined : T) {
+  reset(value: T) {
     this.restart(value);
   }
 
@@ -179,8 +179,11 @@ export class Resolvable<T = void> {
     // In this case, the first one who responds to the promise will start the resolvable again, and the others will have to wait again.
   };
 
-  static resolvedWith<U>(value: U extends void ? undefined : U) {
-    return new Resolvable<U>({ startResolved: true, startResolvedWith: value }, 'resolvedWith');
+  static resolvedWith<U>(value: U) {
+    return new Resolvable<U>({ 
+      startResolved: true, 
+      startResolvedWith: value 
+    }, 'resolvedWith');
   };
 
   static resolved() {
