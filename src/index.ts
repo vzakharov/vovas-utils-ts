@@ -1,6 +1,7 @@
 export * from './aliasify';
 export * from './assign';
 export * from './funkenstein';
+export * from './camelize';
 export * from './createEnv';
 export * from './doWith';
 export * from './download';
