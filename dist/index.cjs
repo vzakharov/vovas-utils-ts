@@ -639,6 +639,8 @@ const shift = {
   right: shiftTo("right")
 };
 
+const camelize = (target) => is.string(target) ? target.replace(/_([a-z])/g, (__, char) => char.toUpperCase()) : is.array(target) ? target.map(camelize) : is.object(target) ? _.mapKeys(target, (__, key) => camelize(key)) : target;
+
 function createEnv(descriptor, options = {}) {
   const env = {};
   const missingEnvs = {};
@@ -1081,6 +1083,7 @@ exports.assign = assign;
 exports.assignTo = assignTo;
 exports.both = both;
 exports.callIts = callIts;
+exports.camelize = camelize;
 exports.chainified = chainified;
 exports.check = check;
 exports.coloredEmojis = coloredEmojis;
