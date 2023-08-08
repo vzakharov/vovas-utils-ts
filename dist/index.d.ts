@@ -174,6 +174,7 @@ declare const commonPredicates: {
     match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
+    camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
 };
 type CommonPredicates = typeof commonPredicates;
@@ -216,6 +217,7 @@ declare const is: {
     atMost: (sample: number) => (arg: number) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
+    camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
@@ -252,6 +254,7 @@ declare const is: {
         like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
         match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
+        camelCase: <T_26 extends string>(arg: T_26) => arg is Exclude<T_26, T_26 & Camelized<T_26>>;
         anything: (arg: any) => false;
     };
 };
@@ -290,6 +293,7 @@ declare const does: {
     atMost: (sample: number) => (arg: number) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
+    camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
         undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
@@ -326,6 +330,7 @@ declare const does: {
         like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
         match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
+        camelCase: <T_26 extends string>(arg: T_26) => arg is Exclude<T_26, T_26 & Camelized<T_26>>;
         anything: (arg: any) => false;
     };
 };
@@ -364,6 +369,7 @@ declare const isnt: {
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
+    camelCase: <T_22 extends string>(arg: T_22) => arg is Exclude<T_22, T_22 & Camelized<T_22>>;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -401,6 +407,7 @@ declare const aint: {
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
+    camelCase: <T_22 extends string>(arg: T_22) => arg is Exclude<T_22, T_22 & Camelized<T_22>>;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -438,6 +445,7 @@ declare const doesnt: {
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
+    camelCase: <T_22 extends string>(arg: T_22) => arg is Exclude<T_22, T_22 & Camelized<T_22>>;
     anything: (arg: any) => false;
 };
 
@@ -765,6 +773,7 @@ type Camelized<T> = T extends string ? T extends `${infer U}_${infer V}` ? `${Lo
     [K in keyof T as Camelized<K & string>]: Camelized<T[K]>;
 } : T;
 declare const camelize: <T>(target: T) => Camelized<T>;
+declare function isCamelCase<T extends string>(target: T): target is T & Camelized<T>;
 
 interface CreateEnvResult<T> {
     env: T;
@@ -975,4 +984,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

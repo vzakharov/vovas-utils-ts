@@ -23,3 +23,7 @@ export const camelize = <T>(target: T): Camelized<T> => (
         ? _.mapKeys(target, (__, key) => camelize(key))
         : target
 ) as Camelized<T>;
+
+export function isCamelCase<T extends string>(target: T): target is T & Camelized<T> {
+  return JSON.stringify(target) === JSON.stringify(camelize(target));
+};

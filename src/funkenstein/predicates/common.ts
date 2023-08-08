@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
+import { isCamelCase, isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
 import { TypeguardMap } from '../typings';
 import { isLike } from './isLike';
 import { not } from './not';
@@ -35,7 +35,6 @@ export const commonPredicates = {
   truthy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is T => !!arg,
   falsy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is undefined | null | false | 0 | '' => !arg,
 
-  // exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
   exactly: <T>(sample: T) => (
     (arg: any) => _.isEqual(arg, sample)
   ) as <U>(arg: U) => arg is T & U,
@@ -47,6 +46,8 @@ export const commonPredicates = {
   match: <T extends object>(sample: T) => <U extends T>(arg: U) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
+
+  camelCase: isCamelCase,
 
   anything: (...args: any[]): true => true,
 
@@ -99,8 +100,7 @@ export const is = merge(commonPredicates, is => ({
     typed: <T extends string | number>(type: T) => not(isTyped(type)),
     match: <T extends object>(sample: T) => not(is.match(sample)),
 
-    // matching: (regex: RegExp) => not(is.matching(regex)),
-    // describing: (string: string) => not(is.describing(string)),
+    camelCase: not(is.camelCase),
 
     anything: not(is.anything),
 

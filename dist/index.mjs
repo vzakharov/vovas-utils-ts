@@ -94,7 +94,6 @@ const commonPredicates = {
   empty: (arg) => arg.length === 0,
   truthy: (arg) => !!arg,
   falsy: (arg) => !arg,
-  // exactly: <T>(sample: T) => (arg: T) => _.isEqual(arg, sample),
   exactly: (sample) => (arg) => _.isEqual(arg, sample),
   above: (sample) => (arg) => arg > sample,
   below: (sample) => (arg) => arg < sample,
@@ -103,6 +102,7 @@ const commonPredicates = {
   match: (sample) => (arg) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
+  camelCase: isCamelCase,
   anything: (...args) => true
 };
 const is = merge(commonPredicates, (is2) => ({
@@ -138,8 +138,7 @@ const is = merge(commonPredicates, (is2) => ({
     like: (sample) => not(isLike(sample)),
     typed: (type) => not(isTyped(type)),
     match: (sample) => not(is2.match(sample)),
-    // matching: (regex: RegExp) => not(is.matching(regex)),
-    // describing: (string: string) => not(is.describing(string)),
+    camelCase: not(is2.camelCase),
     anything: not(is2.anything)
   }
   // TODO: Find a way to make the above work in TS without having to manually type it out.
@@ -638,6 +637,9 @@ const shift = {
 };
 
 const camelize = (target) => is.string(target) ? target.replace(/_([a-z])/g, (__, char) => char.toUpperCase()) : is.array(target) ? target.map(camelize) : is.object(target) ? _.mapKeys(target, (__, key) => camelize(key)) : target;
+function isCamelCase(target) {
+  return JSON.stringify(target) === JSON.stringify(camelize(target));
+}
 
 function createEnv(descriptor, options = {}) {
   const env = {};
@@ -1062,4 +1064,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
