@@ -172,7 +172,7 @@ declare const commonPredicates: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
+    among: <U_1 extends readonly any[]>(options: U_1) => (arg: any) => arg is U_1[number];
     match: <T_23 extends object>(sample: T_23) => <U_2 extends T_23>(arg: U_2) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
@@ -217,7 +217,7 @@ declare const is: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
+    among: <U_1 extends readonly any[]>(options: U_1) => (arg: any) => arg is U_1[number];
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -295,7 +295,7 @@ declare const does: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
+    among: <U_1 extends readonly any[]>(options: U_1) => (arg: any) => arg is U_1[number];
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -461,7 +461,7 @@ declare const doesnt: {
 declare function either<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 | Guarded2>;
 declare function either<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare const isAmong: <U extends any[]>(options: U) => (arg: any) => arg is U[number];
+declare const isAmong: <U extends readonly any[]>(options: U) => (arg: any) => arg is U[number];
 
 declare function its<Key extends keyof Obj, Obj extends object>(key: Key): Transform<Obj, Obj[Key]>;
 declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
