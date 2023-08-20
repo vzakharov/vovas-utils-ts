@@ -172,8 +172,8 @@ declare const commonPredicates: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: typeof isAmong;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
+    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
+    match: <T_23 extends object>(sample: T_23) => <U_2 extends T_23>(arg: U_2) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -191,7 +191,7 @@ declare const is: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_11>(arg: object | T_11) => arg is object;
     function: <T_10>(arg: T_10 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
+    match: <T_23 extends object>(sample: T_23) => <U_2 extends T_23>(arg: U_2) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     nil: <T_2>(arg: T_2 | null | undefined) => arg is null | undefined;
     emptyString: <T_4>(arg: "" | T_4) => arg is "";
@@ -217,7 +217,7 @@ declare const is: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: typeof isAmong;
+    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -254,7 +254,7 @@ declare const is: {
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        among: (options: any[]) => (arg: unknown) => arg is never;
+        among: (options: any[]) => (arg: any) => arg is never;
         like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
         match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
@@ -269,7 +269,7 @@ declare const does: {
     undefined: <T>(arg: T | undefined) => arg is undefined;
     object: <T_11>(arg: object | T_11) => arg is object;
     function: <T_10>(arg: T_10 | ((...args: any[]) => any)) => arg is (...args: any[]) => any;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
+    match: <T_23 extends object>(sample: T_23) => <U_2 extends T_23>(arg: U_2) => boolean;
     null: <T_1>(arg: T_1 | null) => arg is null;
     nil: <T_2>(arg: T_2 | null | undefined) => arg is null | undefined;
     emptyString: <T_4>(arg: "" | T_4) => arg is "";
@@ -295,7 +295,7 @@ declare const does: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: typeof isAmong;
+    among: <U_1 extends any[]>(options: U_1) => (arg: any) => arg is U_1[number];
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -332,7 +332,7 @@ declare const does: {
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
-        among: (options: any[]) => (arg: unknown) => arg is never;
+        among: (options: any[]) => (arg: any) => arg is never;
         like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
         match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
@@ -372,7 +372,7 @@ declare const isnt: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: (options: any[]) => (arg: unknown) => arg is never;
+    among: (options: any[]) => (arg: any) => arg is never;
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
@@ -411,7 +411,7 @@ declare const aint: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: (options: any[]) => (arg: unknown) => arg is never;
+    among: (options: any[]) => (arg: any) => arg is never;
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
@@ -450,7 +450,7 @@ declare const doesnt: {
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
-    among: (options: any[]) => (arg: unknown) => arg is never;
+    among: (options: any[]) => (arg: any) => arg is never;
     like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
     match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
@@ -461,7 +461,7 @@ declare const doesnt: {
 declare function either<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 | Guarded2>;
 declare function either<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function isAmong<T, U extends T[]>(options: U): (arg: T) => arg is U[number];
+declare const isAmong: <U extends any[]>(options: U) => (arg: any) => arg is U[number];
 
 declare function its<Key extends keyof Obj, Obj extends object>(key: Key): Transform<Obj, Obj[Key]>;
 declare function its<Key extends keyof Obj, Guarded extends Obj[Key], Obj extends object>(key: Key, typeguard: Typeguard<Obj[Key], Guarded>): Typeguard<Obj, Obj & {
