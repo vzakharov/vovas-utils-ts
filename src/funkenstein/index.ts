@@ -10,6 +10,7 @@ export * from './predicates/both';
 export * from './predicates/common';
 export * from './predicates/either';
 // export * from './predicates/inherently';
+export * from './predicates/isAmong';
 export * from './predicates/isLike';
 export * from './predicates/its';
 export * from './predicates/has';

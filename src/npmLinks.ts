@@ -4,7 +4,7 @@ import path from "path";
 import childProcess from "child_process";
 import { logger } from "./logger";
 
-const log = logger(23, 'yellow');
+const log = logger('vovas-utils.npmLinks', 'yellow');
 
 export interface INpmLsOutput {
   dependencies: Record<string, {

@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { isCamelCase, isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
+import { isAmong, isCamelCase, isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
 import { TypeguardMap } from '../typings';
 import { isLike } from './isLike';
 import { not } from './not';
@@ -42,6 +42,8 @@ export const commonPredicates = {
   below: (sample: number) => (arg: number) => arg < sample,
   atLeast: (sample: number) => (arg: number) => arg >= sample,
   atMost: (sample: number) => (arg: number) => arg <= sample,
+
+  among: isAmong,
 
   match: <T extends object>(sample: T) => <U extends T>(arg: U) => _.isMatch(arg, sample),
   like: isLike,
@@ -95,6 +97,8 @@ export const is = merge(commonPredicates, is => ({
     below: (sample: number) => not(is.below(sample)),
     atLeast: (sample: number) => not(is.atLeast(sample)),
     atMost: (sample: number) => not(is.atMost(sample)),
+
+    among: (options: any[]) => not(is.among(options)),
 
     like: (sample: TypeguardMap) => not(isLike(sample)),
     typed: <T extends string | number>(type: T) => not(isTyped(type)),

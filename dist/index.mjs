@@ -28,6 +28,12 @@ function assign(object, newValuesOrCallback) {
 function mutate(object, newValuesOrCallback) {
   assign(object, newValuesOrCallback);
 }
+function addProperties(object, newValuesOrCallback) {
+  Object.assign(
+    object,
+    is.function(newValuesOrCallback) ? newValuesOrCallback(object) : newValuesOrCallback
+  );
+}
 
 function $do(fnOrKey, ...args) {
   return typeof fnOrKey === "string" ? (target) => target[fnOrKey](...args) : (target) => fnOrKey(target, ...args);
@@ -99,6 +105,7 @@ const commonPredicates = {
   below: (sample) => (arg) => arg < sample,
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
+  among: isAmong,
   match: (sample) => (arg) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
@@ -135,6 +142,7 @@ const is = merge(commonPredicates, (is2) => ({
     below: (sample) => not(is2.below(sample)),
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
+    among: (options) => not(is2.among(options)),
     like: (sample) => not(isLike(sample)),
     typed: (type) => not(isTyped(type)),
     match: (sample) => not(is2.match(sample)),
@@ -506,6 +514,10 @@ function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
 }
 
+function isAmong(options) {
+  return (arg) => options.includes(arg);
+}
+
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
 }
@@ -827,7 +839,7 @@ function merge(target, ...sources) {
   return result;
 }
 
-const log$1 = logger(23, "yellow");
+const log$1 = logger("vovas-utils.npmLinks", "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
@@ -1064,4 +1076,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isAmong, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

@@ -30,6 +30,12 @@ function assign(object, newValuesOrCallback) {
 function mutate(object, newValuesOrCallback) {
   assign(object, newValuesOrCallback);
 }
+function addProperties(object, newValuesOrCallback) {
+  Object.assign(
+    object,
+    is.function(newValuesOrCallback) ? newValuesOrCallback(object) : newValuesOrCallback
+  );
+}
 
 function $do(fnOrKey, ...args) {
   return typeof fnOrKey === "string" ? (target) => target[fnOrKey](...args) : (target) => fnOrKey(target, ...args);
@@ -101,6 +107,7 @@ const commonPredicates = {
   below: (sample) => (arg) => arg < sample,
   atLeast: (sample) => (arg) => arg >= sample,
   atMost: (sample) => (arg) => arg <= sample,
+  among: isAmong,
   match: (sample) => (arg) => _.isMatch(arg, sample),
   like: isLike,
   typed: isTyped,
@@ -137,6 +144,7 @@ const is = merge(commonPredicates, (is2) => ({
     below: (sample) => not(is2.below(sample)),
     atLeast: (sample) => not(is2.atLeast(sample)),
     atMost: (sample) => not(is2.atMost(sample)),
+    among: (options) => not(is2.among(options)),
     like: (sample) => not(isLike(sample)),
     typed: (type) => not(isTyped(type)),
     match: (sample) => not(is2.match(sample)),
@@ -508,6 +516,10 @@ function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
 }
 
+function isAmong(options) {
+  return (arg) => options.includes(arg);
+}
+
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
 }
@@ -829,7 +841,7 @@ function merge(target, ...sources) {
   return result;
 }
 
-const log$1 = logger(23, "yellow");
+const log$1 = logger("vovas-utils.npmLinks", "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
     childProcess.execSync("npm ls --depth=0 --link=true --json=true").toString()
@@ -1075,6 +1087,7 @@ exports.$try = $try;
 exports.$with = $with;
 exports.GroupListener = GroupListener;
 exports.Resolvable = Resolvable;
+exports.addProperties = addProperties;
 exports.aint = aint;
 exports.aliasify = aliasify;
 exports.also = also;
@@ -1117,6 +1130,7 @@ exports.groupListeners = groupListeners;
 exports.has = has;
 exports.humanize = humanize;
 exports.is = is;
+exports.isAmong = isAmong;
 exports.isCamelCase = isCamelCase;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;
