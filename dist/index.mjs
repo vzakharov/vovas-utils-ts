@@ -514,7 +514,9 @@ function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
 }
 
-const isAmong = (options) => (arg) => options.includes(arg);
+function isAmong(options) {
+  return (arg) => options.includes(arg);
+}
 
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
