@@ -1,12 +1,14 @@
+import { is } from "./funkenstein";
+
 export function ensure<T>(x: T | undefined | null, errorMessage?: string): T
 export function ensure<T>(x: T | undefined, errorMessage?: string): T 
 export function ensure<T>(x: T | null, errorMessage?: string): T
-export function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string): T
+export function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string | ((x: U) => string)): T
 
 export function ensure<T, U>(
   x: T | U, 
   typeguardOrErrorMessage?: ((x: T | U) => x is T) | string,
-  errorMessage?: string
+  errorMessage?: string | ((x: T | U) => string)
 ): T {
   if (typeof typeguardOrErrorMessage === 'string' || typeof typeguardOrErrorMessage === 'undefined') {
     errorMessage = typeguardOrErrorMessage;
@@ -19,6 +21,9 @@ export function ensure<T, U>(
   } else {
     const typeguard = typeguardOrErrorMessage;
     if (!typeguard(x)) {
+      if ( is.function(errorMessage) ) {
+        errorMessage = errorMessage(x);
+      };
       throw new Error(errorMessage ?? `Variable ${x} did not pass typeguard ${typeguard.name}.`);
     }
     return x;

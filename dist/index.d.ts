@@ -867,7 +867,7 @@ declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.
 declare function ensure<T>(x: T | undefined | null, errorMessage?: string): T;
 declare function ensure<T>(x: T | undefined, errorMessage?: string): T;
 declare function ensure<T>(x: T | null, errorMessage?: string): T;
-declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string): T;
+declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string | ((x: U) => string)): T;
 type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
 declare function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T;
 interface EnsurePropertyOptions {

@@ -219,6 +219,9 @@ function ensure(x, typeguardOrErrorMessage, errorMessage) {
   } else {
     const typeguard = typeguardOrErrorMessage;
     if (!typeguard(x)) {
+      if (is.function(errorMessage)) {
+        errorMessage = errorMessage(x);
+      }
       throw new Error(errorMessage ?? `Variable ${x} did not pass typeguard ${typeguard.name}.`);
     }
     return x;
