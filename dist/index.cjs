@@ -518,11 +518,11 @@ function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
 }
 
-function everyItem(arrOrTypeguard, typeguard) {
-  if (Array.isArray(arrOrTypeguard)) {
-    return arrOrTypeguard.every(typeguard);
+function everyItem(...args) {
+  if (args.length === 1) {
+    return (arr) => arr.every(args[0]);
   } else {
-    return (arr) => arr.every(arrOrTypeguard);
+    return args[0].every(args[1]);
   }
 }
 

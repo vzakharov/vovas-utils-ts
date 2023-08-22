@@ -28,4 +28,3 @@ export type Narrowed<Base, IsTypeguard extends boolean, Guarded extends Base> =
   IsTypeguard extends true
     ? Exclude<Base, Guarded>
     : Base;
-

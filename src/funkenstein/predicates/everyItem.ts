@@ -1,15 +1,17 @@
 import { Typeguard } from "../typings";
 
-// export const everyItem = <T, U extends T>(typeguard: Typeguard<T, U>) => (arr: T[]): arr is U[] => arr.every(typeguard);
+// export function everyItem<U>(typeguard: Typeguard<any, U>) {
+//   return (arr: any[]): arr is U[] => arr.every( typeguard );
+// }
 
-export function everyItem<T, U extends T>(typeguard: Typeguard<T, U>): (arr: T[]) => arr is U[];
+export function everyItem<T>(typeguard: Typeguard<any, T>): Typeguard<any[], T[]>;
 
-export function everyItem<T, U extends T>(arr: T[], typeguard: Typeguard<T, U>): arr is U[];
+export function everyItem<T>(arr: any[], typeguard: Typeguard<any, T>): arr is T[];
 
-export function everyItem<T, U extends T>(arrOrTypeguard: T[] | Typeguard<T, U>, typeguard?: Typeguard<T, U>) {
-  if (Array.isArray(arrOrTypeguard)) {
-    return arrOrTypeguard.every(typeguard!);
+export function everyItem<T>(...args: [Typeguard<any, T>] | [any[], Typeguard<any, T>]) {
+  if (args.length === 1) {
+    return (arr: any[]) => arr.every(args[0]);
   } else {
-    return (arr: T[]) => arr.every(arrOrTypeguard);
+    return args[0].every(args[1]);
   }
-};
+}

@@ -470,8 +470,8 @@ declare const doesnt: {
 declare function either<Arg, Guarded1 extends Arg, Guarded2 extends Arg>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Arg, Guarded2>): Typeguard<Arg, Guarded1 | Guarded2>;
 declare function either<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function everyItem<T, U extends T>(typeguard: Typeguard<T, U>): (arr: T[]) => arr is U[];
-declare function everyItem<T, U extends T>(arr: T[], typeguard: Typeguard<T, U>): arr is U[];
+declare function everyItem<T>(typeguard: Typeguard<any, T>): Typeguard<any[], T[]>;
+declare function everyItem<T>(arr: any[], typeguard: Typeguard<any, T>): arr is T[];
 
 declare function isAmong<U extends readonly any[]>(options: U): (arg: any) => arg is U[number];
 
