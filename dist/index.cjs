@@ -92,7 +92,7 @@ const commonPredicates = {
   promise: (arg) => arg instanceof Promise,
   object: (arg) => _.isObject(arg),
   // object: <T>(arg: T): arg is T & object => _.isObject(arg),
-  array: (arg) => _.isArray(arg),
+  array: isArray,
   regexp: (arg) => _.isRegExp(arg),
   // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
   itself: (arg) => true,
@@ -531,6 +531,10 @@ function everyItem(...args) {
 
 function isAmong(options) {
   return (arg) => options.includes(arg);
+}
+
+function isArray(arg) {
+  return Array.isArray(arg);
 }
 
 function its(key, predicateOrValue) {
@@ -1145,6 +1149,7 @@ exports.has = has;
 exports.humanize = humanize;
 exports.is = is;
 exports.isAmong = isAmong;
+exports.isArray = isArray;
 exports.isCamelCase = isCamelCase;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;

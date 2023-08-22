@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { isAmong, isCamelCase, isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
+import { isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isPrimitive, isTyped, Jsonable, JsonableObject, merge, Primitive } from '../..';
 import { TypeguardMap } from '../TypeguardMap';
 import { isLike } from './isLike';
 import { not } from './not';
@@ -21,7 +21,7 @@ export const commonPredicates = {
   promise: <T, P extends Promise<any>>(arg: T | P): arg is P => arg instanceof Promise,
   object: <T>(arg: T | object): arg is object => _.isObject(arg),
   // object: <T>(arg: T): arg is T & object => _.isObject(arg),
-  array: <T, U>(arg: T | U[]): arg is U[] => _.isArray(arg),
+  array: isArray,
   regexp: <T>(arg: T | RegExp): arg is RegExp => _.isRegExp(arg),
   // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
 

@@ -11,6 +11,7 @@ export * from './predicates/common';
 export * from './predicates/either';
 export * from './predicates/everyItem';
 export * from './predicates/isAmong';
+export * from './predicates/isArray';
 export * from './predicates/isLike';
 export * from './predicates/its';
 export * from './predicates/has';
