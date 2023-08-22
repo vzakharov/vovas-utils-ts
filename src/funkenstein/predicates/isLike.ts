@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { conformsToTypeguardMap, GuardedWithMap, TypeguardMap } from '../typings';
+import { conformsToTypeguardMap, GuardedWithMap, TypeguardMap } from '../TypeguardMap';
 
 export function isLike<Map extends TypeguardMap>(sample: Map): <T>(arg: T) => arg is T & GuardedWithMap<Map> {
 

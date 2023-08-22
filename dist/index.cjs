@@ -518,6 +518,14 @@ function either(...predicates) {
   return (arg) => predicates.some((predicate) => predicate(arg));
 }
 
+function everyItem(arrOrTypeguard, typeguard) {
+  if (Array.isArray(arrOrTypeguard)) {
+    return arrOrTypeguard.every(typeguard);
+  } else {
+    return (arr) => arr.every(arrOrTypeguard);
+  }
+}
+
 function isAmong(options) {
   return (arg) => options.includes(arg);
 }
@@ -1120,6 +1128,7 @@ exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
 exports.evaluate = evaluate;
+exports.everyItem = everyItem;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
 exports.getHeapUsedMB = getHeapUsedMB;

@@ -1,6 +1,6 @@
 import { NonTypeguard, Predicate, Typeguard } from "../typings";
 
-export function either<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(
+export function either<Arg, Guarded1 extends Arg, Guarded2 extends Arg>(
   typeguard1: Typeguard<Arg, Guarded1>,
   typeguard2: Typeguard<Arg, Guarded2>
 ): Typeguard<Arg, Guarded1 | Guarded2>;
