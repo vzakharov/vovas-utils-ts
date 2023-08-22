@@ -971,6 +971,7 @@ class Resolvable {
     if (this.config.prohibitResolve)
       throw new Error("This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.");
     this._resolve(value);
+    this.resolvedWith = value;
     this.inProgress = false;
     this.config.previousPromise = this.promise;
     this.config.previousResolved = Date.now();

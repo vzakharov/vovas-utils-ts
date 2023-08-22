@@ -29,7 +29,8 @@ export class Resolvable<T = void> {
   private _resolve: (value: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
-  // previousResolved: UnixTimestamp | undefined;
+  
+  resolvedWith?: T extends void ? never : T;
 
   private config: ResolvableConfig<T>;
 
@@ -128,6 +129,7 @@ export class Resolvable<T = void> {
       throw new Error('This Resolvable is configured to prohibit resolve. Set config.prohibitResolve to false to allow resolve.');
     // log(`Resolving ${this.id} with`, value);
     this._resolve(value);
+    this.resolvedWith = value as T extends void ? never : T;
     this.inProgress = false;
     this.config.previousPromise = this.promise;
     this.config.previousResolved = Date.now();

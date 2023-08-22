@@ -840,6 +840,7 @@ declare class Resolvable<T = void> {
     private _resolve;
     private _reject;
     promise: Promise<T>;
+    resolvedWith?: T extends void ? never : T;
     private config;
     constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
     constructor(slug: string);
