@@ -27,14 +27,11 @@ declare function assign<T extends Record<string, any>, U extends Partial<T>>(obj
 declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
 declare function addProperties<T extends object, U extends object>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
 
-type MethodKey<T, Args extends any[], Result> = {
-    [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
-}[keyof T];
-declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare function $do<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
-declare const wrap: typeof $do;
+type Camelized<T> = T extends string ? T extends `${infer U}_${infer V}` ? `${Lowercase<U>}${Capitalize<Camelized<V>>}` : Lowercase<T> : T extends object[] ? Camelized<T[number]>[] : T extends object ? {
+    [K in keyof T as Camelized<K & string>]: Camelized<T[K]>;
+} : T;
+declare const camelize: <T>(target: T) => Camelized<T>;
+declare function isCamelCase<T>(target: T | Camelized<T>): target is Camelized<T>;
 
 type Dict<T = any> = {
     [key: string]: T;
@@ -54,6 +51,95 @@ declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 declare function tuple<T extends any[]>(...args: T): T;
 
+interface CreateEnvResult<T> {
+    env: T;
+    missingEnvs: Partial<T>;
+    presentEnvs: Partial<T>;
+}
+type CreateEnvOptions = {
+    missingKeyError?: (key: string) => Error;
+};
+declare function createEnv<T>(descriptor: Record<keyof T, string>, options?: CreateEnvOptions): CreateEnvResult<T>;
+declare const envCase: (string: string) => string;
+declare const unEnvCase: (string?: string | undefined) => string;
+declare function envKeys<T extends Dict>(dict: T): T;
+declare function unEnvKeys<T extends Dict>(dict: T): T;
+
+declare function doWith<T, Result>(target: T, callback: (target: T) => Result, { finally: cleanMethodName }: {
+    finally: string;
+}): Result;
+
+type PromiseHandlers<T> = {
+    then?: (value: T) => void;
+    catch?: (reason: any) => void;
+};
+type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
+    previousResolved?: UnixTimestamp;
+    previousPromise?: Promise<T>;
+    startResolved?: boolean;
+    startResolvedWith?: T;
+    prohibitResolve?: boolean;
+} & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
+    id?: string;
+} : {
+    id: string;
+});
+declare class Resolvable<T = void> {
+    inProgress: boolean;
+    private _resolve;
+    private _reject;
+    promise: Promise<T>;
+    resolvedWith?: T extends void ? never : T;
+    private config;
+    constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
+    constructor(slug: string);
+    then(callback: (value: T) => void | Promise<void>): this;
+    catch(callback: (reason: any) => void | Promise<void>): this;
+    get resolved(): boolean;
+    get previousResolved(): number | undefined;
+    get everResolved(): boolean;
+    get id(): string;
+    get lastPromise(): Promise<T>;
+    resolve(value: T): void;
+    resolveIfInProgress(value: T): void;
+    reject(reason?: any): void;
+    restart(value: T): void;
+    reset(value: T): void;
+    start(okayIfInProgress?: boolean): void;
+    startIfNotInProgress(): void;
+    restartAfterWait(): Promise<void>;
+    static resolvedWith<U>(value: U): Resolvable<U>;
+    static resolved(): Resolvable<void>;
+    static after(occurrence: Promise<void> | Resolvable): Resolvable;
+    static after(init: () => Promise<void> | Resolvable): Resolvable;
+    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
+}
+
+declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;
+declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream>;
+
+declare function ensure<T>(x: T | undefined | null, errorMessage?: string): T;
+declare function ensure<T>(x: T | undefined, errorMessage?: string): T;
+declare function ensure<T>(x: T | null, errorMessage?: string): T;
+declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string | ((x: U) => string)): T;
+type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
+declare function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T;
+interface EnsurePropertyOptions {
+    requiredType?: string;
+    validate?: (value: any) => boolean;
+    messageIfInvalid?: string;
+}
+declare function ensureProperty<Result, Container = any>(obj: Container, key: string, optionsOrMessageIfInvalid?: EnsurePropertyOptions | string): Result;
+
+type MethodKey<T, Args extends any[], Result> = {
+    [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
+}[keyof T];
+declare function $do<Arg1, Arg2, Result>(fn: (arg1: Arg1, arg2: Arg2) => Result, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Result>(key: MethodKey<Arg1, [Arg2], Result>, arg2: Arg2): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(fn: (arg1: Arg1, arg2: Arg2, arg3: Arg3) => Result, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare function $do<Arg1, Arg2, Arg3, Result>(key: MethodKey<Arg1, [Arg2, Arg3], Result>, arg2: Arg2, arg3: Arg3): (target: Arg1) => Result;
+declare const wrap: typeof $do;
+
 declare function $throw<T extends Error>(error: T): never;
 declare function $throw(message: string): never;
 declare function $throw<T extends Error>(errorOrMessage: T | string): never;
@@ -67,13 +153,6 @@ declare function $with<Args extends any[]>(...args: Args): {
     do: <Result>(fn: (...args: Args) => Result) => Result;
 };
 
-type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
-type ChainableTypes<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = Pick<NonNullable<Parameters<Function>[ChainedParameterIndex]>, ChainedKeys[number]>;
-type Chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = {
-    [Key in ChainedKeys[number]]: (value: ChainableTypes<Function, ChainedParameterIndex, [Key]>[Key]) => ((...args: Parameters<Function>) => ReturnType<Function>) & Chainified<Function, ChainedParameterIndex, Exclude<ChainedKeys, Key>>;
-};
-declare function chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]>($function: Function, chainedParameterIndex: ChainedParameterIndex, chainedKeys: ChainedKeys): Chainified<Function, ChainedParameterIndex, ChainedKeys>;
-
 type Predicate<Base = any, IsTypeguard extends boolean = boolean, Guarded extends Base = Base> = IsTypeguard extends true ? ((arg: Base) => arg is Guarded) : ((arg: Base) => boolean);
 type Typeguard<Base = any, Guarded extends Base = Base> = ((arg: Base) => arg is Guarded);
 type NonTypeguard<Base = any> = ((arg: Base) => boolean);
@@ -81,6 +160,25 @@ type Transform<Arg = any, Result = any> = (arg: Arg) => Result;
 type TransformResult<Trfm extends Transform> = Trfm extends Transform<any, infer Result> ? Result : never;
 type PredicateOutput<Base, IsTypeguard extends boolean, Guarded extends Base> = IsTypeguard extends true ? Guarded : Base;
 type Narrowed<Base, IsTypeguard extends boolean, Guarded extends Base> = IsTypeguard extends true ? Exclude<Base, Guarded> : Base;
+
+type TypeguardMap<Keys extends string = string> = {
+    [Key in Keys]: Typeguard;
+};
+type GuardedWithMap<Map extends TypeguardMap> = {
+    [Key in keyof Map]: Map[Key] extends Typeguard<any, infer Guarded> ? Guarded : never;
+};
+type MapForType<T> = {
+    [Key in keyof T]: Typeguard<any, T[Key]>;
+};
+declare function isTypeguardMap(arg: any): arg is TypeguardMap;
+declare function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(typeguardMap: TG): (object: Record<Keys, any>) => object is GuardedWithMap<TG>;
+
+type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
+type ChainableTypes<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = Pick<NonNullable<Parameters<Function>[ChainedParameterIndex]>, ChainedKeys[number]>;
+type Chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = {
+    [Key in ChainedKeys[number]]: (value: ChainableTypes<Function, ChainedParameterIndex, [Key]>[Key]) => ((...args: Parameters<Function>) => ReturnType<Function>) & Chainified<Function, ChainedParameterIndex, Exclude<ChainedKeys, Key>>;
+};
+declare function chainified<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]>($function: Function, chainedParameterIndex: ChainedParameterIndex, chainedKeys: ChainedKeys): Chainified<Function, ChainedParameterIndex, ChainedKeys>;
 
 type CheckState = {
     isFirst: boolean;
@@ -126,18 +224,6 @@ declare function meta<Args extends any[], Return>(fn: (wrapper: (...args: Args) 
 
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
-
-type TypeguardMap<Keys extends string = string> = {
-    [Key in Keys]: Typeguard;
-};
-type GuardedWithMap<Map extends TypeguardMap> = {
-    [Key in keyof Map]: Map[Key] extends Typeguard<any, infer Guarded> ? Guarded : never;
-};
-type MapForType<T> = {
-    [Key in keyof T]: Typeguard<any, T[Key]>;
-};
-declare function isTypeguardMap(arg: any): arg is TypeguardMap;
-declare function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(typeguardMap: TG): (object: Record<Keys, any>) => object is GuardedWithMap<TG>;
 
 declare function isLike<Map extends TypeguardMap>(sample: Map): <T>(arg: T) => arg is T & GuardedWithMap<Map>;
 
@@ -473,6 +559,8 @@ declare function either<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeg
 declare function everyItem<T>(typeguard: Typeguard<any, T>): Typeguard<any[], T[]>;
 declare function everyItem<T>(arr: any[], typeguard: Typeguard<any, T>): arr is T[];
 
+declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
+
 declare function isAmong<U extends readonly any[]>(options: U): (arg: any) => arg is U[number];
 
 declare function isArray<T>(arg: any): arg is T[];
@@ -487,8 +575,6 @@ declare function its<Key extends keyof Obj, Obj extends object>(key: Key, predic
 declare function its<Key extends keyof Obj, Value extends Obj[Key], Obj extends object>(key: Key, value: Value): Typeguard<Obj, Obj & {
     [K in Key]: Value;
 }>;
-
-declare function has<T extends object, U extends {}>(source: Readonly<U>): (target: T) => target is T & U;
 
 declare function not<Base, Guarded extends Base>(typeguard: (arg: Base) => arg is Guarded): (arg: Base) => arg is Exclude<Base, Guarded>;
 declare function not<T>(predicate: (arg: T) => true): (arg: T) => false;
@@ -508,6 +594,8 @@ declare function respectivelyReturn<BroadType1, NarrowType1 extends BroadType1, 
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3): (arg: [BT1, BT2, BT3]) => [NT1, NT2, NT3];
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4): (arg: [BT1, BT2, BT3, BT4]) => [NT1, NT2, NT3, NT4];
 declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, BT3, NT3 extends BT3, BT4, NT4 extends BT4, BT5, NT5 extends BT5>(tf1: (arg: BT1) => NT1, tf2: (arg: BT2) => NT2, tf3: (arg: BT3) => NT3, tf4: (arg: BT4) => NT4, tf5: (arg: BT5) => NT5): (arg: [BT1, BT2, BT3, BT4, BT5]) => [NT1, NT2, NT3, NT4, NT5];
+
+declare function thisable<This, Args extends any[], Return>(fn: (own: This, ...args: Args) => Return): (this: This, ...args: Args) => Return;
 
 declare function also<T>(handler: (value: T) => void): (value: T) => T;
 
@@ -796,92 +884,6 @@ declare const shift: {
     right: <Args_1 extends any[]>(args: Args_1) => Args_1 extends [...infer Rest_1, any] ? [undefined, ...Rest_1] : never;
 };
 
-type Camelized<T> = T extends string ? T extends `${infer U}_${infer V}` ? `${Lowercase<U>}${Capitalize<Camelized<V>>}` : Lowercase<T> : T extends object[] ? Camelized<T[number]>[] : T extends object ? {
-    [K in keyof T as Camelized<K & string>]: Camelized<T[K]>;
-} : T;
-declare const camelize: <T>(target: T) => Camelized<T>;
-declare function isCamelCase<T>(target: T | Camelized<T>): target is Camelized<T>;
-
-interface CreateEnvResult<T> {
-    env: T;
-    missingEnvs: Partial<T>;
-    presentEnvs: Partial<T>;
-}
-type CreateEnvOptions = {
-    missingKeyError?: (key: string) => Error;
-};
-declare function createEnv<T>(descriptor: Record<keyof T, string>, options?: CreateEnvOptions): CreateEnvResult<T>;
-declare const envCase: (string: string) => string;
-declare const unEnvCase: (string?: string | undefined) => string;
-declare function envKeys<T extends Dict>(dict: T): T;
-declare function unEnvKeys<T extends Dict>(dict: T): T;
-
-declare function doWith<T, Result>(target: T, callback: (target: T) => Result, { finally: cleanMethodName }: {
-    finally: string;
-}): Result;
-
-type PromiseHandlers<T> = {
-    then?: (value: T) => void;
-    catch?: (reason: any) => void;
-};
-type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
-    previousResolved?: UnixTimestamp;
-    previousPromise?: Promise<T>;
-    startResolved?: boolean;
-    startResolvedWith?: T;
-    prohibitResolve?: boolean;
-} & PromiseHandlers<T> & (IdIsOptional extends 'idIsOptional' ? {
-    id?: string;
-} : {
-    id: string;
-});
-declare class Resolvable<T = void> {
-    inProgress: boolean;
-    private _resolve;
-    private _reject;
-    promise: Promise<T>;
-    resolvedWith?: T extends void ? never : T;
-    private config;
-    constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
-    constructor(slug: string);
-    then(callback: (value: T) => void | Promise<void>): this;
-    catch(callback: (reason: any) => void | Promise<void>): this;
-    get resolved(): boolean;
-    get previousResolved(): number | undefined;
-    get everResolved(): boolean;
-    get id(): string;
-    get lastPromise(): Promise<T>;
-    resolve(value: T): void;
-    resolveIfInProgress(value: T): void;
-    reject(reason?: any): void;
-    restart(value: T): void;
-    reset(value: T): void;
-    start(okayIfInProgress?: boolean): void;
-    startIfNotInProgress(): void;
-    restartAfterWait(): Promise<void>;
-    static resolvedWith<U>(value: U): Resolvable<U>;
-    static resolved(): Resolvable<void>;
-    static after(occurrence: Promise<void> | Resolvable): Resolvable;
-    static after(init: () => Promise<void> | Resolvable): Resolvable;
-    static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
-}
-
-declare function download(url: string, release: Resolvable, filename?: string): Promise<string>;
-declare function downloadAsStream(url: string, release: Resolvable): Promise<fs.ReadStream>;
-
-declare function ensure<T>(x: T | undefined | null, errorMessage?: string): T;
-declare function ensure<T>(x: T | undefined, errorMessage?: string): T;
-declare function ensure<T>(x: T | null, errorMessage?: string): T;
-declare function ensure<T extends U, U>(x: U, typeguard: (x: U) => x is T, errorMessage?: string | ((x: U) => string)): T;
-type CouldBeNullOrUndefined<T> = (T | undefined | null) | (T | undefined) | (T | null);
-declare function assert<T>(x: CouldBeNullOrUndefined<T>, errorMessage?: string): asserts x is T;
-interface EnsurePropertyOptions {
-    requiredType?: string;
-    validate?: (value: any) => boolean;
-    messageIfInvalid?: string;
-}
-declare function ensureProperty<Result, Container = any>(obj: Container, key: string, optionsOrMessageIfInvalid?: EnsurePropertyOptions | string): Result;
-
 type Handler<HandlerArg> = (arg: HandlerArg) => void;
 type ParametricHandler<HandlerArg, Params extends any[]> = (arg: HandlerArg, ...params: Params) => void;
 type Listener<Client, Event extends string, HandlerArg> = (event: Event, handler: Handler<HandlerArg>) => Client;
@@ -908,7 +910,14 @@ declare function labelize(values: string[]): {
     label: string;
 }[];
 
+declare function ifGeneric<T, G, U, V>(value: T, typeguard: (value: T) => value is T & G, ifTrue: (value: G) => U, ifFalse: (value: Exclude<T, G>) => V): T extends G ? U : V;
+
 declare function jsObjectString(obj: JsonableObject): string;
+
+declare function jsonClone<T>(obj: T): T & Jsonable;
+declare function jsonEqual<T>(a: T, b: T): boolean;
+declare function isJsonable(obj: any): obj is Jsonable;
+declare function isJsonableObject(obj: any): obj is JsonableObject;
 
 type Color = 'gray' | 'red' | 'green' | 'yellow' | 'blue' | 'magenta' | 'cyan';
 type Painter = (text: string) => string;
@@ -961,11 +970,6 @@ declare function getHeapUsedMB(): number;
 declare function logger(index: number | string | 'always', defaultColor?: Color, defaultSerializeAs?: SerializeAs): Log;
 declare function logger(index: number | string | 'always', defaultOptions?: LogOptions, addAlways?: boolean): Log;
 
-declare function jsonClone<T>(obj: T): T & Jsonable;
-declare function jsonEqual<T>(a: T, b: T): boolean;
-declare function isJsonable(obj: any): obj is Jsonable;
-declare function isJsonableObject(obj: any): obj is JsonableObject;
-
 declare function mapKeysDeep(obj: Record<string, any>, fn: (key: string) => string): Record<string, any>;
 
 type Merge<Target extends object | ((...args: any[]) => any), Source extends object> = {
@@ -996,6 +1000,10 @@ interface IViteConfig {
 }
 declare function forceUpdateNpmLinks(): void;
 
+declare function objectWithKeys<Key extends string, Initializer extends (key: Key) => ReturnType, ReturnType>(keys: Key[], initializer: Initializer): {
+    [key in Key]: ReturnType;
+};
+
 declare function setReliableTimeout(callback: (actualTimePassed: number) => void, timeout: number): NodeJS.Timeout;
 
 type Typed<T extends string | number> = {
@@ -1012,4 +1020,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

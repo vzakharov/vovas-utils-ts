@@ -1,9 +1,9 @@
 import _ from 'lodash';
 import fs from 'fs';
-import yaml from 'js-yaml';
 import https from 'https';
 import path from 'path';
 import os from 'os';
+import yaml from 'js-yaml';
 import childProcess from 'child_process';
 
 function aliasify(object, aliasesDefinition) {
@@ -527,6 +527,10 @@ function everyItem(...args) {
   }
 }
 
+function has(source) {
+  return (target) => _.isMatch(target, source);
+}
+
 function isAmong(options) {
   return (arg) => options.includes(arg);
 }
@@ -537,10 +541,6 @@ function isArray(arg) {
 
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
-}
-
-function has(source) {
-  return (target) => _.isMatch(target, source);
 }
 
 function respectively(...typeguards) {
@@ -554,6 +554,20 @@ function respectivelyReturn(...transforms) {
   };
 }
 respectively.return = respectivelyReturn;
+
+function thisable(fn) {
+  return function(...args) {
+    return fn(this, ...args);
+  };
+}
+const sayHello = thisable((own) => {
+  console.log(`Hello, ${own.name}!`);
+});
+const person = {
+  name: "John",
+  sayHello
+};
+person.sayHello();
 
 function also(handler) {
   return (value) => (handler(value), value);
@@ -767,6 +781,18 @@ function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
 }
 
+function ifGeneric(value, typeguard, ifTrue, ifFalse) {
+  return typeguard(value) ? ifTrue(value) : ifFalse(value);
+}
+function isString(value) {
+  return typeof value === "string";
+}
+function stringNumberDial(value) {
+  return ifGeneric(value, isString, (value2) => parseInt(value2), (value2) => value2.toString());
+}
+stringNumberDial("1") + 1;
+stringNumberDial(1).toUpperCase();
+
 function jsObjectString(obj) {
   const seen = [];
   const shared = [];
@@ -904,6 +930,14 @@ function forceUpdateNpmLinks() {
     childProcess.execSync(`yarn add --force ${packageName}`);
     log$1.green(`Successfully updated npm-linked package ${packageName}`);
   });
+}
+
+function objectWithKeys(keys, initializer) {
+  return _.fromPairs(
+    keys.map(
+      (key) => [key, initializer(key)]
+    )
+  );
 }
 
 const log = logger("vovas-utils.resolvable");
@@ -1094,4 +1128,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

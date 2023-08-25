@@ -2,10 +2,10 @@
 
 const _ = require('lodash');
 const fs = require('fs');
-const yaml = require('js-yaml');
 const https = require('https');
 const path = require('path');
 const os = require('os');
+const yaml = require('js-yaml');
 const childProcess = require('child_process');
 
 function aliasify(object, aliasesDefinition) {
@@ -529,6 +529,10 @@ function everyItem(...args) {
   }
 }
 
+function has(source) {
+  return (target) => _.isMatch(target, source);
+}
+
 function isAmong(options) {
   return (arg) => options.includes(arg);
 }
@@ -539,10 +543,6 @@ function isArray(arg) {
 
 function its(key, predicateOrValue) {
   return _.isUndefined(predicateOrValue) ? (arg) => arg[key] : _.isFunction(predicateOrValue) ? (arg) => predicateOrValue(arg[key]) : (arg) => arg[key] === predicateOrValue;
-}
-
-function has(source) {
-  return (target) => _.isMatch(target, source);
 }
 
 function respectively(...typeguards) {
@@ -556,6 +556,20 @@ function respectivelyReturn(...transforms) {
   };
 }
 respectively.return = respectivelyReturn;
+
+function thisable(fn) {
+  return function(...args) {
+    return fn(this, ...args);
+  };
+}
+const sayHello = thisable((own) => {
+  console.log(`Hello, ${own.name}!`);
+});
+const person = {
+  name: "John",
+  sayHello
+};
+person.sayHello();
 
 function also(handler) {
   return (value) => (handler(value), value);
@@ -769,6 +783,18 @@ function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
 }
 
+function ifGeneric(value, typeguard, ifTrue, ifFalse) {
+  return typeguard(value) ? ifTrue(value) : ifFalse(value);
+}
+function isString(value) {
+  return typeof value === "string";
+}
+function stringNumberDial(value) {
+  return ifGeneric(value, isString, (value2) => parseInt(value2), (value2) => value2.toString());
+}
+stringNumberDial("1") + 1;
+stringNumberDial(1).toUpperCase();
+
 function jsObjectString(obj) {
   const seen = [];
   const shared = [];
@@ -906,6 +932,14 @@ function forceUpdateNpmLinks() {
     childProcess.execSync(`yarn add --force ${packageName}`);
     log$1.green(`Successfully updated npm-linked package ${packageName}`);
   });
+}
+
+function objectWithKeys(keys, initializer) {
+  return _.fromPairs(
+    keys.map(
+      (key) => [key, initializer(key)]
+    )
+  );
 }
 
 const log = logger("vovas-utils.resolvable");
@@ -1148,6 +1182,7 @@ exports.go = go;
 exports.groupListeners = groupListeners;
 exports.has = has;
 exports.humanize = humanize;
+exports.ifGeneric = ifGeneric;
 exports.is = is;
 exports.isAmong = isAmong;
 exports.isArray = isArray;
@@ -1173,6 +1208,7 @@ exports.merge = merge;
 exports.meta = meta;
 exports.mutate = mutate;
 exports.not = not;
+exports.objectWithKeys = objectWithKeys;
 exports.paint = paint;
 exports.parseSwitch = parseSwitch;
 exports.parseTransform = parseTransform;
@@ -1188,6 +1224,7 @@ exports.setReliableTimeout = setReliableTimeout;
 exports.shift = shift;
 exports.shiftTo = shiftTo;
 exports.shouldNotBe = shouldNotBe;
+exports.thisable = thisable;
 exports.to = to;
 exports.toType = toType;
 exports.transform = transform;
