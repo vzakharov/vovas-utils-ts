@@ -3,7 +3,6 @@ export * from './common';
 export * from './either';
 export * from './everyItem';
 export * from './has';
-export * from './inherently';
 export * from './isAmong';
 export * from './isArray';
 export * from './isLike';

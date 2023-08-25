@@ -25,16 +25,16 @@ function stringNumberDial<T extends string | number>(
 stringNumberDial('1') + 1 // OK
 stringNumberDial(1).toUpperCase() // OK
 
-// For comparison, without "ifGeneric"
+// // For comparison, without "ifGeneric"
 
-function vanillaDial(value: string | number) {
-  if (typeof value === 'string') {
-    return parseInt(value);
-  } else {
-    return value.toString();
-  };
-}
-// Return type: string | number
+// function vanillaDial(value: string | number) {
+//   if (typeof value === 'string') {
+//     return parseInt(value);
+//   } else {
+//     return value.toString();
+//   };
+// }
+// // Return type: string | number
 
-vanillaDial('1') + 1 // Error: Operator '+' cannot be applied to types 'string | number' and 'number'
-vanillaDial(1).toUpperCase() // Error: Property 'toUpperCase' does not exist on type 'string | number'
+// vanillaDial('1') + 1 // Error: Operator '+' cannot be applied to types 'string | number' and 'number'
+// vanillaDial(1).toUpperCase() // Error: Property 'toUpperCase' does not exist on type 'string | number'
