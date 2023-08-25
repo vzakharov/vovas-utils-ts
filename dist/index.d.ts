@@ -227,41 +227,125 @@ declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypegua
 
 declare function isLike<Map extends TypeguardMap>(sample: Map): <T>(arg: T) => arg is T & GuardedWithMap<Map>;
 
+declare function genericTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg: any) => boolean)): {
+    <T>(arg: G | T): arg is G;
+    <T_1>(arg: T_1): arg is T_1 & G;
+    <T_2, H extends G>(arg: T_2 | H): arg is H;
+};
+type GenericTypeguard<G> = ReturnType<typeof genericTypeguard<G>>;
+declare function isExactly<T>(sample: T): {
+    <T_1>(arg: T | T_1): arg is T;
+    <T_2>(arg: T_2): arg is T_2 & T;
+    <T_3, H extends T>(arg: T_3 | H): arg is H;
+};
+declare function isInstanceOf<C extends new (...args: any[]) => any>(constructor: C): {
+    <T>(arg: InstanceType<C> | T): arg is InstanceType<C>;
+    <T_1>(arg: T_1): arg is T_1 & InstanceType<C>;
+    <T_2, H extends InstanceType<C>>(arg: T_2 | H): arg is H;
+};
 declare const commonPredicates: {
-    undefined: <T>(arg: T | undefined) => arg is undefined;
-    null: <T_1>(arg: T_1 | null) => arg is null;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is null | undefined;
-    string: <T_3>(arg: string | T_3) => arg is string;
-    emptyString: <T_4>(arg: "" | T_4) => arg is "";
-    number: <T_5>(arg: number | T_5) => arg is number;
-    zero: <T_6>(arg: 0 | T_6) => arg is 0;
-    boolean: <T_7>(arg: boolean | T_7) => arg is boolean;
-    false: <T_8>(arg: false | T_8) => arg is false;
-    true: <T_9>(arg: true | T_9) => arg is true;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is F;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is P;
-    object: <T_12>(arg: object | T_12) => arg is object;
+    undefined: {
+        <T>(arg: T | undefined): arg is undefined;
+        <T_1>(arg: T_1): arg is T_1 & undefined;
+        <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+    };
+    null: {
+        <T_3>(arg: T_3 | null): arg is null;
+        <T_4>(arg: T_4): arg is T_4 & null;
+        <T_5, H_1 extends null>(arg: T_5 | H_1): arg is H_1;
+    };
+    nil: {
+        <T_6>(arg: T_6 | null | undefined): arg is null | undefined;
+        <T_7>(arg: T_7): arg is T_7 & (null | undefined);
+        <T_8, H_2 extends null | undefined>(arg: T_8 | H_2): arg is H_2;
+    };
+    string: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    emptyString: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    number: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    zero: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    boolean: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    false: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    true: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    function: {
+        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
+        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
+        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
+    };
+    promise: {
+        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
+        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
+        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+    };
+    object: {
+        <T_24>(arg: object | T_24): arg is object;
+        <T_25>(arg: T_25): arg is T_25 & object;
+        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+    };
     array: typeof isArray;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
-    itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
-    defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
-    empty: <T_19 extends {
+    regexp: {
+        <T_27>(arg: RegExp | T_27): arg is RegExp;
+        <T_28>(arg: T_28): arg is T_28 & RegExp;
+        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+    };
+    itself: <T_30>(arg: T_30) => arg is T_30;
+    primitive: {
+        <T_31>(arg: Primitive | T_31): arg is Primitive;
+        <T_32>(arg: T_32): arg is T_32 & Primitive;
+        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+    };
+    jsonable: {
+        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
+        <T_35>(arg: T_35): arg is T_35 & Jsonable;
+        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+    };
+    jsonableObject: {
+        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
+        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
+        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+    };
+    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
+    empty: <T_41 extends {
         length: number;
-    }>(arg: T_19) => arg is T_19 & {
+    }>(arg: T_41) => arg is T_41 & {
         length: 0;
     };
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is T_20;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is T_22 & U;
+    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
+    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: typeof isAmong;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
+    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -273,35 +357,103 @@ type CommonPredicateMap = {
     [K in CommonPredicateName]: any;
 };
 declare const is: {
-    string: <T_3>(arg: string | T_3) => arg is string;
-    number: <T_5>(arg: number | T_5) => arg is number;
-    boolean: <T_7>(arg: boolean | T_7) => arg is boolean;
-    undefined: <T>(arg: T | undefined) => arg is undefined;
-    object: <T_12>(arg: object | T_12) => arg is object;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is F;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
-    null: <T_1>(arg: T_1 | null) => arg is null;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is null | undefined;
-    emptyString: <T_4>(arg: "" | T_4) => arg is "";
-    zero: <T_6>(arg: 0 | T_6) => arg is 0;
-    false: <T_8>(arg: false | T_8) => arg is false;
-    true: <T_9>(arg: true | T_9) => arg is true;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is P;
+    string: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    number: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    boolean: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    undefined: {
+        <T>(arg: T | undefined): arg is undefined;
+        <T_1>(arg: T_1): arg is T_1 & undefined;
+        <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+    };
+    object: {
+        <T_24>(arg: object | T_24): arg is object;
+        <T_25>(arg: T_25): arg is T_25 & object;
+        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+    };
+    function: {
+        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
+        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
+        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
+    };
+    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    null: {
+        <T_3>(arg: T_3 | null): arg is null;
+        <T_4>(arg: T_4): arg is T_4 & null;
+        <T_5, H_1 extends null>(arg: T_5 | H_1): arg is H_1;
+    };
+    nil: {
+        <T_6>(arg: T_6 | null | undefined): arg is null | undefined;
+        <T_7>(arg: T_7): arg is T_7 & (null | undefined);
+        <T_8, H_2 extends null | undefined>(arg: T_8 | H_2): arg is H_2;
+    };
+    emptyString: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    zero: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    false: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    true: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    promise: {
+        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
+        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
+        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+    };
     array: typeof isArray;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
-    itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
-    defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
-    empty: <T_19 extends {
+    regexp: {
+        <T_27>(arg: RegExp | T_27): arg is RegExp;
+        <T_28>(arg: T_28): arg is T_28 & RegExp;
+        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+    };
+    itself: <T_30>(arg: T_30) => arg is T_30;
+    primitive: {
+        <T_31>(arg: Primitive | T_31): arg is Primitive;
+        <T_32>(arg: T_32): arg is T_32 & Primitive;
+        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+    };
+    jsonable: {
+        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
+        <T_35>(arg: T_35): arg is T_35 & Jsonable;
+        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+    };
+    jsonableObject: {
+        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
+        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
+        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+    };
+    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
+    empty: <T_41 extends {
         length: number;
-    }>(arg: T_19) => arg is T_19 & {
+    }>(arg: T_41) => arg is T_41 & {
         length: 0;
     };
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is T_20;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is T_22 & U;
+    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
+    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -312,76 +464,144 @@ declare const is: {
     camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
-        undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
-        null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
-        nil: <T_2>(arg: T_2 | null | undefined) => arg is Exclude<T_2, null | undefined>;
-        string: <T_3>(arg: string | T_3) => arg is Exclude<T_3, string>;
-        emptyString: <T_4>(arg: "" | T_4) => arg is Exclude<T_4, "">;
-        number: <T_5>(arg: number | T_5) => arg is Exclude<T_5, number>;
-        zero: <T_6>(arg: 0 | T_6) => arg is Exclude<T_6, 0>;
-        boolean: <T_7>(arg: boolean | T_7) => arg is Exclude<T_7, boolean>;
-        false: <T_8>(arg: false | T_8) => arg is Exclude<T_8, false>;
-        true: <T_9>(arg: true | T_9) => arg is Exclude<T_9, true>;
-        function: <T_10, F extends Function>(arg: T_10 | F) => arg is Exclude<T_10, F> | Exclude<F, F>;
-        promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is Exclude<T_11, P> | Exclude<P, P>;
-        object: <T_12>(arg: object | T_12) => arg is Exclude<T_12, object>;
+        undefined: (arg: unknown) => arg is unknown;
+        null: (arg: unknown) => arg is unknown;
+        nil: (arg: unknown) => arg is unknown;
+        string: (arg: unknown) => arg is unknown;
+        emptyString: (arg: unknown) => arg is unknown;
+        number: (arg: unknown) => arg is unknown;
+        zero: (arg: unknown) => arg is unknown;
+        boolean: (arg: unknown) => arg is unknown;
+        false: (arg: unknown) => arg is unknown;
+        true: (arg: unknown) => arg is unknown;
+        function: (arg: unknown) => arg is unknown;
+        promise: (arg: unknown) => arg is unknown;
+        object: (arg: unknown) => arg is unknown;
         array: (arg: unknown) => arg is unknown;
-        regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
-        itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-        primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
-        jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
-        jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
-        defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
-        empty: <T_19 extends {
+        regexp: (arg: unknown) => arg is unknown;
+        itself: <T>(arg: T) => arg is Exclude<T, T>;
+        primitive: (arg: unknown) => arg is unknown;
+        jsonable: (arg: unknown) => arg is unknown;
+        jsonableObject: (arg: unknown) => arg is unknown;
+        defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
+        empty: <T_2 extends {
             length: number;
-        }>(arg: T_19) => arg is Exclude<T_19, T_19 & {
+        }>(arg: T_2) => arg is Exclude<T_2, T_2 & {
             length: 0;
         }>;
-        truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<undefined, T_20> | Exclude<null, T_20> | Exclude<false, T_20> | Exclude<"", T_20> | Exclude<0, T_20> | Exclude<T_20, T_20>;
-        falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is Exclude<T_21, false | "" | 0 | null | undefined>;
-        exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is Exclude<U, T_22 & U>;
+        truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
+        falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
+        exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         among: (options: any[]) => (arg: any) => arg is never;
-        like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
-        typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
-        match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
-        camelCase: <T_26>(arg: T_26 | Camelized<T_26>) => arg is Exclude<T_26, Camelized<T_26>> | Exclude<Camelized<T_26>, Camelized<T_26>>;
+        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
+        typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
+        match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
+        camelCase: <T_9>(arg: T_9 | Camelized<T_9>) => arg is Exclude<T_9, Camelized<T_9>> | Exclude<Camelized<T_9>, Camelized<T_9>>;
         anything: (arg: any) => false;
     };
 };
 declare const does: {
-    string: <T_3>(arg: string | T_3) => arg is string;
-    number: <T_5>(arg: number | T_5) => arg is number;
-    boolean: <T_7>(arg: boolean | T_7) => arg is boolean;
-    undefined: <T>(arg: T | undefined) => arg is undefined;
-    object: <T_12>(arg: object | T_12) => arg is object;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is F;
-    match: <T_23 extends object>(sample: T_23) => <U_1 extends T_23>(arg: U_1) => boolean;
-    null: <T_1>(arg: T_1 | null) => arg is null;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is null | undefined;
-    emptyString: <T_4>(arg: "" | T_4) => arg is "";
-    zero: <T_6>(arg: 0 | T_6) => arg is 0;
-    false: <T_8>(arg: false | T_8) => arg is false;
-    true: <T_9>(arg: true | T_9) => arg is true;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is P;
+    string: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    number: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    boolean: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    undefined: {
+        <T>(arg: T | undefined): arg is undefined;
+        <T_1>(arg: T_1): arg is T_1 & undefined;
+        <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+    };
+    object: {
+        <T_24>(arg: object | T_24): arg is object;
+        <T_25>(arg: T_25): arg is T_25 & object;
+        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+    };
+    function: {
+        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
+        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
+        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
+    };
+    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    null: {
+        <T_3>(arg: T_3 | null): arg is null;
+        <T_4>(arg: T_4): arg is T_4 & null;
+        <T_5, H_1 extends null>(arg: T_5 | H_1): arg is H_1;
+    };
+    nil: {
+        <T_6>(arg: T_6 | null | undefined): arg is null | undefined;
+        <T_7>(arg: T_7): arg is T_7 & (null | undefined);
+        <T_8, H_2 extends null | undefined>(arg: T_8 | H_2): arg is H_2;
+    };
+    emptyString: {
+        <T_9>(arg: string | T_9): arg is string;
+        <T_10>(arg: T_10): arg is T_10 & string;
+        <T_11, H_3 extends string>(arg: T_11 | H_3): arg is H_3;
+    };
+    zero: {
+        <T_12>(arg: number | T_12): arg is number;
+        <T_13>(arg: T_13): arg is T_13 & number;
+        <T_14, H_4 extends number>(arg: T_14 | H_4): arg is H_4;
+    };
+    false: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    true: {
+        <T_15>(arg: boolean | T_15): arg is boolean;
+        <T_16>(arg: T_16): arg is T_16 & boolean;
+        <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
+    };
+    promise: {
+        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
+        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
+        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+    };
     array: typeof isArray;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is RegExp;
-    itself: <T_14>(arg: T_14) => arg is T_14;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Primitive;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Jsonable;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is JsonableObject;
-    defined: <T_18>(arg: T_18 | undefined) => arg is T_18;
-    empty: <T_19 extends {
+    regexp: {
+        <T_27>(arg: RegExp | T_27): arg is RegExp;
+        <T_28>(arg: T_28): arg is T_28 & RegExp;
+        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+    };
+    itself: <T_30>(arg: T_30) => arg is T_30;
+    primitive: {
+        <T_31>(arg: Primitive | T_31): arg is Primitive;
+        <T_32>(arg: T_32): arg is T_32 & Primitive;
+        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+    };
+    jsonable: {
+        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
+        <T_35>(arg: T_35): arg is T_35 & Jsonable;
+        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+    };
+    jsonableObject: {
+        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
+        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
+        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+    };
+    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
+    empty: <T_41 extends {
         length: number;
-    }>(arg: T_19) => arg is T_19 & {
+    }>(arg: T_41) => arg is T_41 & {
         length: 0;
     };
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is T_20;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is false | "" | 0 | null | undefined;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is T_22 & U;
+    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
+    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -392,164 +612,164 @@ declare const does: {
     camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
-        undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
-        null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
-        nil: <T_2>(arg: T_2 | null | undefined) => arg is Exclude<T_2, null | undefined>;
-        string: <T_3>(arg: string | T_3) => arg is Exclude<T_3, string>;
-        emptyString: <T_4>(arg: "" | T_4) => arg is Exclude<T_4, "">;
-        number: <T_5>(arg: number | T_5) => arg is Exclude<T_5, number>;
-        zero: <T_6>(arg: 0 | T_6) => arg is Exclude<T_6, 0>;
-        boolean: <T_7>(arg: boolean | T_7) => arg is Exclude<T_7, boolean>;
-        false: <T_8>(arg: false | T_8) => arg is Exclude<T_8, false>;
-        true: <T_9>(arg: true | T_9) => arg is Exclude<T_9, true>;
-        function: <T_10, F extends Function>(arg: T_10 | F) => arg is Exclude<T_10, F> | Exclude<F, F>;
-        promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is Exclude<T_11, P> | Exclude<P, P>;
-        object: <T_12>(arg: object | T_12) => arg is Exclude<T_12, object>;
+        undefined: (arg: unknown) => arg is unknown;
+        null: (arg: unknown) => arg is unknown;
+        nil: (arg: unknown) => arg is unknown;
+        string: (arg: unknown) => arg is unknown;
+        emptyString: (arg: unknown) => arg is unknown;
+        number: (arg: unknown) => arg is unknown;
+        zero: (arg: unknown) => arg is unknown;
+        boolean: (arg: unknown) => arg is unknown;
+        false: (arg: unknown) => arg is unknown;
+        true: (arg: unknown) => arg is unknown;
+        function: (arg: unknown) => arg is unknown;
+        promise: (arg: unknown) => arg is unknown;
+        object: (arg: unknown) => arg is unknown;
         array: (arg: unknown) => arg is unknown;
-        regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
-        itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-        primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
-        jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
-        jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
-        defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
-        empty: <T_19 extends {
+        regexp: (arg: unknown) => arg is unknown;
+        itself: <T>(arg: T) => arg is Exclude<T, T>;
+        primitive: (arg: unknown) => arg is unknown;
+        jsonable: (arg: unknown) => arg is unknown;
+        jsonableObject: (arg: unknown) => arg is unknown;
+        defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
+        empty: <T_2 extends {
             length: number;
-        }>(arg: T_19) => arg is Exclude<T_19, T_19 & {
+        }>(arg: T_2) => arg is Exclude<T_2, T_2 & {
             length: 0;
         }>;
-        truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<undefined, T_20> | Exclude<null, T_20> | Exclude<false, T_20> | Exclude<"", T_20> | Exclude<0, T_20> | Exclude<T_20, T_20>;
-        falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is Exclude<T_21, false | "" | 0 | null | undefined>;
-        exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is Exclude<U, T_22 & U>;
+        truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
+        falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
+        exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         among: (options: any[]) => (arg: any) => arg is never;
-        like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
-        typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
-        match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
-        camelCase: <T_26>(arg: T_26 | Camelized<T_26>) => arg is Exclude<T_26, Camelized<T_26>> | Exclude<Camelized<T_26>, Camelized<T_26>>;
+        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
+        typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
+        match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
+        camelCase: <T_9>(arg: T_9 | Camelized<T_9>) => arg is Exclude<T_9, Camelized<T_9>> | Exclude<Camelized<T_9>, Camelized<T_9>>;
         anything: (arg: any) => false;
     };
 };
 declare const isnt: {
-    undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
-    null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is Exclude<T_2, null | undefined>;
-    string: <T_3>(arg: string | T_3) => arg is Exclude<T_3, string>;
-    emptyString: <T_4>(arg: "" | T_4) => arg is Exclude<T_4, "">;
-    number: <T_5>(arg: number | T_5) => arg is Exclude<T_5, number>;
-    zero: <T_6>(arg: 0 | T_6) => arg is Exclude<T_6, 0>;
-    boolean: <T_7>(arg: boolean | T_7) => arg is Exclude<T_7, boolean>;
-    false: <T_8>(arg: false | T_8) => arg is Exclude<T_8, false>;
-    true: <T_9>(arg: true | T_9) => arg is Exclude<T_9, true>;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is Exclude<T_10, F> | Exclude<F, F>;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is Exclude<T_11, P> | Exclude<P, P>;
-    object: <T_12>(arg: object | T_12) => arg is Exclude<T_12, object>;
+    undefined: (arg: unknown) => arg is unknown;
+    null: (arg: unknown) => arg is unknown;
+    nil: (arg: unknown) => arg is unknown;
+    string: (arg: unknown) => arg is unknown;
+    emptyString: (arg: unknown) => arg is unknown;
+    number: (arg: unknown) => arg is unknown;
+    zero: (arg: unknown) => arg is unknown;
+    boolean: (arg: unknown) => arg is unknown;
+    false: (arg: unknown) => arg is unknown;
+    true: (arg: unknown) => arg is unknown;
+    function: (arg: unknown) => arg is unknown;
+    promise: (arg: unknown) => arg is unknown;
+    object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
-    itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
-    defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
-    empty: <T_19 extends {
+    regexp: (arg: unknown) => arg is unknown;
+    itself: <T>(arg: T) => arg is Exclude<T, T>;
+    primitive: (arg: unknown) => arg is unknown;
+    jsonable: (arg: unknown) => arg is unknown;
+    jsonableObject: (arg: unknown) => arg is unknown;
+    defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
+    empty: <T_2 extends {
         length: number;
-    }>(arg: T_19) => arg is Exclude<T_19, T_19 & {
+    }>(arg: T_2) => arg is Exclude<T_2, T_2 & {
         length: 0;
     }>;
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<undefined, T_20> | Exclude<null, T_20> | Exclude<false, T_20> | Exclude<"", T_20> | Exclude<0, T_20> | Exclude<T_20, T_20>;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is Exclude<T_21, false | "" | 0 | null | undefined>;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is Exclude<U, T_22 & U>;
+    truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
+    falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
+    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
-    match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
-    camelCase: <T_22>(arg: T_22 | Camelized<T_22>) => arg is Exclude<T_22, Camelized<T_22>> | Exclude<Camelized<T_22>, Camelized<T_22>>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
+    match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
     anything: (arg: any) => false;
 };
 declare const aint: {
-    undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
-    null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is Exclude<T_2, null | undefined>;
-    string: <T_3>(arg: string | T_3) => arg is Exclude<T_3, string>;
-    emptyString: <T_4>(arg: "" | T_4) => arg is Exclude<T_4, "">;
-    number: <T_5>(arg: number | T_5) => arg is Exclude<T_5, number>;
-    zero: <T_6>(arg: 0 | T_6) => arg is Exclude<T_6, 0>;
-    boolean: <T_7>(arg: boolean | T_7) => arg is Exclude<T_7, boolean>;
-    false: <T_8>(arg: false | T_8) => arg is Exclude<T_8, false>;
-    true: <T_9>(arg: true | T_9) => arg is Exclude<T_9, true>;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is Exclude<T_10, F> | Exclude<F, F>;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is Exclude<T_11, P> | Exclude<P, P>;
-    object: <T_12>(arg: object | T_12) => arg is Exclude<T_12, object>;
+    undefined: (arg: unknown) => arg is unknown;
+    null: (arg: unknown) => arg is unknown;
+    nil: (arg: unknown) => arg is unknown;
+    string: (arg: unknown) => arg is unknown;
+    emptyString: (arg: unknown) => arg is unknown;
+    number: (arg: unknown) => arg is unknown;
+    zero: (arg: unknown) => arg is unknown;
+    boolean: (arg: unknown) => arg is unknown;
+    false: (arg: unknown) => arg is unknown;
+    true: (arg: unknown) => arg is unknown;
+    function: (arg: unknown) => arg is unknown;
+    promise: (arg: unknown) => arg is unknown;
+    object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
-    itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
-    defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
-    empty: <T_19 extends {
+    regexp: (arg: unknown) => arg is unknown;
+    itself: <T>(arg: T) => arg is Exclude<T, T>;
+    primitive: (arg: unknown) => arg is unknown;
+    jsonable: (arg: unknown) => arg is unknown;
+    jsonableObject: (arg: unknown) => arg is unknown;
+    defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
+    empty: <T_2 extends {
         length: number;
-    }>(arg: T_19) => arg is Exclude<T_19, T_19 & {
+    }>(arg: T_2) => arg is Exclude<T_2, T_2 & {
         length: 0;
     }>;
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<undefined, T_20> | Exclude<null, T_20> | Exclude<false, T_20> | Exclude<"", T_20> | Exclude<0, T_20> | Exclude<T_20, T_20>;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is Exclude<T_21, false | "" | 0 | null | undefined>;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is Exclude<U, T_22 & U>;
+    truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
+    falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
+    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
-    match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
-    camelCase: <T_22>(arg: T_22 | Camelized<T_22>) => arg is Exclude<T_22, Camelized<T_22>> | Exclude<Camelized<T_22>, Camelized<T_22>>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
+    match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
-    undefined: <T>(arg: T | undefined) => arg is Exclude<T, undefined>;
-    null: <T_1>(arg: T_1 | null) => arg is Exclude<T_1, null>;
-    nil: <T_2>(arg: T_2 | null | undefined) => arg is Exclude<T_2, null | undefined>;
-    string: <T_3>(arg: string | T_3) => arg is Exclude<T_3, string>;
-    emptyString: <T_4>(arg: "" | T_4) => arg is Exclude<T_4, "">;
-    number: <T_5>(arg: number | T_5) => arg is Exclude<T_5, number>;
-    zero: <T_6>(arg: 0 | T_6) => arg is Exclude<T_6, 0>;
-    boolean: <T_7>(arg: boolean | T_7) => arg is Exclude<T_7, boolean>;
-    false: <T_8>(arg: false | T_8) => arg is Exclude<T_8, false>;
-    true: <T_9>(arg: true | T_9) => arg is Exclude<T_9, true>;
-    function: <T_10, F extends Function>(arg: T_10 | F) => arg is Exclude<T_10, F> | Exclude<F, F>;
-    promise: <T_11, P extends Promise<any>>(arg: T_11 | P) => arg is Exclude<T_11, P> | Exclude<P, P>;
-    object: <T_12>(arg: object | T_12) => arg is Exclude<T_12, object>;
+    undefined: (arg: unknown) => arg is unknown;
+    null: (arg: unknown) => arg is unknown;
+    nil: (arg: unknown) => arg is unknown;
+    string: (arg: unknown) => arg is unknown;
+    emptyString: (arg: unknown) => arg is unknown;
+    number: (arg: unknown) => arg is unknown;
+    zero: (arg: unknown) => arg is unknown;
+    boolean: (arg: unknown) => arg is unknown;
+    false: (arg: unknown) => arg is unknown;
+    true: (arg: unknown) => arg is unknown;
+    function: (arg: unknown) => arg is unknown;
+    promise: (arg: unknown) => arg is unknown;
+    object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
-    regexp: <T_13>(arg: RegExp | T_13) => arg is Exclude<T_13, RegExp>;
-    itself: <T_14>(arg: T_14) => arg is Exclude<T_14, T_14>;
-    primitive: <T_15>(arg: T_15 | Primitive) => arg is Exclude<T_15, Primitive>;
-    jsonable: <T_16>(arg: T_16 | Jsonable) => arg is Exclude<T_16, Jsonable>;
-    jsonableObject: <T_17>(arg: JsonableObject | T_17) => arg is Exclude<T_17, JsonableObject>;
-    defined: <T_18>(arg: T_18 | undefined) => arg is Exclude<undefined, T_18> | Exclude<T_18, T_18>;
-    empty: <T_19 extends {
+    regexp: (arg: unknown) => arg is unknown;
+    itself: <T>(arg: T) => arg is Exclude<T, T>;
+    primitive: (arg: unknown) => arg is unknown;
+    jsonable: (arg: unknown) => arg is unknown;
+    jsonableObject: (arg: unknown) => arg is unknown;
+    defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
+    empty: <T_2 extends {
         length: number;
-    }>(arg: T_19) => arg is Exclude<T_19, T_19 & {
+    }>(arg: T_2) => arg is Exclude<T_2, T_2 & {
         length: 0;
     }>;
-    truthy: <T_20>(arg: false | "" | 0 | T_20 | null | undefined) => arg is Exclude<undefined, T_20> | Exclude<null, T_20> | Exclude<false, T_20> | Exclude<"", T_20> | Exclude<0, T_20> | Exclude<T_20, T_20>;
-    falsy: <T_21>(arg: false | "" | 0 | T_21 | null | undefined) => arg is Exclude<T_21, false | "" | 0 | null | undefined>;
-    exactly: <T_22>(sample: T_22) => <U>(arg: U) => arg is Exclude<U, T_22 & U>;
+    truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
+    falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
+    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_23>(arg: T_23) => arg is Exclude<T_23, T_23 & GuardedWithMap<TypeguardMap<string>>>;
-    typed: <T_24 extends string | number>(type: T_24) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_24>>;
-    match: <T_25 extends object>(sample: T_25) => <U_1 extends T_25>(arg: U_1) => boolean;
-    camelCase: <T_22>(arg: T_22 | Camelized<T_22>) => arg is Exclude<T_22, Camelized<T_22>> | Exclude<Camelized<T_22>, Camelized<T_22>>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
+    typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
+    match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
     anything: (arg: any) => false;
 };
 
@@ -910,7 +1130,7 @@ declare function labelize(values: string[]): {
     label: string;
 }[];
 
-declare function ifGeneric<T, G, U, V>(value: T, typeguard: (value: T) => value is T & G, ifTrue: (value: G) => U, ifFalse: (value: Exclude<T, G>) => V): T extends G ? U : V;
+declare function ifGeneric<T>(value: T): <G, U, V>(typeguard: (value: T) => value is T & G, ifTrue: (value: G) => U, ifFalse: (value: Exclude<T, G>) => V) => T extends G ? U : V;
 
 declare function jsObjectString(obj: JsonableObject): string;
 
@@ -1020,4 +1240,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

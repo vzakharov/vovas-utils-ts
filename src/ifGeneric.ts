@@ -1,24 +1,28 @@
-export function ifGeneric<T, G, U, V>(
-  value: T,
-  typeguard: (value: T) => value is T & G,
-  ifTrue: (value: G) => U,
-  ifFalse: (value: Exclude<T, G>) => V
-) { 
-  return (
-    typeguard(value) ? ifTrue(value) : ifFalse(value as Exclude<T, G>)
-  ) as T extends G ? U : V; 
-};
+import _ from "lodash";
+import { is } from "./funkenstein";
+
+export function ifGeneric<T>(value: T) {
+  return function<G, U, V>(
+    typeguard: (value: T) => value is T & G,
+    ifTrue: (value: G) => U,
+    ifFalse: (value: Exclude<T, G>) => V
+  ) { 
+    return (
+      typeguard(value) ? ifTrue(value) : ifFalse(value as Exclude<T, G>)
+    ) as T extends G ? U : V; 
+  }
+}
 
 // Example
-
-function isString<T>(value: T): value is T & string {
-  return typeof value === 'string';
-};
 
 function stringNumberDial<T extends string | number>(
   value: T,
 ) {
-  return ifGeneric<T, string, number, string>(value, isString, (value) => parseInt(value), (value) => value.toString());
+  return ifGeneric(value)(
+    is.string, 
+    (value) => parseInt(value+"0"), 
+    (value) => ( value + 1 ).toString()
+  );
 };
 // Return type: T extends string ? number : string
 

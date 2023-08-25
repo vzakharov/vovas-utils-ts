@@ -4,41 +4,59 @@ import { TypeguardMap } from '../TypeguardMap';
 import { isLike } from './isLike';
 import { not } from './not';
 
+
+export function genericTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (arg: any) => boolean ) ) {
+  function typeguard<T>(arg: T | G): arg is G;
+  function typeguard<T>(arg: T): arg is T & G;
+  function typeguard<T, H extends G>(arg: T | H): arg is H;
+  function typeguard(arg: any) {
+    return predicate(arg);
+  };
+
+  return typeguard;
+};
+
+export type GenericTypeguard<G> = ReturnType<typeof genericTypeguard<G>>;
+
+export function isExactly<T>(sample: T) {
+  return genericTypeguard<T>(arg => _.isEqual(arg, sample));
+};
+
+export function isInstanceOf<C extends new (...args: any[]) => any>(constructor: C) {
+  return genericTypeguard<InstanceType<C>>(arg => arg instanceof constructor);
+};
+
+
 export const commonPredicates = {
 
-  undefined: <T>(arg: T | undefined): arg is undefined => _.isUndefined(arg),
-  null: <T>(arg: T | null): arg is null => _.isNull(arg),
-  nil: <T>(arg: T | undefined | null): arg is undefined | null => _.isNil(arg),
-  string: <T>(arg: T | string): arg is string => _.isString(arg),
-  // string: <T>(arg: T): arg is T & string => _.isString(arg),
-  emptyString: <T>(arg: T | ''): arg is '' => arg === '',
-  number: <T>(arg: T | number): arg is number => _.isNumber(arg),
-  zero: <T>(arg: T | 0): arg is 0 => arg === 0,
-  boolean: <T>(arg: T | boolean): arg is boolean => _.isBoolean(arg),
-  false: <T>(arg: T | false): arg is false => arg === false,
-  true: <T>(arg: T | true): arg is true => arg === true,
-  function: <T, F extends Function>(arg: T | F): arg is F => _.isFunction(arg),
-  promise: <T, P extends Promise<any>>(arg: T | P): arg is P => arg instanceof Promise,
-  object: <T>(arg: T | object): arg is object => _.isObject(arg),
-  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
+  undefined: genericTypeguard(_.isUndefined),
+  null: genericTypeguard(_.isNull),
+  nil: genericTypeguard(_.isNil),
+  string: genericTypeguard(_.isString),
+  emptyString: isExactly(''),
+  number: genericTypeguard(_.isNumber),
+  zero: isExactly(0),
+  boolean: genericTypeguard(_.isBoolean),
+  false: isExactly(false),
+  true: isExactly(true),
+  function: genericTypeguard(_.isFunction),
+  promise: isInstanceOf(Promise<any>),
+  object: genericTypeguard(_.isObject),
   array: isArray,
-  regexp: <T>(arg: T | RegExp): arg is RegExp => _.isRegExp(arg),
-  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
+  regexp: genericTypeguard(_.isRegExp),
 
   itself: <T>(arg: T): arg is T => true,
 
-  primitive: <T>(arg: T | Primitive): arg is Primitive => isPrimitive(arg),
-  jsonable: <T>(arg: T | Jsonable): arg is Jsonable => isJsonable(arg),
-  jsonableObject: <T>(arg: T | JsonableObject): arg is JsonableObject => isJsonableObject(arg),
+  primitive: genericTypeguard(isPrimitive),
+  jsonable: genericTypeguard(isJsonable),
+  jsonableObject: genericTypeguard(isJsonableObject),
 
   defined: <T>(arg: T | undefined): arg is T => !_.isUndefined(arg),
   empty: <T extends { length: number }>(arg: T): arg is T & { length: 0 } => arg.length === 0,
   truthy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is T => !!arg,
   falsy: <T>(arg: T | undefined | null | false | 0 | '' ): arg is undefined | null | false | 0 | '' => !arg,
 
-  exactly: <T>(sample: T) => (
-    (arg: any) => _.isEqual(arg, sample)
-  ) as <U>(arg: U) => arg is T & U,
+  exactly: isExactly,
   above: (sample: number) => (arg: number) => arg > sample,
   below: (sample: number) => (arg: number) => arg < sample,
   atLeast: (sample: number) => (arg: number) => arg >= sample,

@@ -74,34 +74,43 @@ function not(predicate) {
   return (arg) => !predicate(arg);
 }
 
+function genericTypeguard(predicate) {
+  function typeguard(arg) {
+    return predicate(arg);
+  }
+  return typeguard;
+}
+function isExactly(sample) {
+  return genericTypeguard((arg) => _.isEqual(arg, sample));
+}
+function isInstanceOf(constructor) {
+  return genericTypeguard((arg) => arg instanceof constructor);
+}
 const commonPredicates = {
-  undefined: (arg) => _.isUndefined(arg),
-  null: (arg) => _.isNull(arg),
-  nil: (arg) => _.isNil(arg),
-  string: (arg) => _.isString(arg),
-  // string: <T>(arg: T): arg is T & string => _.isString(arg),
-  emptyString: (arg) => arg === "",
-  number: (arg) => _.isNumber(arg),
-  zero: (arg) => arg === 0,
-  boolean: (arg) => _.isBoolean(arg),
-  false: (arg) => arg === false,
-  true: (arg) => arg === true,
-  function: (arg) => _.isFunction(arg),
-  promise: (arg) => arg instanceof Promise,
-  object: (arg) => _.isObject(arg),
-  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
+  undefined: genericTypeguard(_.isUndefined),
+  null: genericTypeguard(_.isNull),
+  nil: genericTypeguard(_.isNil),
+  string: genericTypeguard(_.isString),
+  emptyString: isExactly(""),
+  number: genericTypeguard(_.isNumber),
+  zero: isExactly(0),
+  boolean: genericTypeguard(_.isBoolean),
+  false: isExactly(false),
+  true: isExactly(true),
+  function: genericTypeguard(_.isFunction),
+  promise: isInstanceOf(Promise),
+  object: genericTypeguard(_.isObject),
   array: isArray,
-  regexp: (arg) => _.isRegExp(arg),
-  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
+  regexp: genericTypeguard(_.isRegExp),
   itself: (arg) => true,
-  primitive: (arg) => isPrimitive(arg),
-  jsonable: (arg) => isJsonable(arg),
-  jsonableObject: (arg) => isJsonableObject(arg),
+  primitive: genericTypeguard(isPrimitive),
+  jsonable: genericTypeguard(isJsonable),
+  jsonableObject: genericTypeguard(isJsonableObject),
   defined: (arg) => !_.isUndefined(arg),
   empty: (arg) => arg.length === 0,
   truthy: (arg) => !!arg,
   falsy: (arg) => !arg,
-  exactly: (sample) => (arg) => _.isEqual(arg, sample),
+  exactly: isExactly,
   above: (sample) => (arg) => arg > sample,
   below: (sample) => (arg) => arg < sample,
   atLeast: (sample) => (arg) => arg >= sample,
@@ -781,14 +790,17 @@ function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
 }
 
-function ifGeneric(value, typeguard, ifTrue, ifFalse) {
-  return typeguard(value) ? ifTrue(value) : ifFalse(value);
-}
-function isString(value) {
-  return typeof value === "string";
+function ifGeneric(value) {
+  return function(typeguard, ifTrue, ifFalse) {
+    return typeguard(value) ? ifTrue(value) : ifFalse(value);
+  };
 }
 function stringNumberDial(value) {
-  return ifGeneric(value, isString, (value2) => parseInt(value2), (value2) => value2.toString());
+  return ifGeneric(value)(
+    is.string,
+    (value2) => parseInt(value2 + "0"),
+    (value2) => (value2 + 1).toString()
+  );
 }
 stringNumberDial("1") + 1;
 stringNumberDial(1).toUpperCase();
@@ -1128,4 +1140,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

@@ -76,34 +76,43 @@ function not(predicate) {
   return (arg) => !predicate(arg);
 }
 
+function genericTypeguard(predicate) {
+  function typeguard(arg) {
+    return predicate(arg);
+  }
+  return typeguard;
+}
+function isExactly(sample) {
+  return genericTypeguard((arg) => _.isEqual(arg, sample));
+}
+function isInstanceOf(constructor) {
+  return genericTypeguard((arg) => arg instanceof constructor);
+}
 const commonPredicates = {
-  undefined: (arg) => _.isUndefined(arg),
-  null: (arg) => _.isNull(arg),
-  nil: (arg) => _.isNil(arg),
-  string: (arg) => _.isString(arg),
-  // string: <T>(arg: T): arg is T & string => _.isString(arg),
-  emptyString: (arg) => arg === "",
-  number: (arg) => _.isNumber(arg),
-  zero: (arg) => arg === 0,
-  boolean: (arg) => _.isBoolean(arg),
-  false: (arg) => arg === false,
-  true: (arg) => arg === true,
-  function: (arg) => _.isFunction(arg),
-  promise: (arg) => arg instanceof Promise,
-  object: (arg) => _.isObject(arg),
-  // object: <T>(arg: T): arg is T & object => _.isObject(arg),
+  undefined: genericTypeguard(_.isUndefined),
+  null: genericTypeguard(_.isNull),
+  nil: genericTypeguard(_.isNil),
+  string: genericTypeguard(_.isString),
+  emptyString: isExactly(""),
+  number: genericTypeguard(_.isNumber),
+  zero: isExactly(0),
+  boolean: genericTypeguard(_.isBoolean),
+  false: isExactly(false),
+  true: isExactly(true),
+  function: genericTypeguard(_.isFunction),
+  promise: isInstanceOf(Promise),
+  object: genericTypeguard(_.isObject),
   array: isArray,
-  regexp: (arg) => _.isRegExp(arg),
-  // regexp: <T>(arg: T): arg is T & RegExp => _.isRegExp(arg),
+  regexp: genericTypeguard(_.isRegExp),
   itself: (arg) => true,
-  primitive: (arg) => isPrimitive(arg),
-  jsonable: (arg) => isJsonable(arg),
-  jsonableObject: (arg) => isJsonableObject(arg),
+  primitive: genericTypeguard(isPrimitive),
+  jsonable: genericTypeguard(isJsonable),
+  jsonableObject: genericTypeguard(isJsonableObject),
   defined: (arg) => !_.isUndefined(arg),
   empty: (arg) => arg.length === 0,
   truthy: (arg) => !!arg,
   falsy: (arg) => !arg,
-  exactly: (sample) => (arg) => _.isEqual(arg, sample),
+  exactly: isExactly,
   above: (sample) => (arg) => arg > sample,
   below: (sample) => (arg) => arg < sample,
   atLeast: (sample) => (arg) => arg >= sample,
@@ -783,14 +792,17 @@ function labelize(values) {
   return values.map((value) => ({ value, label: humanize(value) }));
 }
 
-function ifGeneric(value, typeguard, ifTrue, ifFalse) {
-  return typeguard(value) ? ifTrue(value) : ifFalse(value);
-}
-function isString(value) {
-  return typeof value === "string";
+function ifGeneric(value) {
+  return function(typeguard, ifTrue, ifFalse) {
+    return typeguard(value) ? ifTrue(value) : ifFalse(value);
+  };
 }
 function stringNumberDial(value) {
-  return ifGeneric(value, isString, (value2) => parseInt(value2), (value2) => value2.toString());
+  return ifGeneric(value)(
+    is.string,
+    (value2) => parseInt(value2 + "0"),
+    (value2) => (value2 + 1).toString()
+  );
 }
 stringNumberDial("1") + 1;
 stringNumberDial(1).toUpperCase();
@@ -1173,6 +1185,7 @@ exports.evaluate = evaluate;
 exports.everyItem = everyItem;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
+exports.genericTypeguard = genericTypeguard;
 exports.getHeapUsedMB = getHeapUsedMB;
 exports.getNpmLinks = getNpmLinks;
 exports.getProp = getProp;
@@ -1187,6 +1200,8 @@ exports.is = is;
 exports.isAmong = isAmong;
 exports.isArray = isArray;
 exports.isCamelCase = isCamelCase;
+exports.isExactly = isExactly;
+exports.isInstanceOf = isInstanceOf;
 exports.isJsonable = isJsonable;
 exports.isJsonableObject = isJsonableObject;
 exports.isKindOf = isKindOf;
