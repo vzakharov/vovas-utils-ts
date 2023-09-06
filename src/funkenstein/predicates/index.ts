@@ -5,6 +5,7 @@ export * from './everyItem';
 export * from './has';
 export * from './isAmong';
 export * from './isArray';
+export * from './isFunction';
 export * from './isLike';
 export * from './its';
 export * from './not';

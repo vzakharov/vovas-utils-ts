@@ -27,10 +27,10 @@ declare function assign<T extends Record<string, any>, U extends Partial<T>>(obj
 declare function mutate<T extends Record<string, any>, U extends Partial<T>>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
 declare function addProperties<T extends object, U extends object>(object: T, newValuesOrCallback: U | ((object: T) => U)): asserts object is T & U;
 
-type Camelized<T> = T extends string ? T extends `${infer U}_${infer V}` ? `${Lowercase<U>}${Capitalize<Camelized<V>>}` : Lowercase<T> : T extends object[] ? Camelized<T[number]>[] : T extends object ? {
-    [K in keyof T as Camelized<K & string>]: Camelized<T[K]>;
+type Camelized<T, CamelizeStrings extends boolean = true> = T extends string ? CamelizeStrings extends true ? T extends `${infer U}_${infer V}` ? `${Lowercase<U>}${Capitalize<Camelized<V>>}` : Lowercase<T> : T : T extends object[] ? Camelized<T[number]>[] : T extends object ? {
+    [K in keyof T as Camelized<K & string>]: Camelized<T[K], false>;
 } : T;
-declare const camelize: <T>(target: T) => Camelized<T>;
+declare const camelize: <T>(target: T) => Camelized<T, true>;
 declare function isCamelCase<T>(target: T | Camelized<T>): target is Camelized<T>;
 
 type Dict<T = any> = {
@@ -93,8 +93,8 @@ declare class Resolvable<T = void> {
     private config;
     constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
     constructor(slug: string);
-    then(callback: (value: T) => void | Promise<void>): this;
-    catch(callback: (reason: any) => void | Promise<void>): this;
+    then(callback: (value: T) => void | Promise<void>): Promise<void>;
+    catch(callback: (reason: any) => void | Promise<void>): Promise<void | T>;
     get resolved(): boolean;
     get previousResolved(): number | undefined;
     get everResolved(): boolean;
@@ -110,8 +110,8 @@ declare class Resolvable<T = void> {
     restartAfterWait(): Promise<void>;
     static resolvedWith<U>(value: U): Resolvable<U>;
     static resolved(): Resolvable<void>;
-    static after(occurrence: Promise<void> | Resolvable): Resolvable;
-    static after(init: () => Promise<void> | Resolvable): Resolvable;
+    static after<T>(occurrence: Promise<T> | Resolvable<T>): Resolvable<T>;
+    static after<T>(init: () => Promise<T> | Resolvable<T>): Resolvable<T>;
     static all<T>(resolvables: Resolvable<T>[]): Resolvable<T[]>;
 }
 
@@ -227,6 +227,9 @@ declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypegua
 
 declare function isLike<Map extends TypeguardMap>(sample: Map): <T>(arg: T) => arg is T & GuardedWithMap<Map>;
 
+declare function isFunction(maybeFn: any): maybeFn is (...args: any[]) => any;
+declare function isFunction<Args extends any[], Result>(maybeFn: any): maybeFn is (...args: Args) => Result;
+
 declare function genericTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg: any) => boolean)): {
     <T>(arg: G | T): arg is G;
     <T_1>(arg: T_1): arg is T_1 & G;
@@ -294,58 +297,54 @@ declare const commonPredicates: {
         <T_16>(arg: T_16): arg is T_16 & boolean;
         <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
     };
-    function: {
-        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
-        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
-        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
-    };
+    function: typeof isFunction;
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_18>(arg: Promise<any> | T_18): arg is Promise<any>;
+        <T_19>(arg: T_19): arg is T_19 & Promise<any>;
+        <T_20, H_6 extends Promise<any>>(arg: T_20 | H_6): arg is H_6;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_21>(arg: object | T_21): arg is object;
+        <T_22>(arg: T_22): arg is T_22 & object;
+        <T_23, H_7 extends object>(arg: T_23 | H_7): arg is H_7;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_24>(arg: RegExp | T_24): arg is RegExp;
+        <T_25>(arg: T_25): arg is T_25 & RegExp;
+        <T_26, H_8 extends RegExp>(arg: T_26 | H_8): arg is H_8;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_27>(arg: T_27) => arg is T_27;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_28>(arg: Primitive | T_28): arg is Primitive;
+        <T_29>(arg: T_29): arg is T_29 & Primitive;
+        <T_30, H_9 extends Primitive>(arg: T_30 | H_9): arg is H_9;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_31>(arg: Jsonable | T_31): arg is Jsonable;
+        <T_32>(arg: T_32): arg is T_32 & Jsonable;
+        <T_33, H_10 extends Jsonable>(arg: T_33 | H_10): arg is H_10;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_34>(arg: JsonableObject | T_34): arg is JsonableObject;
+        <T_35>(arg: T_35): arg is T_35 & JsonableObject;
+        <T_36, H_11 extends JsonableObject>(arg: T_36 | H_11): arg is H_11;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_37>(arg: T_37 | undefined) => arg is T_37;
+    empty: <T_38 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_38) => arg is T_38 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_39>(arg: false | "" | 0 | T_39 | null | undefined) => arg is T_39;
+    falsy: <T_40>(arg: false | "" | 0 | T_40 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: typeof isAmong;
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    match: <T_41 extends object>(sample: T_41) => <U extends T_41>(arg: U) => boolean;
     like: typeof isLike;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -378,16 +377,12 @@ declare const is: {
         <T_2, H extends undefined>(arg: T_2 | H): arg is H;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_21>(arg: object | T_21): arg is object;
+        <T_22>(arg: T_22): arg is T_22 & object;
+        <T_23, H_7 extends object>(arg: T_23 | H_7): arg is H_7;
     };
-    function: {
-        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
-        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
-        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
-    };
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    function: typeof isFunction;
+    match: <T_41 extends object>(sample: T_41) => <U extends T_41>(arg: U) => boolean;
     null: {
         <T_3>(arg: T_3 | null): arg is null;
         <T_4>(arg: T_4): arg is T_4 & null;
@@ -419,40 +414,40 @@ declare const is: {
         <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
     };
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_18>(arg: Promise<any> | T_18): arg is Promise<any>;
+        <T_19>(arg: T_19): arg is T_19 & Promise<any>;
+        <T_20, H_6 extends Promise<any>>(arg: T_20 | H_6): arg is H_6;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_24>(arg: RegExp | T_24): arg is RegExp;
+        <T_25>(arg: T_25): arg is T_25 & RegExp;
+        <T_26, H_8 extends RegExp>(arg: T_26 | H_8): arg is H_8;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_27>(arg: T_27) => arg is T_27;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_28>(arg: Primitive | T_28): arg is Primitive;
+        <T_29>(arg: T_29): arg is T_29 & Primitive;
+        <T_30, H_9 extends Primitive>(arg: T_30 | H_9): arg is H_9;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_31>(arg: Jsonable | T_31): arg is Jsonable;
+        <T_32>(arg: T_32): arg is T_32 & Jsonable;
+        <T_33, H_10 extends Jsonable>(arg: T_33 | H_10): arg is H_10;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_34>(arg: JsonableObject | T_34): arg is JsonableObject;
+        <T_35>(arg: T_35): arg is T_35 & JsonableObject;
+        <T_36, H_11 extends JsonableObject>(arg: T_36 | H_11): arg is H_11;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_37>(arg: T_37 | undefined) => arg is T_37;
+    empty: <T_38 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_38) => arg is T_38 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_39>(arg: false | "" | 0 | T_39 | null | undefined) => arg is T_39;
+    falsy: <T_40>(arg: false | "" | 0 | T_40 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
@@ -474,7 +469,7 @@ declare const is: {
         boolean: (arg: unknown) => arg is unknown;
         false: (arg: unknown) => arg is unknown;
         true: (arg: unknown) => arg is unknown;
-        function: (arg: unknown) => arg is unknown;
+        function: (arg: any) => arg is any;
         promise: (arg: unknown) => arg is unknown;
         object: (arg: unknown) => arg is unknown;
         array: (arg: unknown) => arg is unknown;
@@ -500,7 +495,7 @@ declare const is: {
         like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
         match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
-        camelCase: <T_9>(arg: T_9 | Camelized<T_9>) => arg is Exclude<T_9, Camelized<T_9>> | Exclude<Camelized<T_9>, Camelized<T_9>>;
+        camelCase: <T_9>(arg: T_9 | Camelized<T_9, true>) => arg is Exclude<T_9, Camelized<T_9, true>> | Exclude<Camelized<T_9, true>, Camelized<T_9, true>>;
         anything: (arg: any) => false;
     };
 };
@@ -526,16 +521,12 @@ declare const does: {
         <T_2, H extends undefined>(arg: T_2 | H): arg is H;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_21>(arg: object | T_21): arg is object;
+        <T_22>(arg: T_22): arg is T_22 & object;
+        <T_23, H_7 extends object>(arg: T_23 | H_7): arg is H_7;
     };
-    function: {
-        <T_18>(arg: ((...args: any[]) => any) | T_18): arg is (...args: any[]) => any;
-        <T_19>(arg: T_19): arg is T_19 & ((...args: any[]) => any);
-        <T_20, H_6 extends (...args: any[]) => any>(arg: T_20 | H_6): arg is H_6;
-    };
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    function: typeof isFunction;
+    match: <T_41 extends object>(sample: T_41) => <U extends T_41>(arg: U) => boolean;
     null: {
         <T_3>(arg: T_3 | null): arg is null;
         <T_4>(arg: T_4): arg is T_4 & null;
@@ -567,40 +558,40 @@ declare const does: {
         <T_17, H_5 extends boolean>(arg: T_17 | H_5): arg is H_5;
     };
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_18>(arg: Promise<any> | T_18): arg is Promise<any>;
+        <T_19>(arg: T_19): arg is T_19 & Promise<any>;
+        <T_20, H_6 extends Promise<any>>(arg: T_20 | H_6): arg is H_6;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_24>(arg: RegExp | T_24): arg is RegExp;
+        <T_25>(arg: T_25): arg is T_25 & RegExp;
+        <T_26, H_8 extends RegExp>(arg: T_26 | H_8): arg is H_8;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_27>(arg: T_27) => arg is T_27;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_28>(arg: Primitive | T_28): arg is Primitive;
+        <T_29>(arg: T_29): arg is T_29 & Primitive;
+        <T_30, H_9 extends Primitive>(arg: T_30 | H_9): arg is H_9;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_31>(arg: Jsonable | T_31): arg is Jsonable;
+        <T_32>(arg: T_32): arg is T_32 & Jsonable;
+        <T_33, H_10 extends Jsonable>(arg: T_33 | H_10): arg is H_10;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_34>(arg: JsonableObject | T_34): arg is JsonableObject;
+        <T_35>(arg: T_35): arg is T_35 & JsonableObject;
+        <T_36, H_11 extends JsonableObject>(arg: T_36 | H_11): arg is H_11;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_37>(arg: T_37 | undefined) => arg is T_37;
+    empty: <T_38 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_38) => arg is T_38 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_39>(arg: false | "" | 0 | T_39 | null | undefined) => arg is T_39;
+    falsy: <T_40>(arg: false | "" | 0 | T_40 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
@@ -622,7 +613,7 @@ declare const does: {
         boolean: (arg: unknown) => arg is unknown;
         false: (arg: unknown) => arg is unknown;
         true: (arg: unknown) => arg is unknown;
-        function: (arg: unknown) => arg is unknown;
+        function: (arg: any) => arg is any;
         promise: (arg: unknown) => arg is unknown;
         object: (arg: unknown) => arg is unknown;
         array: (arg: unknown) => arg is unknown;
@@ -648,7 +639,7 @@ declare const does: {
         like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
         match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
-        camelCase: <T_9>(arg: T_9 | Camelized<T_9>) => arg is Exclude<T_9, Camelized<T_9>> | Exclude<Camelized<T_9>, Camelized<T_9>>;
+        camelCase: <T_9>(arg: T_9 | Camelized<T_9, true>) => arg is Exclude<T_9, Camelized<T_9, true>> | Exclude<Camelized<T_9, true>, Camelized<T_9, true>>;
         anything: (arg: any) => false;
     };
 };
@@ -663,7 +654,7 @@ declare const isnt: {
     boolean: (arg: unknown) => arg is unknown;
     false: (arg: unknown) => arg is unknown;
     true: (arg: unknown) => arg is unknown;
-    function: (arg: unknown) => arg is unknown;
+    function: (arg: any) => arg is any;
     promise: (arg: unknown) => arg is unknown;
     object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
@@ -689,7 +680,7 @@ declare const isnt: {
     like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
-    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
     anything: (arg: any) => false;
 };
 declare const aint: {
@@ -703,7 +694,7 @@ declare const aint: {
     boolean: (arg: unknown) => arg is unknown;
     false: (arg: unknown) => arg is unknown;
     true: (arg: unknown) => arg is unknown;
-    function: (arg: unknown) => arg is unknown;
+    function: (arg: any) => arg is any;
     promise: (arg: unknown) => arg is unknown;
     object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
@@ -729,7 +720,7 @@ declare const aint: {
     like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
-    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
     anything: (arg: any) => false;
 };
 declare const doesnt: {
@@ -743,7 +734,7 @@ declare const doesnt: {
     boolean: (arg: unknown) => arg is unknown;
     false: (arg: unknown) => arg is unknown;
     true: (arg: unknown) => arg is unknown;
-    function: (arg: unknown) => arg is unknown;
+    function: (arg: any) => arg is any;
     promise: (arg: unknown) => arg is unknown;
     object: (arg: unknown) => arg is unknown;
     array: (arg: unknown) => arg is unknown;
@@ -769,7 +760,7 @@ declare const doesnt: {
     like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
-    camelCase: <T_5>(arg: T_5 | Camelized<T_5>) => arg is Exclude<T_5, Camelized<T_5>> | Exclude<Camelized<T_5>, Camelized<T_5>>;
+    camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
     anything: (arg: any) => false;
 };
 
@@ -824,14 +815,16 @@ declare function assignTo<T extends object, P extends keyof T>(object: T, proper
 declare function callIts<Key extends PropertyKey, Args extends any[]>(key: Key, ...args: Args): <Object extends Record<Key, (...args: Args) => any>>(object: Object) => ReturnType<Object[Key]>;
 declare const please: typeof callIts;
 
+declare function callWith<Args extends any[]>(...args: Args): <Fn extends (...args: Args) => T, T>(fn: Fn) => T;
+
 declare function compileTimeError(item: never): never;
 declare const shouldNotBe: typeof compileTimeError;
 
 declare function getProp<Object extends object, Key extends keyof Object>(key: Key): (obj: Object) => Object[Key];
 
 declare const commonTransforms: Aliasified<{
-    itself: <T>(arg: T) => T;
-    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
+    itself: typeof itself;
+    themselves: <T extends any[]>(arrayArg: T) => T;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -843,10 +836,10 @@ declare const commonTransforms: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2>(arg: T_2) => string;
-    boolean: <T_3>(arg: T_3) => boolean;
-    number: <T_4>(arg: T_4) => number;
-    array: <T_5>(arg: T_5) => T_5[];
+    string: <T_1>(arg: T_1) => string;
+    boolean: <T_2>(arg: T_2) => boolean;
+    number: <T_3>(arg: T_3) => number;
+    array: <T_4>(arg: T_4) => T_4[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -860,14 +853,14 @@ declare const commonTransforms: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_6>(arg: T_6[]) => T_6;
-    last: <T_7>(arg: T_7[]) => T_7;
+    first: <T_5>(arg: T_5[]) => T_5;
+    last: <T_6>(arg: T_6[]) => T_6;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
-        [key: string]: T_8;
+    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
+        [key: string]: T_7;
     }) => {
         [key: string]: R;
     };
@@ -893,8 +886,8 @@ declare const commonTransforms: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const give: Aliasified<{
-    itself: <T>(arg: T) => T;
-    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
+    itself: typeof itself;
+    themselves: <T extends any[]>(arrayArg: T) => T;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -906,10 +899,10 @@ declare const give: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2>(arg: T_2) => string;
-    boolean: <T_3>(arg: T_3) => boolean;
-    number: <T_4>(arg: T_4) => number;
-    array: <T_5>(arg: T_5) => T_5[];
+    string: <T_1>(arg: T_1) => string;
+    boolean: <T_2>(arg: T_2) => boolean;
+    number: <T_3>(arg: T_3) => number;
+    array: <T_4>(arg: T_4) => T_4[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -923,14 +916,14 @@ declare const give: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_6>(arg: T_6[]) => T_6;
-    last: <T_7>(arg: T_7[]) => T_7;
+    first: <T_5>(arg: T_5[]) => T_5;
+    last: <T_6>(arg: T_6[]) => T_6;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
-        [key: string]: T_8;
+    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
+        [key: string]: T_7;
     }) => {
         [key: string]: R;
     };
@@ -956,8 +949,8 @@ declare const give: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const to: Aliasified<{
-    itself: <T>(arg: T) => T;
-    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
+    itself: typeof itself;
+    themselves: <T extends any[]>(arrayArg: T) => T;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -969,10 +962,10 @@ declare const to: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2>(arg: T_2) => string;
-    boolean: <T_3>(arg: T_3) => boolean;
-    number: <T_4>(arg: T_4) => number;
-    array: <T_5>(arg: T_5) => T_5[];
+    string: <T_1>(arg: T_1) => string;
+    boolean: <T_2>(arg: T_2) => boolean;
+    number: <T_3>(arg: T_3) => number;
+    array: <T_4>(arg: T_4) => T_4[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -986,14 +979,14 @@ declare const to: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_6>(arg: T_6[]) => T_6;
-    last: <T_7>(arg: T_7[]) => T_7;
+    first: <T_5>(arg: T_5[]) => T_5;
+    last: <T_6>(arg: T_6[]) => T_6;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
-        [key: string]: T_8;
+    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
+        [key: string]: T_7;
     }) => {
         [key: string]: R;
     };
@@ -1019,8 +1012,8 @@ declare const to: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const go: Aliasified<{
-    itself: <T>(arg: T) => T;
-    themselves: <T_1 extends any[]>(arrayArg: T_1) => T_1;
+    itself: typeof itself;
+    themselves: <T extends any[]>(arrayArg: T) => T;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -1032,10 +1025,10 @@ declare const go: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_2>(arg: T_2) => string;
-    boolean: <T_3>(arg: T_3) => boolean;
-    number: <T_4>(arg: T_4) => number;
-    array: <T_5>(arg: T_5) => T_5[];
+    string: <T_1>(arg: T_1) => string;
+    boolean: <T_2>(arg: T_2) => boolean;
+    number: <T_3>(arg: T_3) => number;
+    array: <T_4>(arg: T_4) => T_4[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -1049,14 +1042,14 @@ declare const go: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_6>(arg: T_6[]) => T_6;
-    last: <T_7>(arg: T_7[]) => T_7;
+    first: <T_5>(arg: T_5[]) => T_5;
+    last: <T_6>(arg: T_6[]) => T_6;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_8, R>(transform: (arg: T_8) => R) => (arg: {
-        [key: string]: T_8;
+    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
+        [key: string]: T_7;
     }) => {
         [key: string]: R;
     };
@@ -1084,6 +1077,8 @@ declare const go: Aliasified<{
 type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
 declare function give$<T>(arg: T): (...args: any[]) => T;
+
+declare function itself<T>(arg: T): T;
 
 type PipedFunctions<From, Via, To> = Via extends [infer Via1] ? [(from: From) => Via1, (via1: Via1) => To] : Via extends [infer Via1, ...infer ViaRest] ? [(from: From) => Via1, ...PipedFunctions<Via1, ViaRest, To>] : never;
 declare function pipe<From, Via, To>(...fns: PipedFunctions<From, [Via], To>): (from: From) => To;
@@ -1240,4 +1235,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

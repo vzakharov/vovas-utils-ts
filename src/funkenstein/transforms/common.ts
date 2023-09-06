@@ -1,7 +1,7 @@
 import _ from "lodash";
 import yaml from "js-yaml";
 import { $thrower } from "../$throw";
-import { $do, aliasify, pipe, Jsonable } from "../..";
+import { $do, aliasify, pipe, Jsonable, itself } from "../..";
 import { compileTimeError } from "./compileTimeError";
 import { getProp } from "./getProp";
 
@@ -9,7 +9,7 @@ export const commonTransforms = aliasify({
 
   // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
 
-  itself: <T>(arg: T): T => arg,
+  itself,
   themselves: <T extends any[]>(arrayArg: T): T => arrayArg,
 
   $: give$,

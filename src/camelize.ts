@@ -1,16 +1,19 @@
 import _ from "lodash";
 import { is } from "./funkenstein";
 
-export type Camelized<T> =
+export type Camelized<T, CamelizeStrings extends boolean = true> =
   T extends string
-    ? T extends `${infer U}_${infer V}`
-      ? `${Lowercase<U>}${Capitalize<Camelized<V>>}`
-      : Lowercase<T>
+    ? CamelizeStrings extends true
+      ? T extends `${infer U}_${infer V}`
+        ? `${Lowercase<U>}${Capitalize<Camelized<V>>}`
+        : Lowercase<T>
+      : T
     : T extends object[]
       ? Camelized<T[number]>[]
       : T extends object
         ? {
-          [K in keyof T as Camelized<K & string>]: Camelized<T[K]>
+          [K in keyof T as Camelized<K & string>]: Camelized<T[K], false>;
+          // (I.e., we don't want to camelize actual values that are strings)
         }
         : T;
 

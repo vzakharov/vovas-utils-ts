@@ -74,6 +74,10 @@ function not(predicate) {
   return (arg) => !predicate(arg);
 }
 
+function isFunction(maybeFn) {
+  return _.isFunction(maybeFn);
+}
+
 function genericTypeguard(predicate) {
   function typeguard(arg) {
     return predicate(arg);
@@ -97,7 +101,7 @@ const commonPredicates = {
   boolean: genericTypeguard(_.isBoolean),
   false: isExactly(false),
   true: isExactly(true),
-  function: genericTypeguard(_.isFunction),
+  function: isFunction,
   promise: isInstanceOf(Promise),
   object: genericTypeguard(_.isObject),
   array: isArray,
@@ -596,13 +600,17 @@ function callIts(key, ...args) {
 }
 const please = callIts;
 
+function callWith(...args) {
+  return (fn) => fn(...args);
+}
+
 function getProp(key) {
   return (obj) => obj[key];
 }
 
 const commonTransforms = aliasify({
   // Value-ish transforms: e.g. `.else.itself` returns the original value without needing to wrap it in a function
-  itself: (arg) => arg,
+  itself,
   themselves: (arrayArg) => arrayArg,
   $: give$,
   undefined: give$(void 0),
@@ -666,6 +674,10 @@ const to = commonTransforms;
 const go = commonTransforms;
 function give$(arg) {
   return () => arg;
+}
+
+function itself(arg) {
+  return arg;
 }
 
 function pipe(...fns) {
@@ -983,15 +995,13 @@ class Resolvable {
     if (this.config.then && this.config.then !== callback)
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
-    this.promise.then((value) => (log(`Calling then callback for Resolvable (${this.id}) with value:`, value), callback(value)));
-    return this;
+    return this.promise.then((value) => (log(`Calling then callback for Resolvable (${this.id}) with value:`, value), callback(value)));
   }
   catch(callback) {
     if (this.config.catch && this.config.catch !== callback)
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
-    this.promise.catch((reason) => (log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason), callback(reason)));
-    return this;
+    return this.promise.catch((reason) => (log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason), callback(reason)));
   }
   // TODO: Abstractify then/catch(/finally?) into a single function
   get resolved() {
@@ -1074,10 +1084,10 @@ class Resolvable {
       prohibitResolve: true
     }, "after");
     log(`Created resolvable ${resolvable.id}, resolving after ${occurrence}`);
-    occurrence.then(() => {
+    occurrence.then((result) => {
       log(`Resolvable ${resolvable.id} is now allowed to resolve`);
       resolvable.config.prohibitResolve = false;
-      resolvable.resolve();
+      resolvable.resolve(result);
     }).catch((error) => {
       log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
       resolvable.reject(error);
@@ -1140,4 +1150,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

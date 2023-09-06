@@ -81,11 +81,10 @@ export class Resolvable<T = void> {
     if ( this.config.then && this.config.then !== callback )
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
-    this.promise.then(value => (
+    return this.promise.then(value => (
       log(`Calling then callback for Resolvable (${this.id}) with value:`, value),
       callback(value)
     ));
-    return this;
   }
 
   catch( callback: (reason: any) => void | Promise<void> ) {
@@ -93,11 +92,10 @@ export class Resolvable<T = void> {
     if ( this.config.catch && this.config.catch !== callback )
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
-    this.promise.catch(reason => (
+    return this.promise.catch(reason => (
       log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason),
       callback(reason)
     ));
-    return this;
   }
 
   // TODO: Abstractify then/catch(/finally?) into a single function
@@ -192,23 +190,23 @@ export class Resolvable<T = void> {
     return new Resolvable<void>({ startResolved: true }, 'resolved');
   }
 
-  static after(occurrence: Promise<void> | Resolvable): Resolvable
-  static after(init: () => Promise<void> | Resolvable): Resolvable
-  static after(occurrenceOrInit: Promise<void> | Resolvable | (() => Promise<void> | Resolvable)) {
+  static after<T>(occurrence: Promise<T> | Resolvable<T>): Resolvable<T>
+  static after<T>(init: () => Promise<T> | Resolvable<T>): Resolvable<T>
+  static after<T>(occurrenceOrInit: Promise<T> | Resolvable<T> | (() => Promise<T> | Resolvable<T>)) {
     // const init = is.function(promiseOrInit) ? promiseOrInit : () => promiseOrInit;
     const occurrence = is.function(occurrenceOrInit) ? $try(
       occurrenceOrInit,
       error => Promise.reject(error)
     ) : occurrenceOrInit;
-    const resolvable = new Resolvable({
+    const resolvable = new Resolvable<T>({
       prohibitResolve: true,
     }, 'after');
     log(`Created resolvable ${resolvable.id}, resolving after ${occurrence}`);
     // (This is needed so we don't allow the user to resolve the resolvable before the init function is done)
-    occurrence.then(() => {
+    occurrence.then((result) => {
       log(`Resolvable ${resolvable.id} is now allowed to resolve`);
       resolvable.config.prohibitResolve = false;
-      resolvable.resolve();
+      resolvable.resolve(result);
     }).catch(error => {
       log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
       resolvable.reject(error);

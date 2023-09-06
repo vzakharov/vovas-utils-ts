@@ -3,6 +3,7 @@ import { isAmong, isArray, isCamelCase, isJsonable, isJsonableObject, isPrimitiv
 import { TypeguardMap } from '../TypeguardMap';
 import { isLike } from './isLike';
 import { not } from './not';
+import { isFunction } from './isFunction';
 
 
 export function genericTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (arg: any) => boolean ) ) {
@@ -39,7 +40,7 @@ export const commonPredicates = {
   boolean: genericTypeguard(_.isBoolean),
   false: isExactly(false),
   true: isExactly(true),
-  function: genericTypeguard(_.isFunction),
+  function: isFunction,
   promise: isInstanceOf(Promise<any>),
   object: genericTypeguard(_.isObject),
   array: isArray,
