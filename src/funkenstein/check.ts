@@ -3,7 +3,7 @@ import { logger } from "../logger";
 import { NonTypeguard, Predicate, PredicateOutput, Transform, Typeguard } from "./typings";
 
 
-const log = logger(28, 'yellow');
+const log = logger('vovas-utils.check', 'yellow');
 
 export type CheckState = {
   isFirst: boolean;

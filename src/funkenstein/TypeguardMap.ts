@@ -17,22 +17,16 @@ export type MapForType<T> = {
 export function isTypeguardMap(arg: any): arg is TypeguardMap {
   return _.isObject(arg) && _.every(arg, _.isFunction);
   // NOTE: We cannot actually check if the functions return what we want them to return, so this is a merely compile-time check.
-}
-;
-// export function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(
-//   typeguardMap: TG
-//   object: Record<Keys, any>,
-// ): object is GuardedWithMap<TG> {
+};
 
 export function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(
   typeguardMap: TG
-): (object: Record<Keys, any>) => object is GuardedWithMap<TG> {
+) {
 
-  return (
-    object => {
-      return _.every(typeguardMap, (typeguard, key) => typeguard(object[key as Keys]));
-    }
-  ) as (object: Record<Keys, any>) => object is GuardedWithMap<TG>;
+  function conforms<T>(object: T): object is GuardedWithMap<TG> extends T ? GuardedWithMap<TG> : never {
+    return _.every(typeguardMap, (typeguard, key) => typeguard(object[key as keyof T]));
+  }
 
-}
-;
+  return conforms;
+
+};

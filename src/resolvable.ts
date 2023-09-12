@@ -1,9 +1,10 @@
 import _ from "lodash";
 
-import { $try, is } from "./funkenstein/index.js";
+import { $try, give, give$, is } from "./funkenstein/index.js";
 import { logger } from "./logger.js";
 import { UnixTimestamp } from "./types.js";
 import { ensure } from "./ensure.js";
+import { ifGeneric } from "./ifGeneric.js";
 
 const log = logger('vovas-utils.resolvable');
 
@@ -18,10 +19,14 @@ export type PromiseHandlers<T> = {
 export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
   previousResolved?: UnixTimestamp;
   previousPromise?: Promise<T>;
-  startResolved?: boolean;
-  startResolvedWith?: T;
+  // startResolved?: boolean;
+  // startResolvedWith?: T;
+  startResolved?: T extends void ? boolean : undefined;
+  startResolvedWith?: T extends void ? undefined : T;
   prohibitResolve?: boolean;
-} & PromiseHandlers<T> & ( IdIsOptional extends 'idIsOptional' ? { id?: string } : { id: string } );
+} 
+  & PromiseHandlers<T> 
+  & ( IdIsOptional extends 'idIsOptional' ? { id?: string } : { id: string } );
 
 export class Resolvable<T = void> {
 
@@ -62,8 +67,8 @@ export class Resolvable<T = void> {
     const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
 
     // this.previousResolved = previousResolved;
-    if ( startResolved ) {
-      this.resolve(ensure(startResolvedWith, "startResolvedWith is required when startResolved is true"));
+    if ( startResolved || startResolvedWith ) {
+      this.resolve(startResolvedWith as T);
       this.inProgress = false;
     }
     if ( then )
@@ -160,10 +165,8 @@ export class Resolvable<T = void> {
         return log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
       else
         throw new Error(`Resolvable ${this.id} is already in progress. Cannot start.`);
-    Object.assign(this, new Resolvable({
-      ...this.config,
-      startResolved: false,
-    }));
+    const { config: { startResolved, startResolvedWith, ...config } } = this;
+    Object.assign(this, new Resolvable(config));
   };
 
   startIfNotInProgress() {
@@ -180,9 +183,21 @@ export class Resolvable<T = void> {
   };
 
   static resolvedWith<U>(value: U) {
-    return new Resolvable<U>({ 
-      startResolved: true, 
-      startResolvedWith: value 
+
+    function ifVoid<T, U>(ifTrue: T, ifFalse: U) {
+      return ifGeneric(value)(
+        is.void,
+        () => ifTrue,
+        () => ifFalse
+      );
+    }
+
+    const startResolved = ifVoid(true, undefined);
+    const startResolvedWith = ifVoid(undefined, value);    
+
+    return new Resolvable({
+      startResolved,
+      startResolvedWith,
     }, 'resolvedWith');
   };
 

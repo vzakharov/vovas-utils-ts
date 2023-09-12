@@ -14,6 +14,7 @@ export * from './json';
 export * from './logger';
 export * from './mapKeysDeep';
 export * from './merge';
+export * from './mixinable';
 export * from './npmLinks';
 export * from './objectWithKeys';
 export * from './resolvable';

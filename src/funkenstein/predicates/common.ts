@@ -31,6 +31,7 @@ export function isInstanceOf<C extends new (...args: any[]) => any>(constructor:
 export const commonPredicates = {
 
   undefined: genericTypeguard(_.isUndefined),
+  void: genericTypeguard<void>(_.isUndefined),
   null: genericTypeguard(_.isNull),
   nil: genericTypeguard(_.isNil),
   string: genericTypeguard(_.isString),
@@ -87,6 +88,7 @@ export type CommonPredicateMap = {
 export const is = merge(commonPredicates, is => ({
   not: {
     undefined: not(is.undefined),
+    void: not(is.void),
     null: not(is.null),
     nil: not(is.nil),
     string: not(is.string),

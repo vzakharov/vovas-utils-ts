@@ -18,6 +18,8 @@ export const commonTransforms = aliasify({
   null: give$(null as null),
   true: give$(true as const),
   false: give$(false as const),
+  booleanTrue: give$(true),
+  booleanFalse: give$(false),
   NaN: give$(NaN),
   Infinity: give$(Infinity),
   zero: give$(0 as const),

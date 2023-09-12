@@ -63,14 +63,13 @@ function isTypeguardMap(arg) {
   return _.isObject(arg) && _.every(arg, _.isFunction);
 }
 function conformsToTypeguardMap(typeguardMap) {
-  return (object) => {
+  function conforms(object) {
     return _.every(typeguardMap, (typeguard, key) => typeguard(object[key]));
-  };
+  }
+  return conforms;
 }
 
-function isLike(sample) {
-  return _.isObject(sample) ? conformsToTypeguardMap(sample) : () => false;
-}
+const isLike = conformsToTypeguardMap;
 
 function not(predicate) {
   return (arg) => !predicate(arg);
@@ -94,6 +93,7 @@ function isInstanceOf(constructor) {
 }
 const commonPredicates = {
   undefined: genericTypeguard(_.isUndefined),
+  void: genericTypeguard(_.isUndefined),
   null: genericTypeguard(_.isNull),
   nil: genericTypeguard(_.isNil),
   string: genericTypeguard(_.isString),
@@ -131,6 +131,7 @@ const commonPredicates = {
 const is = merge(commonPredicates, (is2) => ({
   not: {
     undefined: not(is2.undefined),
+    void: not(is2.void),
     null: not(is2.null),
     nil: not(is2.nil),
     string: not(is2.string),
@@ -417,7 +418,7 @@ function logger(index, defaultColorOrOptions, defaultSerializeAsOrAddAlways) {
   return log;
 }
 
-const log$3 = logger(28, "yellow");
+const log$3 = logger("vovas-utils.check", "yellow");
 function parseSwitch(kind, hasArgument, argument, switchStack) {
   log$3("parseSwitch", { kind, hasArgument, argument, switchStack });
   function $if2(predicate, transform2) {
@@ -584,8 +585,11 @@ const person = {
 };
 person.sayHello();
 
-function also(handler) {
-  return (value) => (handler(value), value);
+function also(...args) {
+  const callback = args.length === 1 ? args[0] : args[1];
+  const value = args.length === 1 ? void 0 : args[0];
+  const handle = (value2) => (callback(value2), value2);
+  return value === void 0 ? handle : handle(value);
 }
 
 function assignTo(object, property) {
@@ -619,6 +623,8 @@ const commonTransforms = aliasify({
   null: give$(null),
   true: give$(true),
   false: give$(false),
+  booleanTrue: give$(true),
+  booleanFalse: give$(false),
   NaN: give$(NaN),
   Infinity: give$(Infinity),
   zero: give$(0),
@@ -908,6 +914,51 @@ function merge(target, ...sources) {
   return result;
 }
 
+class MixinBuilder {
+  constructor(Base) {
+    this.Base = Base;
+  }
+  mixin(MixinFactory) {
+    const MixedClass = MixinFactory(this.Base);
+    this.Base = MixedClass;
+    return this;
+  }
+  create(...args) {
+    return new this.Base(...args);
+  }
+}
+function mixinable(BaseClass) {
+  return new MixinBuilder(BaseClass);
+}
+class Chair {
+  constructor(color) {
+    this.color = color;
+  }
+  sit() {
+    console.log(`You sit on the ${this.color} chair.`);
+  }
+}
+function FunnyMixin(BaseClass) {
+  return class extends BaseClass {
+    joke() {
+      console.log(`Why don't ${this.color} chairs ever tell secrets? Because they can't stand up for themselves!`);
+    }
+  };
+}
+function BreakableMixin(BaseClass) {
+  return class extends BaseClass {
+    break() {
+      console.log(`The ${this.color} chair breaks!`);
+    }
+  };
+}
+const FunnyBreakableChair = mixinable(Chair).mixin(FunnyMixin).mixin(BreakableMixin);
+const redFunnyBreakableChair = FunnyBreakableChair.create("red");
+const blueFunnyBreakableChair = FunnyBreakableChair.create("blue");
+redFunnyBreakableChair.sit();
+blueFunnyBreakableChair.joke();
+redFunnyBreakableChair.break();
+
 const log$1 = logger("vovas-utils.npmLinks", "yellow");
 function getNpmLinks() {
   const npmLsOutput = JSON.parse(
@@ -984,8 +1035,8 @@ class Resolvable {
       id
     };
     const { previousResolved, startResolved, startResolvedWith, then, catch: _catch } = config;
-    if (startResolved) {
-      this.resolve(ensure(startResolvedWith, "startResolvedWith is required when startResolved is true"));
+    if (startResolved || startResolvedWith) {
+      this.resolve(startResolvedWith);
       this.inProgress = false;
     }
     if (then)
@@ -1054,10 +1105,8 @@ class Resolvable {
         return log.always.yellow(`Resolvable ${this.id} is already in progress. Skipping start.`);
       else
         throw new Error(`Resolvable ${this.id} is already in progress. Cannot start.`);
-    Object.assign(this, new Resolvable({
-      ...this.config,
-      startResolved: false
-    }));
+    const { config: { startResolved, startResolvedWith, ...config } } = this;
+    Object.assign(this, new Resolvable(config));
   }
   startIfNotInProgress() {
     if (!this.inProgress)
@@ -1069,9 +1118,18 @@ class Resolvable {
     this.start();
   }
   static resolvedWith(value) {
+    function ifVoid(ifTrue, ifFalse) {
+      return ifGeneric(value)(
+        is.void,
+        () => ifTrue,
+        () => ifFalse
+      );
+    }
+    const startResolved = ifVoid(true, void 0);
+    const startResolvedWith = ifVoid(void 0, value);
     return new Resolvable({
-      startResolved: true,
-      startResolvedWith: value
+      startResolved,
+      startResolvedWith
     }, "resolvedWith");
   }
   static resolved() {
@@ -1160,6 +1218,7 @@ exports.$thrower = $thrower;
 exports.$try = $try;
 exports.$with = $with;
 exports.GroupListener = GroupListener;
+exports.MixinBuilder = MixinBuilder;
 exports.Resolvable = Resolvable;
 exports.addProperties = addProperties;
 exports.aint = aint;
@@ -1234,6 +1293,7 @@ exports.loggerInfo = loggerInfo;
 exports.mapKeysDeep = mapKeysDeep;
 exports.merge = merge;
 exports.meta = meta;
+exports.mixinable = mixinable;
 exports.mutate = mutate;
 exports.not = not;
 exports.objectWithKeys = objectWithKeys;

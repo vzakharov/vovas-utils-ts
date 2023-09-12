@@ -3,9 +3,21 @@
 //
 // Useful for handling promises, e.g. `promise.then(also(console.log))` will resolve with the original value, but also log it.
 
-export function also<T>(handler: (value: T) => void): (value: T) => T {
-  return value => (
-    handler(value),
+export function also<T>(value: T, handler: (value: T) => void): T;
+export function also<T>(handler: (value: T) => void): (value: T) => T;
+
+export function also<T>(...args: [T, (value: T) => void] | [(value: T) => void]): T | ((value: T) => T) {
+
+  const callback = args.length === 1 ? args[0] : args[1];
+  const value = args.length === 1 ? undefined : args[0];
+
+  const handle = (value: T) => (
+    callback(value),
     value
   );
+
+  return value === undefined
+    ? handle
+    : handle(value);
+
 };
