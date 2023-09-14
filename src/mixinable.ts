@@ -1,3 +1,5 @@
+import { $throw } from ".";
+
 export type Class<T = {}, Args extends any[] = any[]> = new (...args: Args) => T;
 
 export class MixinBuilder<Base, Args extends any[]> {
@@ -21,8 +23,8 @@ export function mixinable<Base, Args extends any[]>(BaseClass: Class<Base, Args>
 // Test
 
 // Define the base class
-class Chair {
-  constructor(public color: string) {}
+class Chair<C extends 'red' | 'blue'> {
+  constructor(public color: C) {}
 
   sit() {
     console.log(`You sit on the ${this.color} chair.`);
@@ -30,7 +32,7 @@ class Chair {
 }
 
 // Define the Funny mixin
-function FunnyMixin<Base extends Class<Chair>>(BaseClass: Base) {
+function FunnyMixin<Base extends Class<Chair<any>>>(BaseClass: Base) {
   return class extends BaseClass {
     joke() {
       console.log(`Why don't ${this.color} chairs ever tell secrets? Because they can't stand up for themselves!`);
@@ -39,7 +41,7 @@ function FunnyMixin<Base extends Class<Chair>>(BaseClass: Base) {
 }
 
 // Define the Breakable mixin
-function BreakableMixin<Base extends Class<Chair>>(BaseClass: Base) {
+function BreakableMixin<Base extends Class<Chair<any>>>(BaseClass: Base) {
   return class extends BaseClass {
     break() {
       console.log(`The ${this.color} chair breaks!`);
@@ -48,7 +50,7 @@ function BreakableMixin<Base extends Class<Chair>>(BaseClass: Base) {
 }
 
 // Create a factory for funny, breakable chairs
-const FunnyBreakableChair = mixinable(Chair)
+const FunnyBreakableChair = mixinable(Chair as Class<Chair<any>, ['red' | 'blue']>)
   .mixin(FunnyMixin)
   .mixin(BreakableMixin);
 

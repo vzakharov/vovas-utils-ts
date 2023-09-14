@@ -6,17 +6,17 @@
 export function also<T>(value: T, handler: (value: T) => void): T;
 export function also<T>(handler: (value: T) => void): (value: T) => T;
 
-export function also<T>(...args: [T, (value: T) => void] | [(value: T) => void]): T | ((value: T) => T) {
+export function also(...args: any[]) {
 
   const callback = args.length === 1 ? args[0] : args[1];
   const value = args.length === 1 ? undefined : args[0];
 
-  const handle = (value: T) => (
+  const handle = (value: any) => (
     callback(value),
     value
   );
 
-  return value === undefined
+  return args.length === 1
     ? handle
     : handle(value);
 

@@ -587,7 +587,7 @@ function also(...args) {
   const callback = args.length === 1 ? args[0] : args[1];
   const value = args.length === 1 ? void 0 : args[0];
   const handle = (value2) => (callback(value2), value2);
-  return value === void 0 ? handle : handle(value);
+  return args.length === 1 ? handle : handle(value);
 }
 
 function assignTo(object, property) {
