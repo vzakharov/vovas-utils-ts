@@ -5,6 +5,7 @@ export * from './createEnv';
 export * from './doWith';
 export * from './download';
 export * from './ensure';
+export * from './iterators';
 export * from './funkenstein';
 export * from './groupListener';
 export * from './humanize';

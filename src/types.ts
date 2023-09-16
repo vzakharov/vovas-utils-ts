@@ -43,3 +43,5 @@ export function $as<AsWhat>(
 export function tuple<T extends any[]>(...args: T): T {
   return args;
 }
+
+export type StringKey<T> = Extract<keyof T, string>;

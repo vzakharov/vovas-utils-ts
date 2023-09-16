@@ -50,6 +50,7 @@ declare function functionThatReturns<T>(value: T): FunctionThatReturns<T>;
 declare function $as<AsWhat>(what: any): AsWhat;
 declare function $as<AsWhat>(what: FunctionThatReturns<any>): FunctionThatReturns<AsWhat>;
 declare function tuple<T extends any[]>(...args: T): T;
+type StringKey<T> = Extract<keyof T, string>;
 
 interface CreateEnvResult<T> {
     env: T;
@@ -130,6 +131,15 @@ interface EnsurePropertyOptions {
     messageIfInvalid?: string;
 }
 declare function ensureProperty<Result, Container = any>(obj: Container, key: string, optionsOrMessageIfInvalid?: EnsurePropertyOptions | string): Result;
+
+type IteratorArgs<T extends object, R> = [
+    object: T,
+    callback: <K extends keyof T>(value: T[K], key: K) => R
+];
+declare function forEach<T extends object>(...[object, callback]: IteratorArgs<T, void>): void;
+declare function map<T extends object, R>(...[object, callback]: IteratorArgs<T, R>): R[];
+declare function every<T extends object>(...[object, callback]: IteratorArgs<T, boolean>): boolean;
+declare function any<T extends object>(...[object, callback]: IteratorArgs<T, boolean>): boolean;
 
 type MethodKey<T, Args extends any[], Result> = {
     [K in keyof T]: T[K] extends (...args: Args) => Result ? K : never;
@@ -829,7 +839,8 @@ declare function respectivelyReturn<BT1, NT1 extends BT1, BT2, NT2 extends BT2, 
 declare function thisable<This, Args extends any[], Return>(fn: (own: This, ...args: Args) => Return): (this: This, ...args: Args) => Return;
 
 declare function also<T>(value: T, handler: (value: T) => void): T;
-declare function also<T>(handler: (value: T) => void): (value: T) => T;
+declare function also<T>(handler: (value: T) => void): <U extends T>(value: U) => U;
+declare function alsoLog(prefix: string, doLog?: boolean): <T>(value: T) => T;
 
 declare function assignTo<T extends object, P extends keyof T>(object: T, property: P): <V extends T[P]>(value: V) => V;
 
@@ -1273,4 +1284,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Class, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, MixinBuilder, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Class, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, IteratorArgs, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, MixinBuilder, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, StringKey, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

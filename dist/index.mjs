@@ -589,6 +589,9 @@ function also(...args) {
   const handle = (value2) => (callback(value2), value2);
   return args.length === 1 ? handle : handle(value);
 }
+function alsoLog(prefix, doLog) {
+  return (value) => (doLog && console.log(prefix, value), value);
+}
 
 function assignTo(object, property) {
   return (value) => object[property] = value;
@@ -774,6 +777,32 @@ async function download(url, release, filename) {
 async function downloadAsStream(url, release) {
   const path2 = await download(url, release);
   return fs.createReadStream(path2);
+}
+
+function forEach(...[object, callback]) {
+  for (const key in object) {
+    callback(object[key], key);
+  }
+}
+function map(...[object, callback]) {
+  const result = [];
+  forEach(object, (value, key) => {
+    result.push(callback(value, key));
+  });
+  return result;
+}
+function every(...[object, callback]) {
+  return everyOrAny(object, callback, true);
+}
+function any(...[object, callback]) {
+  return everyOrAny(object, callback, false);
+}
+function everyOrAny(...[object, callback, every2]) {
+  for (const key in object) {
+    if (callback(object[key], key) !== every2)
+      return !every2;
+  }
+  return every2;
 }
 
 const groupListeners = {};
@@ -1208,4 +1237,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, MixinBuilder, Resolvable, addProperties, aint, aliasify, also, ansiColors, ansiPrefixes, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, everyItem, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, MixinBuilder, Resolvable, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

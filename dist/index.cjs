@@ -591,6 +591,9 @@ function also(...args) {
   const handle = (value2) => (callback(value2), value2);
   return args.length === 1 ? handle : handle(value);
 }
+function alsoLog(prefix, doLog) {
+  return (value) => (doLog && console.log(prefix, value), value);
+}
 
 function assignTo(object, property) {
   return (value) => object[property] = value;
@@ -776,6 +779,32 @@ async function download(url, release, filename) {
 async function downloadAsStream(url, release) {
   const path2 = await download(url, release);
   return fs.createReadStream(path2);
+}
+
+function forEach(...[object, callback]) {
+  for (const key in object) {
+    callback(object[key], key);
+  }
+}
+function map(...[object, callback]) {
+  const result = [];
+  forEach(object, (value, key) => {
+    result.push(callback(value, key));
+  });
+  return result;
+}
+function every(...[object, callback]) {
+  return everyOrAny(object, callback, true);
+}
+function any(...[object, callback]) {
+  return everyOrAny(object, callback, false);
+}
+function everyOrAny(...[object, callback, every2]) {
+  for (const key in object) {
+    if (callback(object[key], key) !== every2)
+      return !every2;
+  }
+  return every2;
 }
 
 const groupListeners = {};
@@ -1224,8 +1253,10 @@ exports.addProperties = addProperties;
 exports.aint = aint;
 exports.aliasify = aliasify;
 exports.also = also;
+exports.alsoLog = alsoLog;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
+exports.any = any;
 exports.assert = assert;
 exports.assign = assign;
 exports.assignTo = assignTo;
@@ -1252,7 +1283,9 @@ exports.ensureProperty = ensureProperty;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
 exports.evaluate = evaluate;
+exports.every = every;
 exports.everyItem = everyItem;
+exports.forEach = forEach;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
 exports.genericTypeguard = genericTypeguard;
@@ -1290,6 +1323,7 @@ exports.labelize = labelize;
 exports.lazily = lazily;
 exports.logger = logger;
 exports.loggerInfo = loggerInfo;
+exports.map = map;
 exports.mapKeysDeep = mapKeysDeep;
 exports.merge = merge;
 exports.meta = meta;
