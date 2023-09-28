@@ -687,14 +687,14 @@ function give$(arg) {
   return () => arg;
 }
 
-const itself = Object.assign(
-  (arg) => arg,
-  {
-    if: (typeguard) => ({
-      else: (defaultValue) => (arg) => typeguard(arg) ? arg : defaultValue
-    })
-  }
-);
+function itself(arg) {
+  return arg;
+}
+function itselfIf(typeguard) {
+  return {
+    else: (defaultValue) => (arg) => typeguard(arg) ? arg : defaultValue
+  };
+}
 
 function pipe(...fns) {
   return (from) => {
@@ -1335,6 +1335,7 @@ exports.isTypeguardMap = isTypeguardMap;
 exports.isnt = isnt;
 exports.its = its;
 exports.itself = itself;
+exports.itselfIf = itselfIf;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
