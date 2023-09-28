@@ -687,9 +687,14 @@ function give$(arg) {
   return () => arg;
 }
 
-function itself(arg) {
-  return arg;
-}
+const itself = Object.assign(
+  (arg) => arg,
+  {
+    if: (typeguard) => ({
+      else: (defaultValue) => (arg) => typeguard(arg) ? arg : defaultValue
+    })
+  }
+);
 
 function pipe(...fns) {
   return (from) => {

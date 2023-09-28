@@ -913,8 +913,12 @@ declare const shouldNotBe: typeof compileTimeError;
 declare function getProp<Object extends object, Key extends keyof Object>(key: Key): (obj: Object) => Object[Key];
 
 declare const commonTransforms: Aliasified<{
-    itself: typeof itself;
-    themselves: <T extends any[]>(arrayArg: T) => T;
+    itself: (<T>(arg: T) => T) & {
+        if: <T_1, G extends T_1>(typeguard: (arg: T_1) => arg is G) => {
+            else: (defaultValue: G) => (arg: T_1) => G;
+        };
+    };
+    themselves: <T_2 extends any[]>(arrayArg: T_2) => T_2;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -928,10 +932,10 @@ declare const commonTransforms: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_1>(arg: T_1) => string;
-    boolean: <T_2>(arg: T_2) => boolean;
-    number: <T_3>(arg: T_3) => number;
-    array: <T_4>(arg: T_4) => T_4[];
+    string: <T_3>(arg: T_3) => string;
+    boolean: <T_4>(arg: T_4) => boolean;
+    number: <T_5>(arg: T_5) => number;
+    array: <T_6>(arg: T_6) => T_6[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -945,14 +949,14 @@ declare const commonTransforms: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_5>(arg: T_5[]) => T_5;
-    last: <T_6>(arg: T_6[]) => T_6;
+    first: <T_7>(arg: T_7[]) => T_7;
+    last: <T_8>(arg: T_8[]) => T_8;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
-        [key: string]: T_7;
+    mapValues: <T_9, R>(transform: (arg: T_9) => R) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R;
     };
@@ -978,8 +982,12 @@ declare const commonTransforms: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const give: Aliasified<{
-    itself: typeof itself;
-    themselves: <T extends any[]>(arrayArg: T) => T;
+    itself: (<T>(arg: T) => T) & {
+        if: <T_1, G extends T_1>(typeguard: (arg: T_1) => arg is G) => {
+            else: (defaultValue: G) => (arg: T_1) => G;
+        };
+    };
+    themselves: <T_2 extends any[]>(arrayArg: T_2) => T_2;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -993,10 +1001,10 @@ declare const give: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_1>(arg: T_1) => string;
-    boolean: <T_2>(arg: T_2) => boolean;
-    number: <T_3>(arg: T_3) => number;
-    array: <T_4>(arg: T_4) => T_4[];
+    string: <T_3>(arg: T_3) => string;
+    boolean: <T_4>(arg: T_4) => boolean;
+    number: <T_5>(arg: T_5) => number;
+    array: <T_6>(arg: T_6) => T_6[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -1010,14 +1018,14 @@ declare const give: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_5>(arg: T_5[]) => T_5;
-    last: <T_6>(arg: T_6[]) => T_6;
+    first: <T_7>(arg: T_7[]) => T_7;
+    last: <T_8>(arg: T_8[]) => T_8;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
-        [key: string]: T_7;
+    mapValues: <T_9, R>(transform: (arg: T_9) => R) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R;
     };
@@ -1043,8 +1051,12 @@ declare const give: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const to: Aliasified<{
-    itself: typeof itself;
-    themselves: <T extends any[]>(arrayArg: T) => T;
+    itself: (<T>(arg: T) => T) & {
+        if: <T_1, G extends T_1>(typeguard: (arg: T_1) => arg is G) => {
+            else: (defaultValue: G) => (arg: T_1) => G;
+        };
+    };
+    themselves: <T_2 extends any[]>(arrayArg: T_2) => T_2;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -1058,10 +1070,10 @@ declare const to: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_1>(arg: T_1) => string;
-    boolean: <T_2>(arg: T_2) => boolean;
-    number: <T_3>(arg: T_3) => number;
-    array: <T_4>(arg: T_4) => T_4[];
+    string: <T_3>(arg: T_3) => string;
+    boolean: <T_4>(arg: T_4) => boolean;
+    number: <T_5>(arg: T_5) => number;
+    array: <T_6>(arg: T_6) => T_6[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -1075,14 +1087,14 @@ declare const to: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_5>(arg: T_5[]) => T_5;
-    last: <T_6>(arg: T_6[]) => T_6;
+    first: <T_7>(arg: T_7[]) => T_7;
+    last: <T_8>(arg: T_8[]) => T_8;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
-        [key: string]: T_7;
+    mapValues: <T_9, R>(transform: (arg: T_9) => R) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R;
     };
@@ -1108,8 +1120,12 @@ declare const to: Aliasified<{
     readonly prop: readonly ["property", "its"];
 }>;
 declare const go: Aliasified<{
-    itself: typeof itself;
-    themselves: <T extends any[]>(arrayArg: T) => T;
+    itself: (<T>(arg: T) => T) & {
+        if: <T_1, G extends T_1>(typeguard: (arg: T_1) => arg is G) => {
+            else: (defaultValue: G) => (arg: T_1) => G;
+        };
+    };
+    themselves: <T_2 extends any[]>(arrayArg: T_2) => T_2;
     $: typeof give$;
     undefined: (...args: any[]) => undefined;
     null: (...args: any[]) => null;
@@ -1123,10 +1139,10 @@ declare const go: Aliasified<{
     emptyString: (...args: any[]) => "";
     emptyArray: (...args: any[]) => readonly [];
     emptyObject: (...args: any[]) => {};
-    string: <T_1>(arg: T_1) => string;
-    boolean: <T_2>(arg: T_2) => boolean;
-    number: <T_3>(arg: T_3) => number;
-    array: <T_4>(arg: T_4) => T_4[];
+    string: <T_3>(arg: T_3) => string;
+    boolean: <T_4>(arg: T_4) => boolean;
+    number: <T_5>(arg: T_5) => number;
+    array: <T_6>(arg: T_6) => T_6[];
     keys: (arg: object) => string[];
     json: (arg: Jsonable) => string;
     yaml: (arg: Jsonable) => string;
@@ -1140,14 +1156,14 @@ declare const go: Aliasified<{
     startCase: (arg: string) => string;
     format: (format: string) => (insert: string) => string;
     replace: (template: string | RegExp, replacement: string) => (arg: string) => string;
-    first: <T_5>(arg: T_5[]) => T_5;
-    last: <T_6>(arg: T_6[]) => T_6;
+    first: <T_7>(arg: T_7[]) => T_7;
+    last: <T_8>(arg: T_8[]) => T_8;
     prop: typeof getProp;
     compileTimeError: typeof compileTimeError;
     error: typeof $thrower;
     map: <Array_1 extends any[], TransformResult>(transform: (arg: Array_1 extends (infer Item)[] ? Item : never) => TransformResult) => (arg: Array_1) => TransformResult[];
-    mapValues: <T_7, R>(transform: (arg: T_7) => R) => (arg: {
-        [key: string]: T_7;
+    mapValues: <T_9, R>(transform: (arg: T_9) => R) => (arg: {
+        [key: string]: T_9;
     }) => {
         [key: string]: R;
     };
@@ -1176,7 +1192,11 @@ type CommonTransforms = typeof commonTransforms;
 type CommonTransformKey = keyof CommonTransforms;
 declare function give$<T>(arg: T): (...args: any[]) => T;
 
-declare function itself<T>(arg: T): T;
+declare const itself: (<T>(arg: T) => T) & {
+    if: <T_1, G extends T_1>(typeguard: (arg: T_1) => arg is G) => {
+        else: (defaultValue: G) => (arg: T_1) => G;
+    };
+};
 
 type PipedFunctions<From, Via, To> = Via extends [infer Via1] ? [(from: From) => Via1, (via1: Via1) => To] : Via extends [infer Via1, ...infer ViaRest] ? [(from: From) => Via1, ...PipedFunctions<Via1, ViaRest, To>] : never;
 declare function pipe<From, Via, To>(...fns: PipedFunctions<From, [Via], To>): (from: From) => To;
