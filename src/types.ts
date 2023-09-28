@@ -14,15 +14,15 @@ export function isPrimitive(v: any): v is Primitive {
   return result;
 }
 
+export type JsonableNonArray = Primitive | JsonableObject;
+
+export type Jsonable = JsonableNonArray | Jsonable[];
+
 export type JsonableObject = {
   [key: string]: Jsonable;
 };
 
 export type KeyOfJsonable = keyof JsonableObject;
-
-export type JsonableNonArray = Primitive | JsonableObject;
-
-export type Jsonable = JsonableNonArray | Jsonable[];
 
 export type FunctionThatReturns<T> = (...args: any[]) => T;
 

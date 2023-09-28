@@ -18,6 +18,7 @@ export * from './merge';
 export * from './mixinable';
 export * from './npmLinks';
 export * from './objectWithKeys';
+export * from './reifyInterface';
 export * from './resolvable';
 export * from './setReliableTimeout';
 export * from './typed';
