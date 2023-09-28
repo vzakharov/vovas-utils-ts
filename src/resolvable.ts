@@ -13,7 +13,7 @@ const log = logger('vovas-utils.resolvable');
 export type PromiseHandlers<T> = {
   then?: (value: T) => void;
   catch?: (reason: any) => void;
-  // finally?: () => void;
+  finally?: () => void;
 }
 
 export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
@@ -30,12 +30,15 @@ export type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = fa
 
 export class Resolvable<T = void> {
 
-  inProgress: boolean = true;
+  inProgress = true;
+  rejected = false;
   private _resolve: (value: T | PromiseLike<T>) => void = () => {};
   private _reject: (reason?: any) => void = () => {};
   promise = new Promise<T>((_resolve, _reject) => { Object.assign(this, { _resolve, _reject }); });
   
   resolvedWith?: T extends void ? never : T;
+
+  rejectedWith: any = null;
 
   private config: ResolvableConfig<T>;
 
@@ -86,10 +89,11 @@ export class Resolvable<T = void> {
     if ( this.config.then && this.config.then !== callback )
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
-    return this.promise.then(value => (
+    this.promise.then(value => (
       log(`Calling then callback for Resolvable (${this.id}) with value:`, value),
       callback(value)
     ));
+    return this;
   }
 
   catch( callback: (reason: any) => void | Promise<void> ) {
@@ -97,16 +101,29 @@ export class Resolvable<T = void> {
     if ( this.config.catch && this.config.catch !== callback )
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
-    return this.promise.catch(reason => (
+    this.promise.catch(reason => (
       log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason),
       callback(reason)
     ));
+    return this;
+  }
+  
+  finally( callback: () => void | Promise<void> ) {
+    // If there's already a finally callback, throw an error
+    if ( this.config.finally && this.config.finally !== callback )
+      throw new Error(`Cannot set multiple finally callbacks on a Resolvable (${this.id})`);
+    this.config.finally = callback;
+    this.promise.finally(() => (
+      log(`Calling finally callback for Resolvable (${this.id})`),
+      callback()
+    ));
+    return this;
   }
 
   // TODO: Abstractify then/catch(/finally?) into a single function
 
   get resolved() {
-    return !this.inProgress;
+    return !this.inProgress && !this.rejected;
   }
 
   get previousResolved() {
@@ -147,6 +164,8 @@ export class Resolvable<T = void> {
   reject(reason?: any) {
     this._reject(reason);
     this.inProgress = false;
+    this.rejected = true;
+    this.rejectedWith = reason;
   }
 
   restart(value: T) {
@@ -223,7 +242,7 @@ export class Resolvable<T = void> {
       resolvable.config.prohibitResolve = false;
       resolvable.resolve(result);
     }).catch(error => {
-      log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
+      log.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split('\n')[0]);
       resolvable.reject(error);
     });
     return resolvable;

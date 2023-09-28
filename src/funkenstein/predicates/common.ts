@@ -10,6 +10,7 @@ export function genericTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (a
   function typeguard<T>(arg: T | G): arg is G;
   function typeguard<T>(arg: T): arg is T & G;
   function typeguard<T, H extends G>(arg: T | H): arg is H;
+  function typeguard(arg: any): arg is G;
   function typeguard(arg: any) {
     return predicate(arg);
   };

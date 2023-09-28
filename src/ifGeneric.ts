@@ -2,7 +2,20 @@ import _ from "lodash";
 import { is } from "./funkenstein";
 
 export function ifGeneric<T>(value: T) {
-  return function<G, U, V>(
+
+  function fork<G, U, V>(
+    typeguard: (value: T) => value is T & G,
+    ifTrue: (value: G) => U,
+    ifFalse: (value: Exclude<T, G>) => V
+  ): T extends G ? U : V;
+  
+  function fork<G extends T, U, V>(
+    typeguard: (value: T) => value is G,
+    ifTrue: (value: G) => U,
+    ifFalse: (value: Exclude<T, G>) => V
+  ): T extends G ? U : V;
+  
+  function fork<G, U, V>(
     typeguard: (value: T) => value is T & G,
     ifTrue: (value: G) => U,
     ifFalse: (value: Exclude<T, G>) => V
@@ -11,6 +24,8 @@ export function ifGeneric<T>(value: T) {
       typeguard(value) ? ifTrue(value) : ifFalse(value as Exclude<T, G>)
     ) as T extends G ? U : V; 
   }
+
+  return fork;
 }
 
 // Example

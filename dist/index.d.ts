@@ -73,6 +73,7 @@ declare function doWith<T, Result>(target: T, callback: (target: T) => Result, {
 type PromiseHandlers<T> = {
     then?: (value: T) => void;
     catch?: (reason: any) => void;
+    finally?: () => void;
 };
 type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = {
     previousResolved?: UnixTimestamp;
@@ -87,15 +88,18 @@ type ResolvableConfig<T, IdIsOptional extends 'idIsOptional' | false = false> = 
 });
 declare class Resolvable<T = void> {
     inProgress: boolean;
+    rejected: boolean;
     private _resolve;
     private _reject;
     promise: Promise<T>;
     resolvedWith?: T extends void ? never : T;
+    rejectedWith: any;
     private config;
     constructor(config?: ResolvableConfig<T, 'idIsOptional'>, slug?: string);
     constructor(slug: string);
-    then(callback: (value: T) => void | Promise<void>): Promise<void>;
-    catch(callback: (reason: any) => void | Promise<void>): Promise<void | T>;
+    then(callback: (value: T) => void | Promise<void>): this;
+    catch(callback: (reason: any) => void | Promise<void>): this;
+    finally(callback: () => void | Promise<void>): this;
     get resolved(): boolean;
     get previousResolved(): number | undefined;
     get everResolved(): boolean;
@@ -134,7 +138,7 @@ declare function ensureProperty<Result, Container = any>(obj: Container, key: st
 
 type IteratorArgs<T extends object, R> = [
     object: T,
-    callback: <K extends keyof T>(value: T[K], key: K) => R
+    callback: <K extends StringKey<T>>(value: T[K], key: K) => R
 ];
 declare function forEach<T extends object>(...[object, callback]: IteratorArgs<T, void>): void;
 declare function map<T extends object, R>(...[object, callback]: IteratorArgs<T, R>): R[];
@@ -242,106 +246,126 @@ declare function genericTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg
     <T>(arg: G | T): arg is G;
     <T_1>(arg: T_1): arg is T_1 & G;
     <T_2, H extends G>(arg: T_2 | H): arg is H;
+    (arg: any): arg is G;
 };
 type GenericTypeguard<G> = ReturnType<typeof genericTypeguard<G>>;
 declare function isExactly<T>(sample: T): {
     <T_1>(arg: T | T_1): arg is T;
     <T_2>(arg: T_2): arg is T_2 & T;
     <T_3, H extends T>(arg: T_3 | H): arg is H;
+    (arg: any): arg is T;
 };
 declare function isInstanceOf<C extends new (...args: any[]) => any>(constructor: C): {
     <T>(arg: InstanceType<C> | T): arg is InstanceType<C>;
     <T_1>(arg: T_1): arg is T_1 & InstanceType<C>;
     <T_2, H extends InstanceType<C>>(arg: T_2 | H): arg is H;
+    (arg: any): arg is InstanceType<C>;
 };
 declare const commonPredicates: {
     undefined: {
         <T>(arg: T | undefined): arg is undefined;
         <T_1>(arg: T_1): arg is T_1 & undefined;
         <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+        (arg: any): arg is undefined;
     };
     void: {
         <T_3>(arg: void | T_3): arg is void;
         <T_4>(arg: T_4): arg is T_4 & void;
         <T_5, H_1 extends void>(arg: T_5 | H_1): arg is H_1;
+        (arg: any): arg is void;
     };
     null: {
         <T_6>(arg: T_6 | null): arg is null;
         <T_7>(arg: T_7): arg is T_7 & null;
         <T_8, H_2 extends null>(arg: T_8 | H_2): arg is H_2;
+        (arg: any): arg is null;
     };
     nil: {
         <T_9>(arg: T_9 | null | undefined): arg is null | undefined;
         <T_10>(arg: T_10): arg is T_10 & (null | undefined);
         <T_11, H_3 extends null | undefined>(arg: T_11 | H_3): arg is H_3;
+        (arg: any): arg is null | undefined;
     };
     string: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     emptyString: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     number: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     zero: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     boolean: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     false: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     true: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     function: typeof isFunction;
     promise: {
         <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
         <T_22>(arg: T_22): arg is T_22 & Promise<any>;
         <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is Promise<any>;
     };
     object: {
         <T_24>(arg: object | T_24): arg is object;
         <T_25>(arg: T_25): arg is T_25 & object;
         <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        (arg: any): arg is object;
     };
     array: typeof isArray;
     regexp: {
         <T_27>(arg: RegExp | T_27): arg is RegExp;
         <T_28>(arg: T_28): arg is T_28 & RegExp;
         <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        (arg: any): arg is RegExp;
     };
     itself: <T_30>(arg: T_30) => arg is T_30;
     primitive: {
         <T_31>(arg: Primitive | T_31): arg is Primitive;
         <T_32>(arg: T_32): arg is T_32 & Primitive;
         <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        (arg: any): arg is Primitive;
     };
     jsonable: {
         <T_34>(arg: Jsonable | T_34): arg is Jsonable;
         <T_35>(arg: T_35): arg is T_35 & Jsonable;
         <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        (arg: any): arg is Jsonable;
     };
     jsonableObject: {
         <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
         <T_38>(arg: T_38): arg is T_38 & JsonableObject;
         <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        (arg: any): arg is JsonableObject;
     };
     defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
     empty: <T_41 extends {
@@ -373,26 +397,31 @@ declare const is: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     number: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     boolean: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     undefined: {
         <T>(arg: T | undefined): arg is undefined;
         <T_1>(arg: T_1): arg is T_1 & undefined;
         <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+        (arg: any): arg is undefined;
     };
     object: {
         <T_24>(arg: object | T_24): arg is object;
         <T_25>(arg: T_25): arg is T_25 & object;
         <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        (arg: any): arg is object;
     };
     function: typeof isFunction;
     match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
@@ -400,63 +429,75 @@ declare const is: {
         <T_3>(arg: void | T_3): arg is void;
         <T_4>(arg: T_4): arg is T_4 & void;
         <T_5, H_1 extends void>(arg: T_5 | H_1): arg is H_1;
+        (arg: any): arg is void;
     };
     null: {
         <T_6>(arg: T_6 | null): arg is null;
         <T_7>(arg: T_7): arg is T_7 & null;
         <T_8, H_2 extends null>(arg: T_8 | H_2): arg is H_2;
+        (arg: any): arg is null;
     };
     nil: {
         <T_9>(arg: T_9 | null | undefined): arg is null | undefined;
         <T_10>(arg: T_10): arg is T_10 & (null | undefined);
         <T_11, H_3 extends null | undefined>(arg: T_11 | H_3): arg is H_3;
+        (arg: any): arg is null | undefined;
     };
     emptyString: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     zero: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     false: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     true: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     promise: {
         <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
         <T_22>(arg: T_22): arg is T_22 & Promise<any>;
         <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is Promise<any>;
     };
     array: typeof isArray;
     regexp: {
         <T_27>(arg: RegExp | T_27): arg is RegExp;
         <T_28>(arg: T_28): arg is T_28 & RegExp;
         <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        (arg: any): arg is RegExp;
     };
     itself: <T_30>(arg: T_30) => arg is T_30;
     primitive: {
         <T_31>(arg: Primitive | T_31): arg is Primitive;
         <T_32>(arg: T_32): arg is T_32 & Primitive;
         <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        (arg: any): arg is Primitive;
     };
     jsonable: {
         <T_34>(arg: Jsonable | T_34): arg is Jsonable;
         <T_35>(arg: T_35): arg is T_35 & Jsonable;
         <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        (arg: any): arg is Jsonable;
     };
     jsonableObject: {
         <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
         <T_38>(arg: T_38): arg is T_38 & JsonableObject;
         <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        (arg: any): arg is JsonableObject;
     };
     defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
     empty: <T_41 extends {
@@ -477,26 +518,26 @@ declare const is: {
     camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
-        undefined: (arg: unknown) => arg is unknown;
-        void: (arg: unknown) => arg is unknown;
-        null: (arg: unknown) => arg is unknown;
-        nil: (arg: unknown) => arg is unknown;
-        string: (arg: unknown) => arg is unknown;
-        emptyString: (arg: unknown) => arg is unknown;
-        number: (arg: unknown) => arg is unknown;
-        zero: (arg: unknown) => arg is unknown;
-        boolean: (arg: unknown) => arg is unknown;
-        false: (arg: unknown) => arg is unknown;
-        true: (arg: unknown) => arg is unknown;
+        undefined: (arg: any) => arg is any;
+        void: (arg: any) => arg is any;
+        null: (arg: any) => arg is any;
+        nil: (arg: any) => arg is any;
+        string: (arg: any) => arg is any;
+        emptyString: (arg: any) => arg is any;
+        number: (arg: any) => arg is any;
+        zero: (arg: any) => arg is any;
+        boolean: (arg: any) => arg is any;
+        false: (arg: any) => arg is any;
+        true: (arg: any) => arg is any;
         function: (arg: any) => arg is any;
-        promise: (arg: unknown) => arg is unknown;
-        object: (arg: unknown) => arg is unknown;
+        promise: (arg: any) => arg is any;
+        object: (arg: any) => arg is any;
         array: (arg: unknown) => arg is unknown;
-        regexp: (arg: unknown) => arg is unknown;
+        regexp: (arg: any) => arg is any;
         itself: <T>(arg: T) => arg is Exclude<T, T>;
-        primitive: (arg: unknown) => arg is unknown;
-        jsonable: (arg: unknown) => arg is unknown;
-        jsonableObject: (arg: unknown) => arg is unknown;
+        primitive: (arg: any) => arg is any;
+        jsonable: (arg: any) => arg is any;
+        jsonableObject: (arg: any) => arg is any;
         defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
         empty: <T_2 extends {
             length: number;
@@ -505,7 +546,7 @@ declare const is: {
         }>;
         truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
         falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
-        exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
+        exactly: <T_5>(sample: T_5) => (arg: any) => arg is Exclude<any, T_5>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
@@ -523,26 +564,31 @@ declare const does: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     number: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     boolean: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     undefined: {
         <T>(arg: T | undefined): arg is undefined;
         <T_1>(arg: T_1): arg is T_1 & undefined;
         <T_2, H extends undefined>(arg: T_2 | H): arg is H;
+        (arg: any): arg is undefined;
     };
     object: {
         <T_24>(arg: object | T_24): arg is object;
         <T_25>(arg: T_25): arg is T_25 & object;
         <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        (arg: any): arg is object;
     };
     function: typeof isFunction;
     match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
@@ -550,63 +596,75 @@ declare const does: {
         <T_3>(arg: void | T_3): arg is void;
         <T_4>(arg: T_4): arg is T_4 & void;
         <T_5, H_1 extends void>(arg: T_5 | H_1): arg is H_1;
+        (arg: any): arg is void;
     };
     null: {
         <T_6>(arg: T_6 | null): arg is null;
         <T_7>(arg: T_7): arg is T_7 & null;
         <T_8, H_2 extends null>(arg: T_8 | H_2): arg is H_2;
+        (arg: any): arg is null;
     };
     nil: {
         <T_9>(arg: T_9 | null | undefined): arg is null | undefined;
         <T_10>(arg: T_10): arg is T_10 & (null | undefined);
         <T_11, H_3 extends null | undefined>(arg: T_11 | H_3): arg is H_3;
+        (arg: any): arg is null | undefined;
     };
     emptyString: {
         <T_12>(arg: string | T_12): arg is string;
         <T_13>(arg: T_13): arg is T_13 & string;
         <T_14, H_4 extends string>(arg: T_14 | H_4): arg is H_4;
+        (arg: any): arg is string;
     };
     zero: {
         <T_15>(arg: number | T_15): arg is number;
         <T_16>(arg: T_16): arg is T_16 & number;
         <T_17, H_5 extends number>(arg: T_17 | H_5): arg is H_5;
+        (arg: any): arg is number;
     };
     false: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     true: {
         <T_18>(arg: boolean | T_18): arg is boolean;
         <T_19>(arg: T_19): arg is T_19 & boolean;
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
+        (arg: any): arg is boolean;
     };
     promise: {
         <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
         <T_22>(arg: T_22): arg is T_22 & Promise<any>;
         <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is Promise<any>;
     };
     array: typeof isArray;
     regexp: {
         <T_27>(arg: RegExp | T_27): arg is RegExp;
         <T_28>(arg: T_28): arg is T_28 & RegExp;
         <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        (arg: any): arg is RegExp;
     };
     itself: <T_30>(arg: T_30) => arg is T_30;
     primitive: {
         <T_31>(arg: Primitive | T_31): arg is Primitive;
         <T_32>(arg: T_32): arg is T_32 & Primitive;
         <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        (arg: any): arg is Primitive;
     };
     jsonable: {
         <T_34>(arg: Jsonable | T_34): arg is Jsonable;
         <T_35>(arg: T_35): arg is T_35 & Jsonable;
         <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        (arg: any): arg is Jsonable;
     };
     jsonableObject: {
         <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
         <T_38>(arg: T_38): arg is T_38 & JsonableObject;
         <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        (arg: any): arg is JsonableObject;
     };
     defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
     empty: <T_41 extends {
@@ -627,26 +685,26 @@ declare const does: {
     camelCase: typeof isCamelCase;
     anything: (...args: any[]) => true;
     not: {
-        undefined: (arg: unknown) => arg is unknown;
-        void: (arg: unknown) => arg is unknown;
-        null: (arg: unknown) => arg is unknown;
-        nil: (arg: unknown) => arg is unknown;
-        string: (arg: unknown) => arg is unknown;
-        emptyString: (arg: unknown) => arg is unknown;
-        number: (arg: unknown) => arg is unknown;
-        zero: (arg: unknown) => arg is unknown;
-        boolean: (arg: unknown) => arg is unknown;
-        false: (arg: unknown) => arg is unknown;
-        true: (arg: unknown) => arg is unknown;
+        undefined: (arg: any) => arg is any;
+        void: (arg: any) => arg is any;
+        null: (arg: any) => arg is any;
+        nil: (arg: any) => arg is any;
+        string: (arg: any) => arg is any;
+        emptyString: (arg: any) => arg is any;
+        number: (arg: any) => arg is any;
+        zero: (arg: any) => arg is any;
+        boolean: (arg: any) => arg is any;
+        false: (arg: any) => arg is any;
+        true: (arg: any) => arg is any;
         function: (arg: any) => arg is any;
-        promise: (arg: unknown) => arg is unknown;
-        object: (arg: unknown) => arg is unknown;
+        promise: (arg: any) => arg is any;
+        object: (arg: any) => arg is any;
         array: (arg: unknown) => arg is unknown;
-        regexp: (arg: unknown) => arg is unknown;
+        regexp: (arg: any) => arg is any;
         itself: <T>(arg: T) => arg is Exclude<T, T>;
-        primitive: (arg: unknown) => arg is unknown;
-        jsonable: (arg: unknown) => arg is unknown;
-        jsonableObject: (arg: unknown) => arg is unknown;
+        primitive: (arg: any) => arg is any;
+        jsonable: (arg: any) => arg is any;
+        jsonableObject: (arg: any) => arg is any;
         defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
         empty: <T_2 extends {
             length: number;
@@ -655,7 +713,7 @@ declare const does: {
         }>;
         truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
         falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
-        exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
+        exactly: <T_5>(sample: T_5) => (arg: any) => arg is Exclude<any, T_5>;
         above: (sample: number) => (arg: number) => boolean;
         below: (sample: number) => (arg: number) => boolean;
         atLeast: (sample: number) => (arg: number) => boolean;
@@ -669,26 +727,26 @@ declare const does: {
     };
 };
 declare const isnt: {
-    undefined: (arg: unknown) => arg is unknown;
-    void: (arg: unknown) => arg is unknown;
-    null: (arg: unknown) => arg is unknown;
-    nil: (arg: unknown) => arg is unknown;
-    string: (arg: unknown) => arg is unknown;
-    emptyString: (arg: unknown) => arg is unknown;
-    number: (arg: unknown) => arg is unknown;
-    zero: (arg: unknown) => arg is unknown;
-    boolean: (arg: unknown) => arg is unknown;
-    false: (arg: unknown) => arg is unknown;
-    true: (arg: unknown) => arg is unknown;
+    undefined: (arg: any) => arg is any;
+    void: (arg: any) => arg is any;
+    null: (arg: any) => arg is any;
+    nil: (arg: any) => arg is any;
+    string: (arg: any) => arg is any;
+    emptyString: (arg: any) => arg is any;
+    number: (arg: any) => arg is any;
+    zero: (arg: any) => arg is any;
+    boolean: (arg: any) => arg is any;
+    false: (arg: any) => arg is any;
+    true: (arg: any) => arg is any;
     function: (arg: any) => arg is any;
-    promise: (arg: unknown) => arg is unknown;
-    object: (arg: unknown) => arg is unknown;
+    promise: (arg: any) => arg is any;
+    object: (arg: any) => arg is any;
     array: (arg: unknown) => arg is unknown;
-    regexp: (arg: unknown) => arg is unknown;
+    regexp: (arg: any) => arg is any;
     itself: <T>(arg: T) => arg is Exclude<T, T>;
-    primitive: (arg: unknown) => arg is unknown;
-    jsonable: (arg: unknown) => arg is unknown;
-    jsonableObject: (arg: unknown) => arg is unknown;
+    primitive: (arg: any) => arg is any;
+    jsonable: (arg: any) => arg is any;
+    jsonableObject: (arg: any) => arg is any;
     defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
     empty: <T_2 extends {
         length: number;
@@ -697,7 +755,7 @@ declare const isnt: {
     }>;
     truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
     falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
-    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
+    exactly: <T_5>(sample: T_5) => (arg: any) => arg is Exclude<any, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -710,26 +768,26 @@ declare const isnt: {
     anything: (arg: any) => false;
 };
 declare const aint: {
-    undefined: (arg: unknown) => arg is unknown;
-    void: (arg: unknown) => arg is unknown;
-    null: (arg: unknown) => arg is unknown;
-    nil: (arg: unknown) => arg is unknown;
-    string: (arg: unknown) => arg is unknown;
-    emptyString: (arg: unknown) => arg is unknown;
-    number: (arg: unknown) => arg is unknown;
-    zero: (arg: unknown) => arg is unknown;
-    boolean: (arg: unknown) => arg is unknown;
-    false: (arg: unknown) => arg is unknown;
-    true: (arg: unknown) => arg is unknown;
+    undefined: (arg: any) => arg is any;
+    void: (arg: any) => arg is any;
+    null: (arg: any) => arg is any;
+    nil: (arg: any) => arg is any;
+    string: (arg: any) => arg is any;
+    emptyString: (arg: any) => arg is any;
+    number: (arg: any) => arg is any;
+    zero: (arg: any) => arg is any;
+    boolean: (arg: any) => arg is any;
+    false: (arg: any) => arg is any;
+    true: (arg: any) => arg is any;
     function: (arg: any) => arg is any;
-    promise: (arg: unknown) => arg is unknown;
-    object: (arg: unknown) => arg is unknown;
+    promise: (arg: any) => arg is any;
+    object: (arg: any) => arg is any;
     array: (arg: unknown) => arg is unknown;
-    regexp: (arg: unknown) => arg is unknown;
+    regexp: (arg: any) => arg is any;
     itself: <T>(arg: T) => arg is Exclude<T, T>;
-    primitive: (arg: unknown) => arg is unknown;
-    jsonable: (arg: unknown) => arg is unknown;
-    jsonableObject: (arg: unknown) => arg is unknown;
+    primitive: (arg: any) => arg is any;
+    jsonable: (arg: any) => arg is any;
+    jsonableObject: (arg: any) => arg is any;
     defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
     empty: <T_2 extends {
         length: number;
@@ -738,7 +796,7 @@ declare const aint: {
     }>;
     truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
     falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
-    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
+    exactly: <T_5>(sample: T_5) => (arg: any) => arg is Exclude<any, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -751,26 +809,26 @@ declare const aint: {
     anything: (arg: any) => false;
 };
 declare const doesnt: {
-    undefined: (arg: unknown) => arg is unknown;
-    void: (arg: unknown) => arg is unknown;
-    null: (arg: unknown) => arg is unknown;
-    nil: (arg: unknown) => arg is unknown;
-    string: (arg: unknown) => arg is unknown;
-    emptyString: (arg: unknown) => arg is unknown;
-    number: (arg: unknown) => arg is unknown;
-    zero: (arg: unknown) => arg is unknown;
-    boolean: (arg: unknown) => arg is unknown;
-    false: (arg: unknown) => arg is unknown;
-    true: (arg: unknown) => arg is unknown;
+    undefined: (arg: any) => arg is any;
+    void: (arg: any) => arg is any;
+    null: (arg: any) => arg is any;
+    nil: (arg: any) => arg is any;
+    string: (arg: any) => arg is any;
+    emptyString: (arg: any) => arg is any;
+    number: (arg: any) => arg is any;
+    zero: (arg: any) => arg is any;
+    boolean: (arg: any) => arg is any;
+    false: (arg: any) => arg is any;
+    true: (arg: any) => arg is any;
     function: (arg: any) => arg is any;
-    promise: (arg: unknown) => arg is unknown;
-    object: (arg: unknown) => arg is unknown;
+    promise: (arg: any) => arg is any;
+    object: (arg: any) => arg is any;
     array: (arg: unknown) => arg is unknown;
-    regexp: (arg: unknown) => arg is unknown;
+    regexp: (arg: any) => arg is any;
     itself: <T>(arg: T) => arg is Exclude<T, T>;
-    primitive: (arg: unknown) => arg is unknown;
-    jsonable: (arg: unknown) => arg is unknown;
-    jsonableObject: (arg: unknown) => arg is unknown;
+    primitive: (arg: any) => arg is any;
+    jsonable: (arg: any) => arg is any;
+    jsonableObject: (arg: any) => arg is any;
     defined: <T_1>(arg: T_1 | undefined) => arg is Exclude<undefined, T_1> | Exclude<T_1, T_1>;
     empty: <T_2 extends {
         length: number;
@@ -779,7 +837,7 @@ declare const doesnt: {
     }>;
     truthy: <T_3>(arg: false | "" | 0 | T_3 | null | undefined) => arg is Exclude<undefined, T_3> | Exclude<null, T_3> | Exclude<false, T_3> | Exclude<"", T_3> | Exclude<0, T_3> | Exclude<T_3, T_3>;
     falsy: <T_4>(arg: false | "" | 0 | T_4 | null | undefined) => arg is Exclude<T_4, false | "" | 0 | null | undefined>;
-    exactly: <T_5>(sample: T_5) => (arg: unknown) => arg is Exclude<unknown, T_5>;
+    exactly: <T_5>(sample: T_5) => (arg: any) => arg is Exclude<any, T_5>;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
@@ -1165,7 +1223,10 @@ declare function labelize(values: string[]): {
     label: string;
 }[];
 
-declare function ifGeneric<T>(value: T): <G, U, V>(typeguard: (value: T) => value is T & G, ifTrue: (value: G) => U, ifFalse: (value: Exclude<T, G>) => V) => T extends G ? U : V;
+declare function ifGeneric<T>(value: T): {
+    <G, U, V>(typeguard: (value: T) => value is T & G, ifTrue: (value: G) => U, ifFalse: (value: Exclude<T, G>) => V): T extends G ? U : V;
+    <G_1 extends T, U_1, V_1>(typeguard: (value: T) => value is G_1, ifTrue: (value: G_1) => U_1, ifFalse: (value: Exclude<T, G_1>) => V_1): T extends G_1 ? U_1 : V_1;
+};
 
 declare function jsObjectString(obj: JsonableObject): string;
 
@@ -1264,9 +1325,7 @@ interface IViteConfig {
 }
 declare function forceUpdateNpmLinks(): void;
 
-declare function objectWithKeys<Key extends string, Initializer extends (key: Key) => ReturnType, ReturnType>(keys: Key[], initializer: Initializer): {
-    [key in Key]: ReturnType;
-};
+declare function objectWithKeys<Key extends string, ReturnType>(keys: Key[] | readonly Key[], initializer: (key: Key) => ReturnType): { [key in Key]: ReturnType; };
 
 declare function setReliableTimeout(callback: (actualTimePassed: number) => void, timeout: number): NodeJS.Timeout;
 

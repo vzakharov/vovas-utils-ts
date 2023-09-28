@@ -838,9 +838,10 @@ function labelize(values) {
 }
 
 function ifGeneric(value) {
-  return function(typeguard, ifTrue, ifFalse) {
+  function fork(typeguard, ifTrue, ifFalse) {
     return typeguard(value) ? ifTrue(value) : ifFalse(value);
-  };
+  }
+  return fork;
 }
 function stringNumberDial(value) {
   return ifGeneric(value)(
@@ -1048,6 +1049,7 @@ const log = logger("vovas-utils.resolvable");
 class Resolvable {
   constructor(slugOrConfig = {}, nothingOrSlug = "resolvable") {
     this.inProgress = true;
+    this.rejected = false;
     this._resolve = () => {
     };
     this._reject = () => {
@@ -1055,6 +1057,7 @@ class Resolvable {
     this.promise = new Promise((_resolve, _reject) => {
       Object.assign(this, { _resolve, _reject });
     });
+    this.rejectedWith = null;
     const [slug, config] = is.string(slugOrConfig) ? [slugOrConfig, {}] : [nothingOrSlug, slugOrConfig];
     const id = config.id ?? _.uniqueId(slug + "-");
     this.config = {
@@ -1075,17 +1078,26 @@ class Resolvable {
     if (this.config.then && this.config.then !== callback)
       throw new Error(`Cannot set multiple then callbacks on a Resolvable (${this.id})`);
     this.config.then = callback;
-    return this.promise.then((value) => (log(`Calling then callback for Resolvable (${this.id}) with value:`, value), callback(value)));
+    this.promise.then((value) => (log(`Calling then callback for Resolvable (${this.id}) with value:`, value), callback(value)));
+    return this;
   }
   catch(callback) {
     if (this.config.catch && this.config.catch !== callback)
       throw new Error(`Cannot set multiple catch callbacks on a Resolvable (${this.id})`);
     this.config.catch = callback;
-    return this.promise.catch((reason) => (log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason), callback(reason)));
+    this.promise.catch((reason) => (log(`Calling catch callback for Resolvable (${this.id}) with reason:`, reason), callback(reason)));
+    return this;
+  }
+  finally(callback) {
+    if (this.config.finally && this.config.finally !== callback)
+      throw new Error(`Cannot set multiple finally callbacks on a Resolvable (${this.id})`);
+    this.config.finally = callback;
+    this.promise.finally(() => (log(`Calling finally callback for Resolvable (${this.id})`), callback()));
+    return this;
   }
   // TODO: Abstractify then/catch(/finally?) into a single function
   get resolved() {
-    return !this.inProgress;
+    return !this.inProgress && !this.rejected;
   }
   get previousResolved() {
     return this.config.previousResolved;
@@ -1117,6 +1129,8 @@ class Resolvable {
   reject(reason) {
     this._reject(reason);
     this.inProgress = false;
+    this.rejected = true;
+    this.rejectedWith = reason;
   }
   restart(value) {
     this.resolve(value);
@@ -1176,7 +1190,7 @@ class Resolvable {
       resolvable.config.prohibitResolve = false;
       resolvable.resolve(result);
     }).catch((error) => {
-      log.always.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
+      log.red(`Resolvable ${resolvable.id} rejected with`, error.toString().split("\n")[0]);
       resolvable.reject(error);
     });
     return resolvable;

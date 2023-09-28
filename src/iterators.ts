@@ -1,6 +1,8 @@
+import { StringKey } from "./types";
+
 export type IteratorArgs<T extends object, R> = [
   object: T,
-  callback: <K extends keyof T>(value: T[K], key: K) => R
+  callback: <K extends StringKey<T>>(value: T[K], key: K) => R
 ]
 
 export function forEach<T extends object>(...[object, callback]: IteratorArgs<T, void>) {
