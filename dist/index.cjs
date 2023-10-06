@@ -79,39 +79,39 @@ function isFunction(maybeFn) {
   return _.isFunction(maybeFn);
 }
 
-function genericTypeguard(predicate) {
+function asTypeguard(predicate) {
   function typeguard(arg) {
     return predicate(arg);
   }
   return typeguard;
 }
 function isExactly(sample) {
-  return genericTypeguard((arg) => _.isEqual(arg, sample));
+  return asTypeguard((arg) => _.isEqual(arg, sample));
 }
 function isInstanceOf(constructor) {
-  return genericTypeguard((arg) => arg instanceof constructor);
+  return asTypeguard((arg) => arg instanceof constructor);
 }
 const commonPredicates = {
-  undefined: genericTypeguard(_.isUndefined),
-  void: genericTypeguard(_.isUndefined),
-  null: genericTypeguard(_.isNull),
-  nil: genericTypeguard(_.isNil),
-  string: genericTypeguard(_.isString),
+  undefined: asTypeguard(_.isUndefined),
+  void: asTypeguard(_.isUndefined),
+  null: asTypeguard(_.isNull),
+  nil: asTypeguard(_.isNil),
+  string: asTypeguard(_.isString),
   emptyString: isExactly(""),
-  number: genericTypeguard(_.isNumber),
+  number: asTypeguard(_.isNumber),
   zero: isExactly(0),
-  boolean: genericTypeguard(_.isBoolean),
+  boolean: asTypeguard(_.isBoolean),
   false: isExactly(false),
   true: isExactly(true),
   function: isFunction,
   promise: isInstanceOf(Promise),
-  object: genericTypeguard(_.isObject),
+  object: asTypeguard(_.isObject),
   array: isArray,
-  regexp: genericTypeguard(_.isRegExp),
+  regexp: asTypeguard(_.isRegExp),
   itself: (arg) => true,
-  primitive: genericTypeguard(isPrimitive),
-  jsonable: genericTypeguard(isJsonable),
-  jsonableObject: genericTypeguard(isJsonableObject),
+  primitive: asTypeguard(isPrimitive),
+  jsonable: asTypeguard(isJsonable),
+  jsonableObject: asTypeguard(isJsonableObject),
   defined: (arg) => !_.isUndefined(arg),
   empty: (arg) => arg.length === 0,
   truthy: (arg) => !!arg,
@@ -1276,6 +1276,7 @@ exports.alsoLog = alsoLog;
 exports.ansiColors = ansiColors;
 exports.ansiPrefixes = ansiPrefixes;
 exports.any = any;
+exports.asTypeguard = asTypeguard;
 exports.assert = assert;
 exports.assign = assign;
 exports.assignTo = assignTo;
@@ -1307,7 +1308,6 @@ exports.everyItem = everyItem;
 exports.forEach = forEach;
 exports.forceUpdateNpmLinks = forceUpdateNpmLinks;
 exports.functionThatReturns = functionThatReturns;
-exports.genericTypeguard = genericTypeguard;
 exports.getHeapUsedMB = getHeapUsedMB;
 exports.getNpmLinks = getNpmLinks;
 exports.getProp = getProp;

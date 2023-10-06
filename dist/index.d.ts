@@ -185,7 +185,7 @@ type MapForType<T> = {
     [Key in keyof T]: Typeguard<any, T[Key]>;
 };
 declare function isTypeguardMap(arg: any): arg is TypeguardMap;
-declare function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(typeguardMap: TG): <T>(object: T) => object is GuardedWithMap<TG> extends T ? GuardedWithMap<TG> : never;
+declare function conformsToTypeguardMap<Keys extends string, TG extends TypeguardMap<Keys>>(typeguardMap: TG): <T>(object: T) => object is GuardedWithMap<TG> extends T ? GuardedWithMap<TG> : T & GuardedWithMap<TG>;
 
 type ChainableKeys<Function extends (...args: any[]) => any, ChainedParameterIndex extends number> = (keyof NonNullable<Parameters<Function>[ChainedParameterIndex]>);
 type ChainableTypes<Function extends (...args: any[]) => any, ChainedParameterIndex extends number, ChainedKeys extends ChainableKeys<Function, ChainedParameterIndex>[]> = Pick<NonNullable<Parameters<Function>[ChainedParameterIndex]>, ChainedKeys[number]>;
@@ -242,13 +242,13 @@ declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypegua
 declare function isFunction(maybeFn: any): maybeFn is (...args: any[]) => any;
 declare function isFunction<Args extends any[], Result>(maybeFn: any): maybeFn is (...args: Args) => Result;
 
-declare function genericTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg: any) => boolean)): {
+declare function asTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg: any) => boolean)): {
     <T>(arg: G | T): arg is G;
     <T_1>(arg: T_1): arg is T_1 & G;
     <T_2, H extends G>(arg: T_2 | H): arg is H;
     (arg: any): arg is G;
 };
-type GenericTypeguard<G> = ReturnType<typeof genericTypeguard<G>>;
+type GenericTypeguard<G> = ReturnType<typeof asTypeguard<G>>;
 declare function isExactly<T>(sample: T): {
     <T_1>(arg: T | T_1): arg is T;
     <T_2>(arg: T_2): arg is T_2 & T;
@@ -552,7 +552,7 @@ declare const is: {
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         among: (options: any[]) => (arg: any) => arg is never;
-        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : never>;
+        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : T_6 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
         match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
         camelCase: <T_9>(arg: T_9 | Camelized<T_9, true>) => arg is Exclude<T_9, Camelized<T_9, true>> | Exclude<Camelized<T_9, true>, Camelized<T_9, true>>;
@@ -719,7 +719,7 @@ declare const does: {
         atLeast: (sample: number) => (arg: number) => boolean;
         atMost: (sample: number) => (arg: number) => boolean;
         among: (options: any[]) => (arg: any) => arg is never;
-        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : never>;
+        like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : T_6 & GuardedWithMap<TypeguardMap<string>>>;
         typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
         match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
         camelCase: <T_9>(arg: T_9 | Camelized<T_9, true>) => arg is Exclude<T_9, Camelized<T_9, true>> | Exclude<Camelized<T_9, true>, Camelized<T_9, true>>;
@@ -761,7 +761,7 @@ declare const isnt: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : never>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
     camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
@@ -802,7 +802,7 @@ declare const aint: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : never>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
     camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
@@ -843,7 +843,7 @@ declare const doesnt: {
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: (options: any[]) => (arg: any) => arg is never;
-    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : never>;
+    like: (sample: TypeguardMap) => <T_6>(arg: T_6) => arg is Exclude<T_6, GuardedWithMap<TypeguardMap<string>> extends T_6 ? T_6 & GuardedWithMap<TypeguardMap<string>> : T_6 & GuardedWithMap<TypeguardMap<string>>>;
     typed: <T_7 extends string | number>(type: T_7) => <O extends Typed<string | number>>(arg: O) => arg is Exclude<O, O & Typed<T_7>>;
     match: <T_8 extends object>(sample: T_8) => <U extends T_8>(arg: U) => boolean;
     camelCase: <T_5>(arg: T_5 | Camelized<T_5, true>) => arg is Exclude<T_5, Camelized<T_5, true>> | Exclude<Camelized<T_5, true>, Camelized<T_5, true>>;
@@ -1331,7 +1331,7 @@ declare function forceUpdateNpmLinks(): void;
 declare function objectWithKeys<Key extends string, ReturnType>(keys: Key[] | readonly Key[], initializer: (key: Key) => ReturnType): { [key in Key]: ReturnType; };
 
 type ReifyInterface<T> = {
-    [P in keyof T]: T[P] extends (infer U)[] ? ReifyInterface<U>[] : T[P] extends object | undefined ? NonNullable<ReifyInterface<T[P]>> | undefined : T[P] extends object ? NonNullable<ReifyInterface<T[P]>> : T[P];
+    [P in keyof T]: T[P] extends (infer U)[] ? ReifyInterface<U>[] : T[P] extends object | undefined ? ReifyInterface<NonNullable<T[P]>> | undefined : T[P] extends object ? NonNullable<ReifyInterface<T[P]>> : T[P];
 };
 
 declare function setReliableTimeout(callback: (actualTimePassed: number) => void, timeout: number): NodeJS.Timeout;
@@ -1350,4 +1350,4 @@ declare function isKindOf<T extends string | number>(kind: T): <O extends {
 
 declare function undefinedIfFalsey<T>(value: T): T | undefined;
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Class, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, IteratorArgs, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, MixinBuilder, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, ReifyInterface, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, StringKey, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, itselfIf, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, AliasedKeys, AliasesDefinition, AliasesFor, Aliasified, Camelized, ChainableKeys, ChainableTypes, Chainified, CheckKind, CheckState, Class, Client, Color, ColorMap, CommonPredicateMap, CommonPredicateName, CommonPredicates, CommonTransformKey, CommonTransforms, CouldBeNullOrUndefined, CreateEnvOptions, CreateEnvResult, Dict, EnsurePropertyOptions, Evaluate, FunctionThatReturns, GenericTypeguard, GroupListener, GuardedWithMap, Handler, INpmLsOutput, IViteConfig, Index, IteratorArgs, Jsonable, JsonableNonArray, JsonableObject, KeyOfJsonable, KindOf, Listener, Log, LogFunction, LogIndices, LogOptions, LoggerInfo, MapForType, Merge, MethodKey, MixinBuilder, Narrowed, NonTypeguard, Not, NpmLink, Paint, Painter, ParametricHandler, ParseSwitchOutput, ParseTransformOutput, PipedFunctions, PossiblySerializedLogFunction, Predicate, PredicateOutput, Primitive, PromiseHandlers, PushToStackOutput, ReifyInterface, Resolvable, ResolvableConfig, SerializeAs, ShiftDirection, StrictlyPartial, StringKey, Transform, TransformResult, Typed, Typeguard, TypeguardMap, UnixTimestamp, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, asTypeguard, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, itselfIf, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

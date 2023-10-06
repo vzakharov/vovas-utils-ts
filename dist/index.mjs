@@ -77,39 +77,39 @@ function isFunction(maybeFn) {
   return _.isFunction(maybeFn);
 }
 
-function genericTypeguard(predicate) {
+function asTypeguard(predicate) {
   function typeguard(arg) {
     return predicate(arg);
   }
   return typeguard;
 }
 function isExactly(sample) {
-  return genericTypeguard((arg) => _.isEqual(arg, sample));
+  return asTypeguard((arg) => _.isEqual(arg, sample));
 }
 function isInstanceOf(constructor) {
-  return genericTypeguard((arg) => arg instanceof constructor);
+  return asTypeguard((arg) => arg instanceof constructor);
 }
 const commonPredicates = {
-  undefined: genericTypeguard(_.isUndefined),
-  void: genericTypeguard(_.isUndefined),
-  null: genericTypeguard(_.isNull),
-  nil: genericTypeguard(_.isNil),
-  string: genericTypeguard(_.isString),
+  undefined: asTypeguard(_.isUndefined),
+  void: asTypeguard(_.isUndefined),
+  null: asTypeguard(_.isNull),
+  nil: asTypeguard(_.isNil),
+  string: asTypeguard(_.isString),
   emptyString: isExactly(""),
-  number: genericTypeguard(_.isNumber),
+  number: asTypeguard(_.isNumber),
   zero: isExactly(0),
-  boolean: genericTypeguard(_.isBoolean),
+  boolean: asTypeguard(_.isBoolean),
   false: isExactly(false),
   true: isExactly(true),
   function: isFunction,
   promise: isInstanceOf(Promise),
-  object: genericTypeguard(_.isObject),
+  object: asTypeguard(_.isObject),
   array: isArray,
-  regexp: genericTypeguard(_.isRegExp),
+  regexp: asTypeguard(_.isRegExp),
   itself: (arg) => true,
-  primitive: genericTypeguard(isPrimitive),
-  jsonable: genericTypeguard(isJsonable),
-  jsonableObject: genericTypeguard(isJsonableObject),
+  primitive: asTypeguard(isPrimitive),
+  jsonable: asTypeguard(isJsonable),
+  jsonableObject: asTypeguard(isJsonableObject),
   defined: (arg) => !_.isUndefined(arg),
   empty: (arg) => arg.length === 0,
   truthy: (arg) => !!arg,
@@ -1256,4 +1256,4 @@ function undefinedIfFalsey(value) {
   return value || void 0;
 }
 
-export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, MixinBuilder, Resolvable, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, genericTypeguard, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, itselfIf, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };
+export { $as, $do, $if, $throw, $thrower, $try, $with, GroupListener, MixinBuilder, Resolvable, addProperties, aint, aliasify, also, alsoLog, ansiColors, ansiPrefixes, any, asTypeguard, assert, assign, assignTo, both, callIts, callWith, camelize, chainified, check, coloredEmojis, commonPredicates, commonTransforms, compileTimeError, conformsToTypeguardMap, createEnv, doWith, does, doesnt, download, downloadAsStream, either, ensure, ensureProperty, envCase, envKeys, evaluate, every, everyItem, forEach, forceUpdateNpmLinks, functionThatReturns, getHeapUsedMB, getNpmLinks, getProp, give, give$, go, groupListeners, has, humanize, ifGeneric, is, isAmong, isArray, isCamelCase, isExactly, isFunction, isInstanceOf, isJsonable, isJsonableObject, isKindOf, isLike, isPrimitive, isTyped, isTypeguardMap, isnt, its, itself, itselfIf, jsObjectString, jsonClone, jsonEqual, labelize, lazily, logger, loggerInfo, map, mapKeysDeep, merge, meta, mixinable, mutate, not, objectWithKeys, paint, parseSwitch, parseTransform, pipe, please, pushToStack, respectively, serializable, serialize, serializer, setLastLogIndex, setReliableTimeout, shift, shiftTo, shouldNotBe, thisable, to, toType, transform, tuple, unEnvCase, unEnvKeys, undefinedIfFalsey, viteConfigForNpmLinks, withLogFile, wrap };

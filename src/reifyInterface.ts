@@ -3,7 +3,7 @@ export type ReifyInterface<T> = {
     T[P] extends (infer U)[] 
       ? ReifyInterface<U>[] 
     : T[P] extends object | undefined
-      ? NonNullable<ReifyInterface<T[P]>> | undefined 
+      ? ReifyInterface<NonNullable<T[P]>> | undefined 
     : T[P] extends object
       ? NonNullable<ReifyInterface<T[P]>>
     : T[P];

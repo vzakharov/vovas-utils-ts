@@ -23,7 +23,7 @@ export function conformsToTypeguardMap<Keys extends string, TG extends Typeguard
   typeguardMap: TG
 ) {
 
-  function conforms<T>(object: T): object is GuardedWithMap<TG> extends T ? GuardedWithMap<TG> : never {
+  function conforms<T>(object: T): object is GuardedWithMap<TG> extends T ? GuardedWithMap<TG> : T & GuardedWithMap<TG> {
     return _.every(typeguardMap, (typeguard, key) => typeguard(object[key as keyof T]));
   }
 

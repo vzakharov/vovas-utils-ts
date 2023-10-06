@@ -6,7 +6,7 @@ import { not } from './not';
 import { isFunction } from './isFunction';
 
 
-export function genericTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (arg: any) => boolean ) ) {
+export function asTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (arg: any) => boolean ) ) {
   function typeguard<T>(arg: T | G): arg is G;
   function typeguard<T>(arg: T): arg is T & G;
   function typeguard<T, H extends G>(arg: T | H): arg is H;
@@ -18,41 +18,41 @@ export function genericTypeguard<G>(predicate: ( (arg: any) => arg is G ) | ( (a
   return typeguard;
 };
 
-export type GenericTypeguard<G> = ReturnType<typeof genericTypeguard<G>>;
+export type GenericTypeguard<G> = ReturnType<typeof asTypeguard<G>>;
 
 export function isExactly<T>(sample: T) {
-  return genericTypeguard<T>(arg => _.isEqual(arg, sample));
+  return asTypeguard<T>(arg => _.isEqual(arg, sample));
 };
 
 export function isInstanceOf<C extends new (...args: any[]) => any>(constructor: C) {
-  return genericTypeguard<InstanceType<C>>(arg => arg instanceof constructor);
+  return asTypeguard<InstanceType<C>>(arg => arg instanceof constructor);
 };
 
 
 export const commonPredicates = {
 
-  undefined: genericTypeguard(_.isUndefined),
-  void: genericTypeguard<void>(_.isUndefined),
-  null: genericTypeguard(_.isNull),
-  nil: genericTypeguard(_.isNil),
-  string: genericTypeguard(_.isString),
+  undefined: asTypeguard(_.isUndefined),
+  void: asTypeguard<void>(_.isUndefined),
+  null: asTypeguard(_.isNull),
+  nil: asTypeguard(_.isNil),
+  string: asTypeguard(_.isString),
   emptyString: isExactly(''),
-  number: genericTypeguard(_.isNumber),
+  number: asTypeguard(_.isNumber),
   zero: isExactly(0),
-  boolean: genericTypeguard(_.isBoolean),
+  boolean: asTypeguard(_.isBoolean),
   false: isExactly(false),
   true: isExactly(true),
   function: isFunction,
   promise: isInstanceOf(Promise<any>),
-  object: genericTypeguard(_.isObject),
+  object: asTypeguard(_.isObject),
   array: isArray,
-  regexp: genericTypeguard(_.isRegExp),
+  regexp: asTypeguard(_.isRegExp),
 
   itself: <T>(arg: T): arg is T => true,
 
-  primitive: genericTypeguard(isPrimitive),
-  jsonable: genericTypeguard(isJsonable),
-  jsonableObject: genericTypeguard(isJsonableObject),
+  primitive: asTypeguard(isPrimitive),
+  jsonable: asTypeguard(isJsonable),
+  jsonableObject: asTypeguard(isJsonableObject),
 
   defined: <T>(arg: T | undefined): arg is T => !_.isUndefined(arg),
   empty: <T extends { length: number }>(arg: T): arg is T & { length: 0 } => arg.length === 0,
