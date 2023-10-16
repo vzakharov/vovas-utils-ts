@@ -49,15 +49,15 @@ function BreakableMixin<Base extends Class<Chair<any>>>(BaseClass: Base) {
   };
 }
 
-// Create a factory for funny, breakable chairs
-const FunnyBreakableChair = mixinable(Chair as Class<Chair<any>, ['red' | 'blue']>)
-  .mixin(FunnyMixin)
-  .mixin(BreakableMixin);
+// // Create a factory for funny, breakable chairs
+// const FunnyBreakableChair = mixinable(Chair as Class<Chair<any>, ['red' | 'blue']>)
+//   .mixin(FunnyMixin)
+//   .mixin(BreakableMixin);
 
-// Now you can use the factory function to create funny, breakable chairs
-const redFunnyBreakableChair = FunnyBreakableChair.create("red");
-const blueFunnyBreakableChair = FunnyBreakableChair.create("blue");
+// // Now you can use the factory function to create funny, breakable chairs
+// const redFunnyBreakableChair = FunnyBreakableChair.create("red");
+// const blueFunnyBreakableChair = FunnyBreakableChair.create("blue");
 
-redFunnyBreakableChair.sit(); // You sit on the red chair.
-blueFunnyBreakableChair.joke(); // Why don't blue chairs ever tell secrets? Because they can't stand up for themselves!
-redFunnyBreakableChair.break(); // The red chair breaks!
+// redFunnyBreakableChair.sit(); // You sit on the red chair.
+// blueFunnyBreakableChair.joke(); // Why don't blue chairs ever tell secrets? Because they can't stand up for themselves!
+// redFunnyBreakableChair.break(); // The red chair breaks!

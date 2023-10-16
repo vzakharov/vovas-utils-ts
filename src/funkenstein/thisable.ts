@@ -6,20 +6,20 @@ export function thisable<This, Args extends any[], Return>(
   };
 };
 
-// Test:
-// import { thisable } from './thisable';
+// // Test:
+// // import { thisable } from './thisable';
 
-type HasName = {
-  name: string;
-};
+// type HasName = {
+//   name: string;
+// };
 
-const sayHello = thisable((own: HasName) => {
-  console.log(`Hello, ${own.name}!`);
-});
+// const sayHello = thisable((own: HasName) => {
+//   console.log(`Hello, ${own.name}!`);
+// });
 
-const person = {
-  name: 'John',
-  sayHello,
-};
+// const person = {
+//   name: 'John',
+//   sayHello,
+// };
 
-person.sayHello(); // Hello, John!
+// person.sayHello(); // Hello, John!

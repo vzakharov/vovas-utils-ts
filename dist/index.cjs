@@ -576,14 +576,6 @@ function thisable(fn) {
     return fn(this, ...args);
   };
 }
-const sayHello = thisable((own) => {
-  console.log(`Hello, ${own.name}!`);
-});
-const person = {
-  name: "John",
-  sayHello
-};
-person.sayHello();
 
 function also(...args) {
   const callback = args.length === 1 ? args[0] : args[1];
@@ -965,34 +957,6 @@ class MixinBuilder {
 function mixinable(BaseClass) {
   return new MixinBuilder(BaseClass);
 }
-class Chair {
-  constructor(color) {
-    this.color = color;
-  }
-  sit() {
-    console.log(`You sit on the ${this.color} chair.`);
-  }
-}
-function FunnyMixin(BaseClass) {
-  return class extends BaseClass {
-    joke() {
-      console.log(`Why don't ${this.color} chairs ever tell secrets? Because they can't stand up for themselves!`);
-    }
-  };
-}
-function BreakableMixin(BaseClass) {
-  return class extends BaseClass {
-    break() {
-      console.log(`The ${this.color} chair breaks!`);
-    }
-  };
-}
-const FunnyBreakableChair = mixinable(Chair).mixin(FunnyMixin).mixin(BreakableMixin);
-const redFunnyBreakableChair = FunnyBreakableChair.create("red");
-const blueFunnyBreakableChair = FunnyBreakableChair.create("blue");
-redFunnyBreakableChair.sit();
-blueFunnyBreakableChair.joke();
-redFunnyBreakableChair.break();
 
 const log$1 = logger("vovas-utils.npmLinks", "yellow");
 function getNpmLinks() {
