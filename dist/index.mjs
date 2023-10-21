@@ -73,9 +73,7 @@ function not(predicate) {
   return (arg) => !predicate(arg);
 }
 
-function isFunction(maybeFn) {
-  return _.isFunction(maybeFn);
-}
+const isFunction = asTypeguard(_.isFunction);
 
 function asTypeguard(predicate) {
   function typeguard(arg) {

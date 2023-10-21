@@ -239,9 +239,6 @@ declare function meta<Args extends any[], Return>(fn: (wrapper: (...args: Args) 
 declare function both<Arg, Guarded1 extends Arg, Guarded2 extends Guarded1>(typeguard1: Typeguard<Arg, Guarded1>, typeguard2: Typeguard<Guarded1, Guarded2>): Typeguard<Arg, Guarded2>;
 declare function both<Arg>(predicate1: NonTypeguard<Arg>, predicate2: NonTypeguard<Arg>): NonTypeguard<Arg>;
 
-declare function isFunction(maybeFn: any): maybeFn is (...args: any[]) => any;
-declare function isFunction<Args extends any[], Result>(maybeFn: any): maybeFn is (...args: Args) => Result;
-
 declare function asTypeguard<G>(predicate: ((arg: any) => arg is G) | ((arg: any) => boolean)): {
     <T>(arg: G | T): arg is G;
     <T_1>(arg: T_1): arg is T_1 & G;
@@ -328,60 +325,65 @@ declare const commonPredicates: {
         <T_20, H_6 extends boolean>(arg: T_20 | H_6): arg is H_6;
         (arg: any): arg is boolean;
     };
-    function: typeof isFunction;
+    function: {
+        <T_21>(arg: ((...args: any[]) => any) | T_21): arg is (...args: any[]) => any;
+        <T_22>(arg: T_22): arg is T_22 & ((...args: any[]) => any);
+        <T_23, H_7 extends (...args: any[]) => any>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is (...args: any[]) => any;
+    };
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_24>(arg: Promise<any> | T_24): arg is Promise<any>;
+        <T_25>(arg: T_25): arg is T_25 & Promise<any>;
+        <T_26, H_8 extends Promise<any>>(arg: T_26 | H_8): arg is H_8;
         (arg: any): arg is Promise<any>;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_27>(arg: object | T_27): arg is object;
+        <T_28>(arg: T_28): arg is T_28 & object;
+        <T_29, H_9 extends object>(arg: T_29 | H_9): arg is H_9;
         (arg: any): arg is object;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_30>(arg: RegExp | T_30): arg is RegExp;
+        <T_31>(arg: T_31): arg is T_31 & RegExp;
+        <T_32, H_10 extends RegExp>(arg: T_32 | H_10): arg is H_10;
         (arg: any): arg is RegExp;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_33>(arg: T_33) => arg is T_33;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_34>(arg: Primitive | T_34): arg is Primitive;
+        <T_35>(arg: T_35): arg is T_35 & Primitive;
+        <T_36, H_11 extends Primitive>(arg: T_36 | H_11): arg is H_11;
         (arg: any): arg is Primitive;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_37>(arg: Jsonable | T_37): arg is Jsonable;
+        <T_38>(arg: T_38): arg is T_38 & Jsonable;
+        <T_39, H_12 extends Jsonable>(arg: T_39 | H_12): arg is H_12;
         (arg: any): arg is Jsonable;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_40>(arg: JsonableObject | T_40): arg is JsonableObject;
+        <T_41>(arg: T_41): arg is T_41 & JsonableObject;
+        <T_42, H_13 extends JsonableObject>(arg: T_42 | H_13): arg is H_13;
         (arg: any): arg is JsonableObject;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_43>(arg: T_43 | undefined) => arg is T_43;
+    empty: <T_44 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_44) => arg is T_44 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_45>(arg: false | "" | 0 | T_45 | null | undefined) => arg is T_45;
+    falsy: <T_46>(arg: false | "" | 0 | T_46 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
     atLeast: (sample: number) => (arg: number) => boolean;
     atMost: (sample: number) => (arg: number) => boolean;
     among: typeof isAmong;
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    match: <T_47 extends object>(sample: T_47) => <U extends T_47>(arg: U) => boolean;
     like: typeof conformsToTypeguardMap;
     typed: typeof isTyped;
     camelCase: typeof isCamelCase;
@@ -418,13 +420,18 @@ declare const is: {
         (arg: any): arg is undefined;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_27>(arg: object | T_27): arg is object;
+        <T_28>(arg: T_28): arg is T_28 & object;
+        <T_29, H_9 extends object>(arg: T_29 | H_9): arg is H_9;
         (arg: any): arg is object;
     };
-    function: typeof isFunction;
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    function: {
+        <T_21>(arg: ((...args: any[]) => any) | T_21): arg is (...args: any[]) => any;
+        <T_22>(arg: T_22): arg is T_22 & ((...args: any[]) => any);
+        <T_23, H_7 extends (...args: any[]) => any>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is (...args: any[]) => any;
+    };
+    match: <T_47 extends object>(sample: T_47) => <U extends T_47>(arg: U) => boolean;
     void: {
         <T_3>(arg: void | T_3): arg is void;
         <T_4>(arg: T_4): arg is T_4 & void;
@@ -468,45 +475,45 @@ declare const is: {
         (arg: any): arg is boolean;
     };
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_24>(arg: Promise<any> | T_24): arg is Promise<any>;
+        <T_25>(arg: T_25): arg is T_25 & Promise<any>;
+        <T_26, H_8 extends Promise<any>>(arg: T_26 | H_8): arg is H_8;
         (arg: any): arg is Promise<any>;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_30>(arg: RegExp | T_30): arg is RegExp;
+        <T_31>(arg: T_31): arg is T_31 & RegExp;
+        <T_32, H_10 extends RegExp>(arg: T_32 | H_10): arg is H_10;
         (arg: any): arg is RegExp;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_33>(arg: T_33) => arg is T_33;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_34>(arg: Primitive | T_34): arg is Primitive;
+        <T_35>(arg: T_35): arg is T_35 & Primitive;
+        <T_36, H_11 extends Primitive>(arg: T_36 | H_11): arg is H_11;
         (arg: any): arg is Primitive;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_37>(arg: Jsonable | T_37): arg is Jsonable;
+        <T_38>(arg: T_38): arg is T_38 & Jsonable;
+        <T_39, H_12 extends Jsonable>(arg: T_39 | H_12): arg is H_12;
         (arg: any): arg is Jsonable;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_40>(arg: JsonableObject | T_40): arg is JsonableObject;
+        <T_41>(arg: T_41): arg is T_41 & JsonableObject;
+        <T_42, H_13 extends JsonableObject>(arg: T_42 | H_13): arg is H_13;
         (arg: any): arg is JsonableObject;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_43>(arg: T_43 | undefined) => arg is T_43;
+    empty: <T_44 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_44) => arg is T_44 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_45>(arg: false | "" | 0 | T_45 | null | undefined) => arg is T_45;
+    falsy: <T_46>(arg: false | "" | 0 | T_46 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
@@ -585,13 +592,18 @@ declare const does: {
         (arg: any): arg is undefined;
     };
     object: {
-        <T_24>(arg: object | T_24): arg is object;
-        <T_25>(arg: T_25): arg is T_25 & object;
-        <T_26, H_8 extends object>(arg: T_26 | H_8): arg is H_8;
+        <T_27>(arg: object | T_27): arg is object;
+        <T_28>(arg: T_28): arg is T_28 & object;
+        <T_29, H_9 extends object>(arg: T_29 | H_9): arg is H_9;
         (arg: any): arg is object;
     };
-    function: typeof isFunction;
-    match: <T_44 extends object>(sample: T_44) => <U extends T_44>(arg: U) => boolean;
+    function: {
+        <T_21>(arg: ((...args: any[]) => any) | T_21): arg is (...args: any[]) => any;
+        <T_22>(arg: T_22): arg is T_22 & ((...args: any[]) => any);
+        <T_23, H_7 extends (...args: any[]) => any>(arg: T_23 | H_7): arg is H_7;
+        (arg: any): arg is (...args: any[]) => any;
+    };
+    match: <T_47 extends object>(sample: T_47) => <U extends T_47>(arg: U) => boolean;
     void: {
         <T_3>(arg: void | T_3): arg is void;
         <T_4>(arg: T_4): arg is T_4 & void;
@@ -635,45 +647,45 @@ declare const does: {
         (arg: any): arg is boolean;
     };
     promise: {
-        <T_21>(arg: Promise<any> | T_21): arg is Promise<any>;
-        <T_22>(arg: T_22): arg is T_22 & Promise<any>;
-        <T_23, H_7 extends Promise<any>>(arg: T_23 | H_7): arg is H_7;
+        <T_24>(arg: Promise<any> | T_24): arg is Promise<any>;
+        <T_25>(arg: T_25): arg is T_25 & Promise<any>;
+        <T_26, H_8 extends Promise<any>>(arg: T_26 | H_8): arg is H_8;
         (arg: any): arg is Promise<any>;
     };
     array: typeof isArray;
     regexp: {
-        <T_27>(arg: RegExp | T_27): arg is RegExp;
-        <T_28>(arg: T_28): arg is T_28 & RegExp;
-        <T_29, H_9 extends RegExp>(arg: T_29 | H_9): arg is H_9;
+        <T_30>(arg: RegExp | T_30): arg is RegExp;
+        <T_31>(arg: T_31): arg is T_31 & RegExp;
+        <T_32, H_10 extends RegExp>(arg: T_32 | H_10): arg is H_10;
         (arg: any): arg is RegExp;
     };
-    itself: <T_30>(arg: T_30) => arg is T_30;
+    itself: <T_33>(arg: T_33) => arg is T_33;
     primitive: {
-        <T_31>(arg: Primitive | T_31): arg is Primitive;
-        <T_32>(arg: T_32): arg is T_32 & Primitive;
-        <T_33, H_10 extends Primitive>(arg: T_33 | H_10): arg is H_10;
+        <T_34>(arg: Primitive | T_34): arg is Primitive;
+        <T_35>(arg: T_35): arg is T_35 & Primitive;
+        <T_36, H_11 extends Primitive>(arg: T_36 | H_11): arg is H_11;
         (arg: any): arg is Primitive;
     };
     jsonable: {
-        <T_34>(arg: Jsonable | T_34): arg is Jsonable;
-        <T_35>(arg: T_35): arg is T_35 & Jsonable;
-        <T_36, H_11 extends Jsonable>(arg: T_36 | H_11): arg is H_11;
+        <T_37>(arg: Jsonable | T_37): arg is Jsonable;
+        <T_38>(arg: T_38): arg is T_38 & Jsonable;
+        <T_39, H_12 extends Jsonable>(arg: T_39 | H_12): arg is H_12;
         (arg: any): arg is Jsonable;
     };
     jsonableObject: {
-        <T_37>(arg: JsonableObject | T_37): arg is JsonableObject;
-        <T_38>(arg: T_38): arg is T_38 & JsonableObject;
-        <T_39, H_12 extends JsonableObject>(arg: T_39 | H_12): arg is H_12;
+        <T_40>(arg: JsonableObject | T_40): arg is JsonableObject;
+        <T_41>(arg: T_41): arg is T_41 & JsonableObject;
+        <T_42, H_13 extends JsonableObject>(arg: T_42 | H_13): arg is H_13;
         (arg: any): arg is JsonableObject;
     };
-    defined: <T_40>(arg: T_40 | undefined) => arg is T_40;
-    empty: <T_41 extends {
+    defined: <T_43>(arg: T_43 | undefined) => arg is T_43;
+    empty: <T_44 extends {
         length: number;
-    }>(arg: T_41) => arg is T_41 & {
+    }>(arg: T_44) => arg is T_44 & {
         length: 0;
     };
-    truthy: <T_42>(arg: false | "" | 0 | T_42 | null | undefined) => arg is T_42;
-    falsy: <T_43>(arg: false | "" | 0 | T_43 | null | undefined) => arg is false | "" | 0 | null | undefined;
+    truthy: <T_45>(arg: false | "" | 0 | T_45 | null | undefined) => arg is T_45;
+    falsy: <T_46>(arg: false | "" | 0 | T_46 | null | undefined) => arg is false | "" | 0 | null | undefined;
     exactly: typeof isExactly;
     above: (sample: number) => (arg: number) => boolean;
     below: (sample: number) => (arg: number) => boolean;
@@ -863,6 +875,13 @@ declare function isAmong<U extends readonly any[]>(options: U): (arg: any) => ar
 declare function isArray<T>(arg: any): arg is T[];
 declare function isArray<T, U>(arg: T | U[]): arg is U[];
 declare function isArray<T, U, V>(arg: T | U[] | V[]): arg is U[] | V[];
+
+declare const isFunction: {
+    <T>(arg: ((...args: any[]) => any) | T): arg is (...args: any[]) => any;
+    <T_1>(arg: T_1): arg is T_1 & ((...args: any[]) => any);
+    <T_2, H extends (...args: any[]) => any>(arg: T_2 | H): arg is H;
+    (arg: any): arg is (...args: any[]) => any;
+};
 
 declare const isLike: typeof conformsToTypeguardMap;
 
