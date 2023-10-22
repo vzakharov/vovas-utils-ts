@@ -677,13 +677,14 @@ function give$(arg) {
   return () => arg;
 }
 
+function ensured(typeguard) {
+  return {
+    else: (fallback) => (arg) => typeguard(arg) ? arg : fallback
+  };
+}
+
 function itself(arg) {
   return arg;
-}
-function itselfIf(typeguard) {
-  return {
-    else: (defaultValue) => (arg) => typeguard(arg) ? arg : defaultValue
-  };
 }
 
 function pipe(...fns) {
@@ -1262,6 +1263,7 @@ exports.downloadAsStream = downloadAsStream;
 exports.either = either;
 exports.ensure = ensure;
 exports.ensureProperty = ensureProperty;
+exports.ensured = ensured;
 exports.envCase = envCase;
 exports.envKeys = envKeys;
 exports.evaluate = evaluate;
@@ -1297,7 +1299,6 @@ exports.isTypeguardMap = isTypeguardMap;
 exports.isnt = isnt;
 exports.its = its;
 exports.itself = itself;
-exports.itselfIf = itselfIf;
 exports.jsObjectString = jsObjectString;
 exports.jsonClone = jsonClone;
 exports.jsonEqual = jsonEqual;
